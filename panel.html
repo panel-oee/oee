@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Miesięczny Panel OEE - Lakiernia Gema</title>
     <style>
         /* ZMIENNE Z KOLORAMI DLA OBU TRYBÓW */
@@ -471,6 +472,437 @@
             from { opacity: 0; transform: translateY(-30px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    
+
+        /* ==========================================================
+           RESPONSYWNOŚĆ PANELU OEE - SMARTFON / TABLET / TV
+           Dodane: 2026-07-01
+           Cel: czytelny widok na telefonie bez pomniejszania strony oraz
+           szeroki, wygodny widok na TV i monitorach.
+           ========================================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+            min-height: 100%;
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            padding: clamp(8px, 1.2vw, 20px) !important;
+            font-size: clamp(14px, 0.85vw, 16px);
+        }
+
+        .container {
+            width: 100%;
+            max-width: min(1920px, 100%) !important;
+            padding: clamp(14px, 1.45vw, 30px) !important;
+            overflow: hidden;
+        }
+
+        .header-container {
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls {
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        h2 {
+            font-size: clamp(20px, 1.55vw, 30px) !important;
+            line-height: 1.15;
+        }
+
+        h3 {
+            font-size: clamp(15px, 1.05vw, 19px) !important;
+            line-height: 1.2;
+        }
+
+        .main-layout {
+            display: grid !important;
+            grid-template-columns: minmax(330px, 0.9fr) minmax(520px, 1.6fr);
+            align-items: start;
+            gap: clamp(16px, 1.4vw, 28px) !important;
+        }
+
+        .left-panel,
+        .right-panel {
+            min-width: 0 !important;
+            max-width: none !important;
+            width: 100%;
+        }
+
+        .calendar-box,
+        .flex-inputs,
+        .gema-columns-container,
+        .weekly-container,
+        .chart-css-container,
+        .table-responsive {
+            min-width: 0;
+            width: 100%;
+        }
+
+        .calendar-grid {
+            grid-template-columns: clamp(30px, 2.3vw, 48px) repeat(7, minmax(0, 1fr)) !important;
+            gap: clamp(4px, 0.45vw, 7px) !important;
+        }
+
+        .calendar-cell {
+            min-height: clamp(44px, 4.2vh, 64px);
+            padding: clamp(6px, 0.65vw, 12px) clamp(2px, 0.35vw, 5px) !important;
+            font-size: clamp(12px, 0.8vw, 14px) !important;
+        }
+
+        .calendar-day-name,
+        .calendar-week-number {
+            font-size: clamp(11px, 0.8vw, 14px) !important;
+        }
+
+        .calendar-cell .mini-oee {
+            font-size: clamp(9px, 0.7vw, 11px) !important;
+        }
+
+        .flex-inputs {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(160px, 1fr));
+            gap: clamp(10px, 0.9vw, 16px) !important;
+            padding: clamp(14px, 1.15vw, 20px) !important;
+        }
+
+        .form-group {
+            min-width: 0 !important;
+            max-width: none !important;
+            width: 100%;
+        }
+
+        .form-group[style*="flex: 2"] {
+            grid-column: span 2;
+        }
+
+        input, select {
+            min-width: 0;
+            font-size: 16px; /* zapobiega automatycznemu zoomowi pól w Chrome/Safari mobile */
+        }
+
+        .gema-columns-container {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: clamp(12px, 1vw, 20px) !important;
+            padding: clamp(14px, 1.15vw, 20px) !important;
+        }
+
+        .gema-column {
+            min-width: 0;
+        }
+
+        .gema-input-box label {
+            min-height: auto !important;
+            line-height: 1.2;
+        }
+
+        .btn-box {
+            display: grid !important;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: clamp(8px, 0.8vw, 12px) !important;
+        }
+
+        .btn-local,
+        .btn-export,
+        button {
+            min-width: 0 !important;
+            width: 100%;
+            white-space: normal;
+        }
+
+        .weekly-container {
+            grid-template-columns: repeat(4, minmax(180px, 1fr)) !important;
+            gap: clamp(12px, 1vw, 20px) !important;
+            padding: clamp(14px, 1.15vw, 20px) !important;
+        }
+
+        .stat-card-single {
+            padding: clamp(14px, 1.1vw, 22px) !important;
+        }
+
+        .stat-card-value {
+            font-size: clamp(30px, 2vw, 42px) !important;
+        }
+
+        .chart-css-container {
+            padding: clamp(14px, 1.3vw, 25px) !important;
+        }
+
+        .chart-css-grid {
+            min-height: clamp(210px, 24vh, 330px);
+            height: clamp(210px, 24vh, 330px) !important;
+        }
+
+        .history-section {
+            min-width: 0;
+        }
+
+        .table-responsive {
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            min-width: 1080px;
+        }
+
+        /* Duży TV / monitor: większa szerokość i wygodniejsze proporcje */
+        @media (min-width: 1600px) {
+            .main-layout {
+                grid-template-columns: minmax(420px, 0.75fr) minmax(760px, 1.65fr);
+            }
+
+            .chart-css-grid {
+                height: 300px !important;
+            }
+        }
+
+        /* Tablet i mniejszy laptop: układ pionowy, ale nadal szerokie formularze */
+        @media (max-width: 1100px) {
+            .main-layout {
+                grid-template-columns: 1fr !important;
+            }
+
+            .flex-inputs {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .form-group[style*="flex: 2"] {
+                grid-column: span 2;
+            }
+
+            .weekly-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
+
+        /* Telefon poziomo i wąskie tablety */
+        @media (max-width: 820px) {
+            body {
+                padding: 0 !important;
+                background: var(--bg-container);
+            }
+
+            .container {
+                border-radius: 0 !important;
+                border-left: 0 !important;
+                border-right: 0 !important;
+                padding: 14px !important;
+                box-shadow: none !important;
+            }
+
+            .header-container {
+                align-items: flex-start;
+                margin-bottom: 18px !important;
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            .btn-config-trigger,
+            .theme-select {
+                font-size: 12px !important;
+                padding: 7px 9px !important;
+            }
+
+            .theme-switcher {
+                margin-left: auto;
+            }
+
+            .main-layout {
+                gap: 18px !important;
+            }
+
+            .calendar-box {
+                padding: 10px !important;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 30px repeat(7, minmax(0, 1fr)) !important;
+                gap: 4px !important;
+            }
+
+            .calendar-cell {
+                min-height: 44px;
+                padding: 6px 1px !important;
+                font-size: 12px !important;
+                border-radius: 7px;
+            }
+
+            .calendar-cell .mini-oee {
+                font-size: 9px !important;
+            }
+
+            .calendar-day-name,
+            .calendar-week-number {
+                font-size: 11px !important;
+            }
+
+            .flex-inputs {
+                grid-template-columns: 1fr !important;
+                padding: 14px !important;
+            }
+
+            .form-group[style*="flex: 2"] {
+                grid-column: auto;
+            }
+
+            .gema-columns-container {
+                grid-template-columns: 1fr !important;
+                padding: 14px !important;
+            }
+
+            .gema-column {
+                display: grid !important;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .btn-box {
+                grid-template-columns: 1fr !important;
+            }
+
+            .weekly-container {
+                grid-template-columns: 1fr !important;
+                margin-top: 18px !important;
+            }
+
+            .weekly-header-box {
+                margin-bottom: 0 !important;
+            }
+
+            .chart-css-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .chart-css-title {
+                margin-bottom: 12px !important;
+            }
+
+            .chart-css-grid {
+                min-width: 680px;
+                height: 230px !important;
+            }
+
+            .table-responsive {
+                max-height: 420px !important;
+            }
+        }
+
+        /* Telefon pionowo — najważniejsza poprawka względem obecnego widoku */
+        @media (max-width: 520px) {
+            .container {
+                padding: 12px !important;
+            }
+
+            h2 {
+                font-size: 19px !important;
+            }
+
+            h3 {
+                margin-top: 18px !important;
+                font-size: 14px !important;
+                letter-spacing: 0.3px !important;
+            }
+
+            .header-controls {
+                display: grid !important;
+                grid-template-columns: 1fr;
+            }
+
+            .theme-switcher {
+                width: 100%;
+                display: grid !important;
+                grid-template-columns: auto 1fr;
+                margin-left: 0;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 26px repeat(7, minmax(0, 1fr)) !important;
+                gap: 3px !important;
+            }
+
+            .calendar-cell {
+                min-height: 38px;
+                font-size: 11px !important;
+            }
+
+            .calendar-cell .mini-oee {
+                font-size: 8px !important;
+            }
+
+            .calendar-day-name,
+            .calendar-week-number {
+                font-size: 10px !important;
+            }
+
+            .calendar-header {
+                font-size: 14px !important;
+            }
+
+            input, select {
+                height: 46px !important;
+            }
+
+            .gema-input-box {
+                padding: 10px !important;
+            }
+
+            .stat-card-value {
+                font-size: 34px !important;
+            }
+
+            .chart-css-grid {
+                min-width: 620px;
+            }
+
+            .gema-modal {
+                max-width: calc(100vw - 24px) !important;
+                margin: 12px;
+            }
+        }
+
+        /* Bardzo wąskie ekrany */
+        @media (max-width: 380px) {
+            .container {
+                padding: 10px !important;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 24px repeat(7, minmax(0, 1fr)) !important;
+                gap: 2px !important;
+            }
+
+            .calendar-cell {
+                min-height: 34px;
+                font-size: 10px !important;
+                border-radius: 5px;
+            }
+
+            .calendar-cell .mini-oee {
+                font-size: 7px !important;
+            }
+        }
+
+        /* KONIEC RESPONSYWNOŚCI PANELU OEE */
+
     </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
