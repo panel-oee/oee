@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Prezentacja OEE - Lakiernia</title>
+    <style>
+        /* RESTART I UNIFIKACJA PUDEŁKOWANIA */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* ZMIENNE Z KOLORAMI DLA OBU TRYBÓW */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-container: #ffffff;
+            --bg-inputs-flex: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-heading: #1e293b;
+            --border-color: #cbd5e1;
+            --calendar-cell-bg: #ffffff;
+            --calendar-cell-text: #334155;
+            --calendar-weekend-bg: #f8fafc;
+            --calendar-weekend-text: #94a3b8;
+            --chart-bg: #f8fafc;
+            --chart-bar-empty: #e2e8f0;
+            --today-border: #10b981;
+            --comment-item-bg: #ffffff;
+            --comment-item-hover-bg: #f8fafc;
+            --comment-item-border: #cbd5e1;
+            --comment-date-color: #2563eb;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --bg-inputs-flex: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-heading: #f8fafc;
+            --border-color: #334155;
+            --calendar-cell-bg: #1e293b;
+            --calendar-cell-text: #cbd5e1;
+            --calendar-weekend-bg: #1e293b;
+            --calendar-weekend-text: #475569;
+            --chart-bg: #0f172a;
+            --chart-bar-empty: #334155;
+            --today-border: #22c55e;
+            --comment-item-bg: rgba(30, 41, 59, 0.92);
+            --comment-item-hover-bg: rgba(51, 65, 85, 0.95);
+            --comment-item-border: #334155;
+            --comment-date-color: #3b82f6;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Blokada globalnego suwaka dla efektu czystego pulpitu TV */
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            padding: 12px; 
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            font-size: 15px;
+        }
+        
+        .container { 
+            width: 100%;
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-container); 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            min-height: 0; 
+        }
+        
+        .header-container {
+            border-bottom: 3px solid #3b82f6; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .controls-wrapper label {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .theme-select, .fullscreen-btn {
+            padding: 6px 12px;
+            font-size: 15px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .fullscreen-btn {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+        .fullscreen-btn:hover {
+            background: #2563eb;
+        }
+
+        h2 { 
+            color: var(--text-heading); 
+            margin: 0;
+            font-weight: 700;
+            font-size: 26px;
+        }
+        h3 { 
+            color: #38bdf8; 
+            margin-top: 0; 
+            margin-bottom: 8px; 
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* SIATKA DASHBOARDU */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        @media (min-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1.35fr;
+                height: 100%;
+            }
+            .dashboard-column {
+                height: 100%;
+            }
+            .left-bottom-section {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+            .right-top-section {
+                flex: 1.4; 
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+            .right-bottom-section {
+                flex: 1; 
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+            }
+        }
+
+        .dashboard-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        .panel-section {
+            background: transparent;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* KALENDARZ */
+        .calendar-box { 
+            background: var(--bg-inputs-flex); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 10px; 
+            min-height: 0;
+        }
+        .calendar-nav-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .calendar-header { 
+            font-weight: bold; 
+            font-size: 18px; 
+            color: var(--text-heading); 
+            text-transform: capitalize; 
+            text-align: center;
+            margin: 0;
+        }
+        .calendar-nav-btn {
+            background: var(--bg-container);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .calendar-nav-btn:hover {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+		.calendar-grid {
+			display: grid;
+			grid-template-columns: 48px repeat(7, 1fr);
+			gap: 5px;
+			text-align: center;
+		}
+		
+		.calendar-week-number {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 14px;
+			font-weight: 800;
+			color: #38bdf8;
+		}
+
+		.calendar-cell.other-month {
+			opacity: 0.35;
+		}
+
+        .calendar-day-name { font-size: 14px; font-weight: bold; color: var(--text-muted); padding-bottom: 2px; text-transform: uppercase; }
+        
+        .calendar-cell { 
+            padding: 6px 2px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; 
+            transition: all 0.2s; background: var(--calendar-cell-bg); font-weight: bold; color: var(--calendar-cell-text); position: relative; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        }
+
+        .calendar-day-num {
+            font-size: 16px;
+            line-height: 1.1;
+        }
+
+        .calendar-day-value {
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        .calendar-cell.oee-good { background: #10b981 !important; border-color: #059669 !important; color: #ffffff !important; }
+        .calendar-cell.oee-warn { background: #f59e0b !important; border-color: #d97706 !important; color: #ffffff !important; }
+        .calendar-cell.oee-bad { background: #ef4444 !important; border-color: #dc2626 !important; color: #ffffff !important; }
+        
+        .calendar-cell.today-current {
+            outline: 4px solid var(--today-border) !important;
+            outline-offset: -4px;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+            animation: pulseToday 2.5s infinite ease-in-out;
+            z-index: 4;
+        }
+
+        @keyframes pulseToday {
+            0% { box-shadow: 0 0 4px rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 14px rgba(34, 197, 94, 0.8); }
+            100% { box-shadow: 0 0 4px rgba(34, 197, 94, 0.4); }
+        }
+
+        .calendar-cell.active { 
+            outline: 4px solid #2563eb !important; 
+            outline-offset: -4px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.6) !important; 
+            z-index: 5;
+        }
+        .calendar-cell.active:not(.oee-good):not(.oee-warn):not(.oee-bad) { 
+            background: #2563eb !important; 
+            color: #ffffff !important; 
+        }
+
+        .calendar-cell.weekend { background: var(--calendar-weekend-bg); color: var(--calendar-weekend-text); }
+        .calendar-cell.holiday { background: #a855f7 !important; border-color: #9333ea !important; color: #ffffff !important; }
+        
+        /* SEKCJA LICZNIKÓW GEMA */
+        .gema-counters-section {
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+        .gema-counters-container {
+            display: flex;
+            gap: 10px;
+            background: transparent;
+        }
+        .gema-counter-card {
+            flex: 1;
+            background: var(--bg-container);
+            border: 2px dashed #10b981;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            min-width: 0;
+        }
+        .gema-counter-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .gema-counter-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #22c55e;
+        }
+
+        /* KAFELKI STATYSTYK 2X2 */
+        .weekly-container { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px; 
+            background: var(--bg-inputs-flex); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 10px; 
+            flex-grow: 1;
+            min-height: 0;
+        }
+        
+        .stat-card-single { 
+            background: var(--bg-container); 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            border-top: 5px solid #64748b; 
+            text-align: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+        }
+        .stat-card-title { font-size: 13px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card-value { font-size: 32px; font-weight: 800; margin-top: 2px; color: var(--text-main); line-height: 1.1; }
+        .stat-card-range { font-size: 14px; margin-top: 4px; color: var(--text-muted); font-weight: 700; line-height: 1.3; }
+        
+        /* WYKRES OEE */
+        .chart-css-container { 
+            background: var(--chart-bg); 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column;
+            min-height: 0;
+        }
+        .chart-css-title { font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; }
+        
+        .chart-css-grid { 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: space-between; 
+            border-left: 2px solid var(--border-color); 
+            border-bottom: 2px solid var(--border-color); 
+            padding-right: 5px; 
+            margin-left: 55px; 
+            margin-bottom: 25px; 
+            margin-top: 25px;    
+            position: relative; 
+            flex-grow: 1;
+            min-height: 0;
+        }
+        .chart-line-guide {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed var(--border-color);
+            opacity: 0.4;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .chart-line-label {
+            position: absolute;
+            left: -48px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+            transform: translateY(-50%);
+        }
+
+        .chart-target-guide {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 3px solid #f43f5e; 
+            box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .chart-css-bar-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex: 1; 
+            margin: 0 1px; 
+            height: 100%; 
+            justify-content: flex-end; 
+            position: relative;
+            z-index: 2;
+            min-width: 0;
+        }
+        .chart-css-bar { width: 95%; max-width: 25px; background: var(--chart-bar-empty); border-radius: 3px 3px 0 0; transition: all 0.3s; position: relative; min-height: 1px; }
+        .chart-css-bar:hover .chart-css-tooltip { display: block; }
+        
+        .chart-css-label { 
+            font-size: 11px; 
+            color: var(--text-muted); 
+            position: absolute;
+            bottom: -22px; 
+            text-align: center; 
+            font-weight: 700; 
+        }
+        .chart-css-tooltip { display: none; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #fc3; color: #000; padding: 5px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap; z-index: 10; }
+
+        /* UWAGI I ZAKŁÓCENIA */
+        .comments-box-container {
+            background: var(--bg-inputs-flex);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+        }
+        .comments-box-title {
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .comments-box-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            padding-right: 5px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        .comment-box-item {
+            background: var(--comment-item-bg);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--comment-item-border);
+            font-size: 15px;
+            line-height: 1.4;
+            border-left: 6px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .comment-box-item:hover {
+            background: var(--comment-item-hover-bg);
+        }
+        .comment-box-date {
+            font-weight: bold;
+            color: var(--comment-date-color);
+            white-space: nowrap;
+        }
+        .comment-box-icon {
+            font-size: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .comment-box-empty {
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 15px;
+            padding: 5px 0;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h2>Panel Wyników OEE - Lakiernia</h2>
+        <div class="controls-wrapper">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <label for="themeChooser">Motyw:</label>
+                <select id="themeChooser" class="theme-select" onchange="changeTheme(this.value)">
+                    <option value="light">Jasny (Light)</option>
+                    <option value="dark">Ciemny (Dark)</option>
+                </select>
+            </div>
+            <button id="fullscreenBtn" class="fullscreen-btn" onclick="toggleFullscreen()">Pełny ekran</button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <div class="dashboard-column">
+            <div class="panel-section">
+                <h3>Kalendarz miesiąca</h3>
+                <div class="calendar-box">
+                    <div class="calendar-nav-wrapper">
+                        <button class="calendar-nav-btn" onclick="navigateMonth(-1)">◀ </button>
+                        <div class="calendar-header" id="calendarMonthTitle">Miesiąc Rok</div>
+                        <button class="calendar-nav-btn" onclick="navigateMonth(1)"> ▶</button>
+                    </div>
+                    
+					<div class="calendar-grid" id="calendarGrid">
+						<div class="calendar-day-name">TW</div>
+						<div class="calendar-day-name">Pn</div>
+						<div class="calendar-day-name">Wt</div>
+						<div class="calendar-day-name">Śr</div>
+						<div class="calendar-day-name">Cz</div>
+						<div class="calendar-day-name">Pt</div>
+						<div class="calendar-day-name">Sb</div>
+						<div class="calendar-day-name">Nd</div>
+					</div>
+
+                </div>
+
+                <div class="gema-counters-section">
+                    <h3>Licznik dzienny (wybrany dzień)</h3>
+                    <div class="gema-counters-container">
+                        <div class="gema-counter-card">
+                            <div class="gema-counter-title">⏱️ Czas pracy automatyki</div>
+                            <div class="gema-counter-value" id="gemaTimeDiff">—</div>
+                        </div>
+                        <div class="gema-counter-card">
+                            <div class="gema-counter-title">📐 Metry linii</div>
+                            <div class="gema-counter-value" id="gemaMetersDiff">—</div>
+                        </div>
+                        <div class="gema-counter-card">
+                            <div class="gema-counter-title">📦 Ilość sztuk</div>
+                            <div class="gema-counter-value" id="gemaPcsDiff">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section left-bottom-section">
+                <h3>Podsumowanie okresowe wyników OEE</h3>
+                <div class="weekly-container">
+                    <div class="stat-card-single" id="currentWeekOeeCard">
+                        <div class="stat-card-title" id="currentWeekCardTitle">Obecny Tydzień</div>
+                        <div class="stat-card-value" id="currentWeekOee">—</div>
+                        <div class="stat-card-range" id="currentWeekTextInfo">Bieżący okres pracy</div>
+                    </div>
+                    <div class="stat-card-single" id="lastWeekOeeCard">
+                        <div class="stat-card-title" id="lastWeekCardTitle">Zeszły Tydzień</div>
+                        <div class="stat-card-value" id="lastWeekOee">—</div>
+                        <div class="stat-card-range" id="lastWeekTextInfo">Poprzedni okres pracy</div>
+                    </div>
+                    <div class="stat-card-single" id="monthOeeCard">
+                        <div class="stat-card-title" id="monthCardTitle">Średnia Miesięczna</div>
+                        <div class="stat-card-value" id="monthOee">—</div>
+                        <div class="stat-card-range" id="monthTextInfo">Cały bieżący miesiąc</div>
+                    </div>
+                    <div class="stat-card-single" id="recordOeeCard">
+                        <div class="stat-card-title">Rekord Miesiąca</div>
+                        <div class="stat-card-value" id="recordOee">—</div>
+                        <div class="stat-card-range" id="recordTextInfo">Najwyższy dobowy wynik</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-column">
+            
+            <div class="panel-section right-top-section">
+                <div class="chart-css-container">
+                    <div class="chart-css-title">Wykres Wyników OEE [%] za wybrany miesiąc</div>
+                    <div class="chart-css-grid" id="chartGrid"></div>
+                </div>
+            </div>
+
+            <div class="panel-section right-bottom-section">
+                <div class="comments-box-container">
+                    <div class="comments-box-title">Uwagi i zakłócenia pracy lakierni w wybranym miesiącu</div>
+                    <div class="comments-box-list" id="commentsBoxList"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // DYNAMICZNA KONFIGURACJA PROGÓW OEE (Pobierana automatycznie z Supabase)
+    // Wartości poniżej służą jako awaryjne progi (gdyby odłączono internet).
+    // =========================================================================
+    let OEE_CONFIG = {
+        target: 70,                   
+        greenMin: 70,                 
+        yellowMin: 60,                
+        chartGuides: [50, 60, 75, 80]  
+    };
+    // =========================================================================
+
+    var gemaBazaDanych = {};
+    
+    const SUPABASE_URL = 'https://vyobsgknuxxlglkyhulb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    var currentDateObj = new Date();
+    var currentYear = currentDateObj.getFullYear();
+    var currentMonth = currentDateObj.getMonth(); 
+    var selectedDayGlobal = formatDateKey(currentDateObj);
+
+    const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+
+    const KATEGORIE_IKON = {
+        "Brak przestojów": "✔️",
+        "Zmiana koloru": "🎨",
+        "Przemalowanie": "🖌️",
+        "Awaria maszyny": "⚙️",
+		"Usterka maszyny": "🔧",
+        "Czyszczenie/Konserwacja": "🧹",
+        "Brak proszku": "📦",
+        "Inne": "⚠️"
+    };
+
+
+    function formatDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function parseDateKey(dateKey) {
+        if (dateKey instanceof Date) return new Date(dateKey);
+        const parts = String(dateKey).split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function getMonthCalendarRange(year, month) {
+        const firstDayDate = new Date(year, month, 1);
+        let firstWeekDay = firstDayDate.getDay();
+        if (firstWeekDay === 0) firstWeekDay = 7;
+
+        const calendarStart = new Date(firstDayDate);
+        calendarStart.setDate(firstDayDate.getDate() - (firstWeekDay - 1));
+
+        const lastDayDate = new Date(year, month + 1, 0);
+        let lastWeekDay = lastDayDate.getDay();
+        if (lastWeekDay === 0) lastWeekDay = 7;
+
+        const calendarEnd = new Date(lastDayDate);
+        calendarEnd.setDate(lastDayDate.getDate() + (7 - lastWeekDay));
+
+        return { calendarStart, calendarEnd };
+    }
+
+    function initTheme() {
+        var savedTheme = localStorage.getItem('gema_theme') || 'dark'; 
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeChooser').value = savedTheme;
+    }
+
+    function changeTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('gema_theme', themeName);
+        calculateWeeklyAverageFromDay(selectedDayGlobal);
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Błąd podczas włączania pełnego ekranu: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const btn = document.getElementById('fullscreenBtn');
+        if (document.fullscreenElement) {
+            btn.innerText = "Zamknij ekran";
+            btn.style.background = "#ef4444";
+            btn.style.borderColor = "#dc2626";
+        } else {
+            btn.innerText = "Pełny ekran";
+            btn.style.background = "#3b82f6";
+            btn.style.borderColor = "#2563eb";
+        }
+    });
+
+    // NOWA FUNKCJA POBIERAJĄCA PROGI Z BAZY DANYCH
+    async function loadOeeConfigFromSupabase() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('oee_config')
+                .select('*')
+                .eq('id', 1)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                OEE_CONFIG = {
+                    target: parseInt(data.target, 10),
+                    greenMin: parseInt(data.green_min, 10),
+                    yellowMin: parseInt(data.yellow_min, 10),
+                    chartGuides: data.chart_guides || [50, 60, 75, 80]
+                };
+                console.log("Konfiguracja OEE załadowana z bazy:", OEE_CONFIG);
+            }
+        } catch (err) {
+            console.error("Błąd pobierania progów z Supabase, używam domyślnych lokalnych:", err.message);
+        }
+    }
+
+    async function loadDataFromSupabase() {
+		const yearStr = currentYear;
+		const monthStr = String(currentMonth + 1).padStart(2, '0');
+		const firstDayDate = new Date(currentYear, currentMonth, 1);
+		let firstWeekDay = firstDayDate.getDay();
+		if (firstWeekDay === 0)
+			firstWeekDay = 7;
+		const calendarStart = new Date(firstDayDate);
+		calendarStart.setDate(
+		firstDayDate.getDate() - (firstWeekDay - 1)
+	);
+
+		const lastDayDate = new Date(currentYear, currentMonth + 1, 0);
+		let lastWeekDay = lastDayDate.getDay();
+		if (lastWeekDay === 0) 
+		lastWeekDay = 7;
+		const calendarEnd =
+		new Date(lastDayDate);
+
+		calendarEnd.setDate(
+		lastDayDate.getDate() + (7 - lastWeekDay)
+	);
+        // Pobieramy od początku poprzedniego miesiąca,
+        // żeby działał kafelek "Zeszły tydzień" oraz ostatnie uwagi.
+        const queryStart = new Date(currentYear, currentMonth - 1, 1);
+        const startOfMonth = formatDateKey(queryStart);
+        const endOfMonth = formatDateKey(calendarEnd);
+
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('oee_reports')
+                .select('*')
+                .gte('date', startOfMonth)
+                .lte('date', endOfMonth)
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            gemaBazaDanych = {}; 
+            if (data) {
+                data.forEach(row => {
+                    const dateKey = row.date;
+                    gemaBazaDanych[dateKey] = {
+                        date: dateKey,
+                        oee: row.oee != null ? parseFloat(row.oee).toFixed(1) : "0.0",
+                        notes: row.notes || "",
+                        h_start: row.h_start || row.hStart || "",
+                        h_end: row.h_end || row.hEnd || "",
+                        m_start: row.m_start != null ? row.m_start : (row.mStart != null ? row.mStart : null),
+                        m_end: row.m_end != null ? row.m_end : (row.mEnd != null ? row.mEnd : null),
+                        pcs_start: row.pcs_start != null ? row.pcs_start : (row.pcsStart != null ? row.pcsStart : null),
+                        pcs_end: row.pcs_end != null ? row.pcs_end : (row.pcsEnd != null ? row.pcsEnd : null)
+                    };
+                });
+            }
+        } catch (err) {
+            console.error("Błąd połączenia z Supabase, używam bazy lokalnej:", err.message);
+            gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db')) || {};
+        }
+    }
+
+    async function navigateMonth(direction) {
+        currentMonth += direction;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        } else if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        selectedDayGlobal = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-01`;
+        await refreshDashboardView();
+    }
+
+    async function refreshDashboardView() {
+        await loadOeeConfigFromSupabase(); // Najpierw zaktualizuj globalne progi z bazy!
+        await loadDataFromSupabase();      // Potem pobierz raporty dzienne
+        buildCalendar();
+        selectDay(selectedDayGlobal);
+        renderChart();
+        await renderCommentsBox();
+    }
+
+    window.onload = async function() {
+        initTheme(); 
+        await refreshDashboardView();
+
+        const CZAS_ODSWIEZANIA_SEKUNDY = 300; 
+        setInterval(async function() {
+            console.log("Automatyczne odświeżanie danych i progów OEE w tle...");
+            var dynamicDate = new Date();
+            
+            currentYear = dynamicDate.getFullYear();
+            currentMonth = dynamicDate.getMonth();
+            selectedDayGlobal = formatDateKey(dynamicDate);
+            
+            await refreshDashboardView();
+        }, CZAS_ODSWIEZANIA_SEKUNDY * 1000);
+    };
+
+    function getCommentCategoryStyle(category) {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const isLight = currentTheme === 'light';
+
+        const lightStyles = {
+            "Przemalowanie": { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
+            "Zmiana koloru": { border: "#be185d", bg: "#fce7f3", text: "#9d174d" },
+            "Brak proszku": { border: "#9333ea", bg: "#f3e8ff", text: "#7e22ce" },
+            "Awaria maszyny": { border: "#2563eb", bg: "#dbeafe", text: "#1d4ed8" },
+            "Usterka maszyny": { border: "#d97706", bg: "#fef3c7", text: "#92400e" },
+            "Czyszczenie/Konserwacja": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
+            "Brak przestojów": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
+            "Inne": { border: "#475569", bg: "#e2e8f0", text: "#334155" }
+        };
+
+        const darkStyles = {
+            "Przemalowanie": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#60a5fa" },
+            "Zmiana koloru": { border: "#ec4899", bg: "rgba(236, 72, 153, 0.18)", text: "#f472b6" },
+            "Brak proszku": { border: "#a855f7", bg: "rgba(168, 85, 247, 0.22)", text: "#d946ef" },
+            "Awaria maszyny": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#93c5fd" },
+            "Usterka maszyny": { border: "#f59e0b", bg: "rgba(245, 158, 11, 0.20)", text: "#fbbf24" },
+            "Czyszczenie/Konserwacja": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
+            "Brak przestojów": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
+            "Inne": { border: "#64748b", bg: "rgba(100, 116, 139, 0.26)", text: "#cbd5e1" }
+        };
+
+        const styles = isLight ? lightStyles : darkStyles;
+        return styles[category] || (isLight
+            ? { border: "#2563eb", bg: "#dbeafe", text: "#1d4ed8" }
+            : { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#93c5fd" }
+        );
+    }
+
+    async function renderCommentsBox() {
+        var listContainer = document.getElementById('commentsBoxList');
+        var titleEl = document.querySelector('.comments-box-title');
+
+        if (!listContainer) return;
+
+        if (!window.commentsMode) {
+            window.commentsMode = 'top5';
+        }
+
+        if (titleEl && !document.getElementById('commentsModeControls')) {
+            titleEl.style.display = 'flex';
+            titleEl.style.justifyContent = 'space-between';
+            titleEl.style.alignItems = 'center';
+            titleEl.style.gap = '8px';
+
+            const titleText = titleEl.innerText;
+            titleEl.innerHTML = `<span>${titleText}</span>`;
+
+            const controls = document.createElement('div');
+            controls.id = 'commentsModeControls';
+            controls.style.display = 'flex';
+            controls.style.gap = '6px';
+
+            const btnTop = document.createElement('button');
+            btnTop.id = 'commentsTop5Btn';
+            btnTop.type = 'button';
+            btnTop.innerText = 'TOP 5';
+            btnTop.style.padding = '4px 12px';
+            btnTop.style.borderRadius = '6px';
+            btnTop.style.border = '1px solid var(--border-color)';
+            btnTop.style.cursor = 'pointer';
+            btnTop.onclick = async function () {
+                window.commentsMode = 'top5';
+                await renderCommentsBox();
+            };
+
+            const btnAll = document.createElement('button');
+            btnAll.id = 'commentsAllBtn';
+            btnAll.type = 'button';
+            btnAll.innerText = 'Wszystkie';
+            btnAll.style.padding = '4px 12px';
+            btnAll.style.borderRadius = '6px';
+            btnAll.style.border = '1px solid var(--border-color)';
+            btnAll.style.cursor = 'pointer';
+            btnAll.onclick = async function () {
+                window.commentsMode = 'all';
+                await renderCommentsBox();
+            };
+
+            controls.appendChild(btnTop);
+            controls.appendChild(btnAll);
+            titleEl.appendChild(controls);
+        }
+
+        const btnTop = document.getElementById('commentsTop5Btn');
+        const btnAll = document.getElementById('commentsAllBtn');
+
+        if (btnTop && btnAll) {
+            const activeStyle = function(btn, active) {
+                btn.style.background = active ? '#ffffff' : 'transparent';
+                btn.style.color = active ? '#0f172a' : 'var(--text-muted)';
+                btn.style.fontWeight = active ? '800' : '700';
+            };
+            activeStyle(btnTop, window.commentsMode === 'top5');
+            activeStyle(btnAll, window.commentsMode === 'all');
+        }
+
+        listContainer.innerHTML = '';
+
+        let comments = [];
+
+        const notesStartDate = new Date(currentYear, currentMonth - 1, 1);
+        const { calendarEnd } = getMonthCalendarRange(currentYear, currentMonth);
+        const notesStart = formatDateKey(notesStartDate);
+        const notesEnd = formatDateKey(calendarEnd);
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('oee_reports')
+                .select('date, notes')
+                .gte('date', notesStart)
+                .lte('date', notesEnd)
+                .order('date', { ascending: false });
+
+            if (error) throw error;
+
+            if (data) {
+                data.forEach(function(row) {
+                    const note = row.notes ? String(row.notes).trim() : '';
+                    if (note !== '') {
+                        comments.push({ dateKey: row.date, date: parseDateKey(row.date), note: note });
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Błąd pobierania uwag z Supabase, używam danych aktualnie w pamięci:', err.message);
+
+            for (const dateKey in gemaBazaDanych) {
+                const rec = gemaBazaDanych[dateKey];
+                const note = rec && rec.notes ? String(rec.notes).trim() : '';
+                if (note !== '') {
+                    comments.push({ dateKey: dateKey, date: parseDateKey(dateKey), note: note });
+                }
+            }
+        }
+
+        // Najnowsze jako pierwsze — tak samo dla TOP 5 i Wszystkie.
+        comments.sort((a, b) => b.date - a.date);
+
+        if (window.commentsMode === 'top5') {
+            comments = comments.slice(0, 5);
+        }
+
+        if (comments.length === 0) {
+            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w wybranym okresie.</div>`;
+            return;
+        }
+
+        comments.forEach(function(comment) {
+            const item = document.createElement('div');
+            item.className = 'comment-box-item';
+
+            const d = comment.date;
+            const fullDateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+
+            let originalNote = comment.note;
+            let iconHtml = '';
+            let cleanNote = originalNote;
+
+            let match = originalNote.match(/\[(.*?)\]/);
+            if (match) {
+                let category = match[1].trim();
+                if (KATEGORIE_IKON[category]) {
+                    const catStyle = getCommentCategoryStyle(category);
+                    item.style.borderLeftColor = catStyle.border;
+                    iconHtml = `<span class="comment-box-icon" title="${category}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${KATEGORIE_IKON[category]} ${category}</span>`;
+                    cleanNote = originalNote.replace(match[0], '').trim();
+                }
+            }
+
+            item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${cleanNote}</span>`;
+            listContainer.appendChild(item);
+        });
+    }
+
+    function getISOWeekNumber(date) {
+        var d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        var dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function isPolishHoliday(year, month, day) {
+        var m = month + 1;
+        if (m === 1 && day === 1) return "Nowy Rok";
+        if (m === 1 && day === 6) return "Trzech Króli";
+        if (m === 5 && day === 1) return "Święto Pracy";
+        if (m === 5 && day === 3) return "Święto Konstytucji 3 Maja";
+        if (m === 8 && day === 15) return "Wniebowzięcie NMP / Święto Wojska Polskiego";
+        if (m === 11 && day === 1) return "Wszystkich Świętych";
+        if (m === 11 && day === 11) return "Święto Niepodległości";
+        if (m === 12 && day === 24) return "Wigilia";
+        if (m === 12 && day === 25) return "Boże Narodzenie (Pierwszy Dzień)";
+        if (m === 12 && day === 26) return "Boże Narodzenie (Drugi Dzień)";
+
+        var a = year % 19; var b = Math.floor(year / 100); var c = year % 100;
+        var d = Math.floor(b / 4); var e = b % 4; var f = Math.floor((b + 8) / 25);
+        var g = Math.floor((b - f + 1) / 3); var h = (19 * a + b - d - g + 15) % 30;
+        var i = Math.floor(c / 4); var k = c % 4; var l = (32 + 2 * e + 2 * i - h - k) % 7;
+        var m_calc = Math.floor((a + 11 * h + 22 * l) / 451); var p = (h + l - 7 * m_calc + 114) % 31;
+        
+        var easterDay = p + 1; var easterMonth = Math.floor((h + l - 7 * m_calc + 114) / 31);
+        var easterDate = new Date(year, easterMonth - 1, easterDay);
+        var easterMonday = new Date(easterDate); easterMonday.setDate(easterDate.getDate() + 1);
+        var pentecost = new Date(easterDate); pentecost.setDate(easterDate.getDate() + 49);
+        var corpusChristi = new Date(easterDate); corpusChristi.setDate(easterDate.getDate() + 60);
+
+        var checkDate = new Date(year, month, day);
+        if (checkDate.getTime() === easterMonday.getTime()) return "Poniedziałek Wielkanocny";
+        if (checkDate.getTime() === pentecost.getTime()) return "Zielone Świątki";
+        if (checkDate.getTime() === corpusChristi.getTime()) return "Boże Ciało";
+        return null;
+    }
+
+    
+function buildCalendar() {
+
+    document.getElementById('calendarMonthTitle').innerText =
+        MONTH_NAMES[currentMonth] + " " + currentYear;
+
+    const grid = document.getElementById('calendarGrid');
+
+    while (grid.children.length > 8) {
+        grid.removeChild(grid.lastChild);
+    }
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+
+    let firstWeekDay = firstDay.getDay();
+    if (firstWeekDay === 0) firstWeekDay = 7;
+
+    const startOffset = firstWeekDay - 1;
+
+    const calendarStart = new Date(currentYear, currentMonth, 1);
+    calendarStart.setDate(calendarStart.getDate() - startOffset);
+
+    const systemToday = new Date();
+
+    for (let week = 0; week < 5; week++) {
+
+        const monday = new Date(calendarStart);
+        monday.setDate(calendarStart.getDate() + week * 7);
+
+        const weekCell = document.createElement('div');
+        weekCell.className = 'calendar-week-number';
+		weekCell.innerText = "T" + getISOWeekNumber(monday);
+
+        grid.appendChild(weekCell);
+
+        for (let d = 0; d < 7; d++) {
+
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + d);
+
+            const day = date.getDate();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+			const dateKey = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell';
+
+            if (month !== currentMonth) {
+                cell.classList.add('other-month');
+            }
+
+            if (date.getDay() === 0 || date.getDay() === 6) {
+                cell.classList.add('weekend');
+            }
+
+            const holidayName =
+                isPolishHoliday(year, month, day);
+
+            if (holidayName) {
+                cell.classList.add('holiday');
+            }
+
+            if (
+                day === systemToday.getDate() &&
+                month === systemToday.getMonth() &&
+                year === systemToday.getFullYear()
+            ) {
+                cell.classList.add('today-current');
+            }
+
+            let html =
+                `<span class="calendar-day-num">${day}</span>`;
+
+            
+			if (gemaBazaDanych[dateKey]) {
+
+			const oeeNum =
+			parseFloat(gemaBazaDanych[dateKey].oee);
+
+			if (oeeNum >= OEE_CONFIG.greenMin) {
+			cell.classList.add('oee-good');
+			} else if (oeeNum >= OEE_CONFIG.yellowMin) {
+			cell.classList.add('oee-warn');
+			} else {
+			cell.classList.add('oee-bad');
+			}
+
+			html +=
+			`<span class="calendar-day-value">${oeeNum.toFixed(1)}%</span>`;
+
+			} else {
+
+			html +=
+			`<span class="calendar-day-value" style="opacity:0.25;">—</span>`;
+
+			}
+
+            cell.innerHTML = html;
+
+            if (month === currentMonth) {
+
+                cell.id = 'cal-day-' + dateKey;
+                cell.dataset.date = dateKey;
+
+                cell.onclick = function () {
+                    selectDay(dateKey);
+                };
+            }
+
+            grid.appendChild(cell);
+        }
+    }
+}
+
+
+    function calculateTimeDiff(startStr, endStr) {
+        if (!startStr || !endStr) return "—";
+        const startParts = startStr.split(':');
+        const endParts = endStr.split(':');
+        if (startParts.length < 2 || endParts.length < 2) return "—";
+        
+        const startMins = parseInt(startParts[0], 10) * 60 + parseInt(startParts[1], 10);
+        const endMins = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
+        
+        let diffMins = endMins - startMins;
+        if (isNaN(diffMins) || diffMins < 0) return "—";
+        
+        diffMins = Math.max(0, diffMins - 120);
+        
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        return `${hrs}h ${mins}m`;
+    }
+
+    function updateGemaCounters(day) {
+        const timeDiffEl = document.getElementById('gemaTimeDiff');
+        const metersDiffEl = document.getElementById('gemaMetersDiff');
+        const pcsDiffEl = document.getElementById('gemaPcsDiff');
+        
+        if (!timeDiffEl || !metersDiffEl || !pcsDiffEl) return;
+
+        const data = gemaBazaDanych[day];
+        if (data) {
+            const hStart = data.h_start || data.hStart || "";
+            const hEnd = data.h_end || data.hEnd || "";
+            const mStart = data.m_start != null ? data.m_start : data.mStart;
+            const mEnd = data.m_end != null ? data.m_end : data.mEnd;
+            const pcsStart = data.pcs_start != null ? data.pcs_start : data.pcsStart;
+            const pcsEnd = data.pcs_end != null ? data.pcs_end : data.pcsEnd;
+
+            timeDiffEl.innerText = calculateTimeDiff(hStart, hEnd);
+            if (mStart !== undefined && mEnd !== undefined && mStart !== null && mEnd !== null) {
+                const diffMeters = parseInt(mEnd, 10) - parseInt(mStart, 10);
+                metersDiffEl.innerText = isNaN(diffMeters) ? "—" : diffMeters + " m";
+            } else {
+                metersDiffEl.innerText = "—";
+            }
+            if (pcsStart !== undefined && pcsEnd !== undefined && pcsStart !== null && pcsEnd !== null) {
+                const diffPcs = parseInt(pcsEnd, 10) - parseInt(pcsStart, 10);
+                pcsDiffEl.innerText = isNaN(diffPcs) ? "—" : diffPcs + " szt";
+            } else {
+                pcsDiffEl.innerText = "—";
+            }
+        } else {
+            timeDiffEl.innerText = "—";
+            metersDiffEl.innerText = "—";
+            pcsDiffEl.innerText = "—";
+        }
+    }
+
+    function selectDay(day) {
+        selectedDayGlobal = day;
+        document.querySelectorAll('.calendar-cell.active').forEach(c => c.classList.remove('active'));
+        var currentCell = document.getElementById('cal-day-' + day);
+        if(currentCell) currentCell.classList.add('active');
+
+        calculateWeeklyAverageFromDay(day);
+        updateGemaCounters(day);
+    }
+
+    
+	function getWeekAverageStats(weekNum) {
+
+    var sumOee = 0;
+    var count = 0;
+
+    for (const dateKey in gemaBazaDanych) {
+
+        const checkDate = new Date(dateKey);
+
+        if (
+            getISOWeekNumber(checkDate) === weekNum &&
+            checkDate.getDay() !== 0 &&
+            checkDate.getDay() !== 6
+        ) {
+
+            const oee =
+                parseFloat(gemaBazaDanych[dateKey].oee);
+
+            if (!isNaN(oee) && oee > 0) {
+                sumOee += oee;
+                count++;
+            }
+        }
+    }
+
+    return count > 0
+        ? (sumOee / count).toFixed(1)
+        : null;
+	}
+	
+	function getMonthAverageStats() {
+
+    let sumOee = 0;
+    let count = 0;
+
+    for (const dateKey in gemaBazaDanych) {
+
+        const checkDate =
+            new Date(dateKey);
+
+        if (
+            checkDate.getFullYear() === currentYear &&
+            checkDate.getMonth() === currentMonth
+        ) {
+
+            const oee =
+                parseFloat(
+                    gemaBazaDanych[dateKey].oee
+                );
+
+            if (!isNaN(oee) && oee > 0) {
+                sumOee += oee;
+                count++;
+            }
+        }
+    }
+
+    return count > 0
+        ? (sumOee / count).toFixed(1)
+        : null;
+	}
+
+    function updateWeekCardVisuals(cardId, valueId, avgOee) {
+        var card = document.getElementById(cardId);
+        var valueDisplay = document.getElementById(valueId);
+
+        if (avgOee !== null) {
+            valueDisplay.innerText = avgOee + "%";
+            
+            if (avgOee >= OEE_CONFIG.greenMin) { 
+                card.style.borderTopColor = '#10b981'; 
+                valueDisplay.style.color = '#10b981';
+            } else if (avgOee >= OEE_CONFIG.yellowMin) { 
+                card.style.borderTopColor = '#f59e0b'; 
+                valueDisplay.style.color = '#f59e0b';
+            } else { 
+                card.style.borderTopColor = '#ef4444'; 
+                valueDisplay.style.color = '#ef4444';
+            }
+        } else {
+            valueDisplay.innerText = "—"; 
+            card.style.borderTopColor = '#64748b'; 
+            valueDisplay.style.color = 'var(--text-main)';
+        }
+    }
+
+    function calculateWeeklyAverageFromDay(targetDay) {
+        var baseDate = new Date(targetDay);
+        
+        var currentWeekNum = getISOWeekNumber(baseDate);
+        var baseDayOfWeek = baseDate.getDay() || 7;
+        var curMonday = new Date(baseDate); curMonday.setDate(baseDate.getDate() - (baseDayOfWeek - 1));
+        var curFriday = new Date(curMonday); curFriday.setDate(curMonday.getDate() + 4);
+        
+        document.getElementById('currentWeekCardTitle').innerText = `Tydzień ${currentWeekNum}`;
+        document.getElementById('currentWeekTextInfo').innerHTML = `Zakres roboczy:<br><b>${curMonday.getDate()}.${curMonday.getMonth()+1} - ${curFriday.getDate()}.${curFriday.getMonth()+1}</b>`;
+        
+        var currentAvg = getWeekAverageStats(currentWeekNum);
+        updateWeekCardVisuals('currentWeekOeeCard', 'currentWeekOee', currentAvg);
+
+        var lastWeekDate = new Date(baseDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        var lastWeekNum = getISOWeekNumber(lastWeekDate);
+        var lastMonday = new Date(curMonday); lastMonday.setDate(curMonday.getDate() - 7);
+        var lastFriday = new Date(lastMonday); lastFriday.setDate(lastMonday.getDate() + 4);
+        
+        document.getElementById('lastWeekCardTitle').innerText = `Zeszły Tydzień ${lastWeekNum}`;
+        document.getElementById('lastWeekTextInfo').innerHTML = `Zakres roboczy:<br><b>${lastMonday.getDate()}.${lastMonday.getMonth()+1} - ${lastFriday.getDate()}.${lastFriday.getMonth()+1}</b>`;
+        
+        var lastAvg = getWeekAverageStats(lastWeekNum);
+        updateWeekCardVisuals('lastWeekOeeCard', 'lastWeekOee', lastAvg);
+
+        document.getElementById('monthCardTitle').innerText = `Średnia Miesięczna`;
+        document.getElementById('monthTextInfo').innerHTML = `Okres rozliczeniowy:<br><b>${MONTH_NAMES[currentMonth]} ${currentYear}</b>`;
+        
+        var monthAvg = getMonthAverageStats();
+        updateWeekCardVisuals('monthOeeCard', 'monthOee', monthAvg);
+
+		var maxOee = -1;
+		var maxDay = null;
+
+		for (const dateKey in gemaBazaDanych) {
+
+		const checkDate = new Date(dateKey);
+
+		if (
+        checkDate.getFullYear() === currentYear &&
+        checkDate.getMonth() === currentMonth
+		) {
+
+        const val =
+            parseFloat(gemaBazaDanych[dateKey].oee);
+
+        if (!isNaN(val) && val > maxOee) {
+
+            maxOee = val;
+
+            maxDay =
+                String(checkDate.getDate())
+                .padStart(2, '0');
+			}
+		}
+		}
+
+        var recordCard = document.getElementById('recordOeeCard');
+        var recordDisplay = document.getElementById('recordOee');
+        if (maxDay !== null && maxOee > 0) {
+            recordDisplay.innerText = maxOee.toFixed(1) + "%";
+            document.getElementById('recordTextInfo').innerHTML = `Dzień <b>${maxDay}</b><br>Najlepszy wynik w tym miesiącu`;
+            
+            if (maxOee >= OEE_CONFIG.greenMin) { 
+                recordCard.style.borderTopColor = '#10b981'; 
+                recordDisplay.style.color = '#10b981'; 
+            } else if (maxOee >= OEE_CONFIG.yellowMin) { 
+                recordCard.style.borderTopColor = '#f59e0b'; 
+                recordDisplay.style.color = '#f59e0b'; 
+            } else { 
+                recordCard.style.borderTopColor = '#ef4444'; 
+                recordDisplay.style.color = '#ef4444'; 
+            }
+        } else {
+            recordDisplay.innerText = "—";
+            recordCard.style.borderTopColor = '#64748b';
+            recordDisplay.style.color = 'var(--text-main)';
+            document.getElementById('recordTextInfo').innerHTML = `Brak danych<br>w tym okresie`;
+        }
+    }
+
+    function renderChart() {
+        var chartGrid = document.getElementById('chartGrid');
+        chartGrid.innerHTML = "";
+
+        const targetLines = OEE_CONFIG.chartGuides;
+        targetLines.forEach(function(t) {
+            var guide = document.createElement('div');
+            guide.className = 'chart-line-guide';
+            guide.style.bottom = t + '%';
+            guide.innerHTML = `<span class="chart-line-label">${t}%</span>`;
+            chartGrid.appendChild(guide);
+        });
+
+        const mainTarget = OEE_CONFIG.target; 
+        var targetGuide = document.createElement('div');
+        targetGuide.className = 'chart-target-guide';
+        targetGuide.style.bottom = mainTarget + '%';
+        targetGuide.innerHTML = ""; 
+        chartGrid.appendChild(targetGuide);
+
+        var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (var d = 1; d <= daysInMonth; d++) {
+            var barWrapper = document.createElement('div'); barWrapper.className = 'chart-css-bar-wrapper';
+            var bar = document.createElement('div'); bar.className = 'chart-css-bar';
+            var label = document.createElement('div'); label.className = 'chart-css-label'; label.innerText = d;
+			const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+			if (
+				gemaBazaDanych[dateKey] &&
+				!isNaN(parseFloat(gemaBazaDanych[dateKey].oee)) &&
+				parseFloat(gemaBazaDanych[dateKey].oee) > 0
+		) {
+
+    var rec = gemaBazaDanych[dateKey];
+
+                bar.style.height = rec.oee + '%';
+                
+                bar.style.background = rec.oee >= OEE_CONFIG.greenMin 
+                    ? 'linear-gradient(180deg, #34d399 0%, #10b981 100%)' 
+                    : (rec.oee >= OEE_CONFIG.yellowMin 
+                        ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' 
+                        : 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)');
+                
+                let chartNote = rec.notes;
+                let match = chartNote.match(/\[(.*?)\]/);
+                if (match && KATEGORIE_IKON[match[1].trim()]) {
+                    chartNote = KATEGORIE_IKON[match[1].trim()] + " " + chartNote.replace(match[0], "").trim();
+                }
+
+                var tooltipText = `Dzień ${d}: ${rec.oee}%`;
+                if(rec.notes) tooltipText += ` (${chartNote})`;
+                bar.innerHTML = `<div class="chart-css-tooltip">${tooltipText}</div>`;
+            } else { 
+                bar.style.height = '0%'; 
+            }
+            barWrapper.appendChild(bar); 
+            barWrapper.appendChild(label); 
+            chartGrid.appendChild(barWrapper);
+        }
+        calculateWeeklyAverageFromDay(selectedDayGlobal);
+    }
+</script>
+</body>
+</html>
