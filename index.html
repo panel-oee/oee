@@ -513,74 +513,452 @@
             font-size: 15px;
             padding: 5px 0;
         }
+    
 
         /* ==========================================================
-           TRYB TV / AUTO-DOPASOWANIE
-           Cel: panel ma mieścić się na ekranie TV przy zoomie 100%,
-           bez ręcznego ustawiania 67% w przeglądarce.
+           RESPONSYWNOŚĆ V2 — TV / laptop / tablet / smartfon
+           Założenie:
+           - >=1200px: dashboard wypełnia wysokość ekranu bez nachodzenia sekcji
+           - <1200px: układ pionowy i przewijanie strony
+           - brak poziomego przewijania
            ========================================================== */
         :root {
-            --page-padding: 12px;
-            --container-padding: 15px;
-            --dashboard-gap: 15px;
-            --section-gap: 15px;
-            --base-font-size: 15px;
-        }
-        .dashboard-grid { gap: var(--dashboard-gap); }
-        .dashboard-column { gap: var(--section-gap); }
-
-        /* Delikatne zagęszczenie dla ekranów o mniejszej wysokości */
-        @media (max-height: 850px) {
-            :root {
-                --page-padding: 8px;
-                --container-padding: 10px;
-                --dashboard-gap: 10px;
-                --section-gap: 10px;
-                --base-font-size: 14px;
-            }
-            .header-container { padding-bottom: 7px; margin-bottom: 10px; }
-            h2 { font-size: 23px; }
-            h3 { font-size: 16px; margin-bottom: 6px; }
-            .calendar-box { padding: 8px; }
-            .calendar-nav-wrapper { margin-bottom: 6px; }
-            .calendar-header { font-size: 16px; }
-            .calendar-grid { gap: 4px; grid-template-columns: 42px repeat(7, 1fr); }
-            .calendar-cell { padding: 4px 2px; gap: 1px; }
-            .calendar-day-num { font-size: 14px; }
-            .calendar-day-value { font-size: 10px; }
-            .gema-counters-section { margin-top: 7px; }
-            .gema-counter-card { padding: 6px; }
-            .gema-counter-title { font-size: 10px; margin-bottom: 2px; }
-            .gema-counter-value { font-size: 15px; }
-            .weekly-container { gap: 7px; padding: 8px; }
-            .stat-card-single { padding: 7px; }
-            .stat-card-title { font-size: 11px; }
-            .stat-card-value { font-size: 27px; }
-            .stat-card-range { font-size: 12px; margin-top: 2px; }
-            .chart-css-container { padding: 10px; }
-            .chart-css-grid { margin-top: 15px; margin-bottom: 20px; margin-left: 48px; }
-            .comments-box-container { padding: 9px; }
-            .comment-box-item { padding: 7px 10px; font-size: 13px; line-height: 1.25; }
+            --page-pad-r: clamp(6px, 0.65vw, 12px);
+            --panel-pad-r: clamp(8px, 0.78vw, 15px);
+            --gap-r: clamp(8px, 0.72vw, 15px);
+            --header-safe-h: clamp(58px, 5.4vh, 78px);
         }
 
-        /* Dla bardzo niskich widoków TV dodatkowo zmniejszamy elementy */
-        @media (max-height: 720px) {
-            :root {
-                --page-padding: 6px;
-                --container-padding: 8px;
-                --dashboard-gap: 8px;
-                --section-gap: 8px;
-                --base-font-size: 13px;
-            }
-            h2 { font-size: 21px; }
-            h3 { font-size: 15px; }
-            .calendar-grid { gap: 3px; grid-template-columns: 38px repeat(7, 1fr); }
-            .calendar-cell { padding: 3px 1px; }
-            .calendar-day-num { font-size: 13px; }
-            .calendar-day-value { font-size: 9px; }
-            .stat-card-value { font-size: 24px; }
-            .chart-css-title, .comments-box-title { font-size: 12px; }
+        html {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
         }
+
+        body {
+            width: 100%;
+            min-height: 100dvh;
+            height: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: var(--page-pad-r) !important;
+            font-size: clamp(12px, 0.78vw, 15px) !important;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            min-height: calc(100dvh - (var(--page-pad-r) * 2));
+            height: auto !important;
+            padding: var(--panel-pad-r) !important;
+            overflow: hidden;
+        }
+
+        .header-container {
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-bottom: clamp(6px, 0.55vw, 10px) !important;
+            margin-bottom: var(--gap-r) !important;
+        }
+
+        .controls-wrapper {
+            gap: clamp(6px, 0.7vw, 15px) !important;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        h2 {
+            font-size: clamp(18px, 1.38vw, 26px) !important;
+            line-height: 1.12 !important;
+        }
+
+        h3 {
+            font-size: clamp(13px, 0.95vw, 18px) !important;
+            line-height: 1.12 !important;
+            margin-bottom: clamp(5px, 0.42vw, 8px) !important;
+        }
+
+        .theme-select,
+        .fullscreen-btn,
+        .calendar-nav-btn {
+            font-size: clamp(12px, 0.78vw, 15px) !important;
+        }
+
+        .dashboard-grid,
+        .dashboard-column,
+        .panel-section,
+        .calendar-box,
+        .weekly-container,
+        .chart-css-container,
+        .comments-box-container {
+            min-width: 0;
+        }
+
+        .dashboard-grid {
+            gap: var(--gap-r) !important;
+        }
+
+        .dashboard-column {
+            gap: var(--gap-r) !important;
+        }
+
+        .calendar-box {
+            padding: clamp(6px, 0.62vw, 10px) !important;
+        }
+
+        .calendar-nav-wrapper {
+            margin-bottom: clamp(5px, 0.5vw, 10px) !important;
+        }
+
+        .calendar-header {
+            font-size: clamp(14px, 0.95vw, 18px) !important;
+        }
+
+        .calendar-grid {
+            grid-template-columns: clamp(30px, 2.35vw, 48px) repeat(7, minmax(0, 1fr)) !important;
+            gap: clamp(3px, 0.3vw, 5px) !important;
+        }
+
+        .calendar-day-name,
+        .calendar-week-number {
+            font-size: clamp(10px, 0.72vw, 14px) !important;
+        }
+
+        .calendar-cell {
+            min-height: clamp(32px, 4.25vh, 56px);
+            padding: clamp(2px, 0.34vw, 6px) 2px !important;
+            gap: 1px !important;
+        }
+
+        .calendar-day-num {
+            font-size: clamp(12px, 0.9vw, 16px) !important;
+        }
+
+        .calendar-day-value {
+            font-size: clamp(9px, 0.66vw, 12px) !important;
+        }
+
+        .gema-counters-section {
+            margin-top: clamp(6px, 0.58vw, 10px) !important;
+        }
+
+        .gema-counters-container {
+            gap: clamp(6px, 0.55vw, 10px) !important;
+        }
+
+        .gema-counter-card {
+            min-height: clamp(42px, 5.0vh, 62px);
+            padding: clamp(5px, 0.48vw, 8px) !important;
+        }
+
+        .gema-counter-title {
+            font-size: clamp(9px, 0.58vw, 11px) !important;
+            line-height: 1.08 !important;
+            overflow-wrap: anywhere;
+        }
+
+        .gema-counter-value {
+            font-size: clamp(13px, 0.9vw, 18px) !important;
+        }
+
+        .weekly-container {
+            gap: clamp(6px, 0.55vw, 10px) !important;
+            padding: clamp(7px, 0.6vw, 10px) !important;
+            grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+        }
+
+        .stat-card-single {
+            padding: clamp(6px, 0.58vw, 10px) !important;
+            min-height: 0;
+        }
+
+        .stat-card-title {
+            font-size: clamp(10px, 0.7vw, 13px) !important;
+            line-height: 1.08 !important;
+        }
+
+        .stat-card-value {
+            font-size: clamp(22px, 1.75vw, 32px) !important;
+        }
+
+        .stat-card-range {
+            font-size: clamp(10px, 0.78vw, 14px) !important;
+            line-height: 1.16 !important;
+        }
+
+        .chart-css-container {
+            padding: clamp(8px, 0.75vw, 15px) !important;
+            height: 100% !important;
+            min-height: 0;
+        }
+
+        .chart-css-title,
+        .comments-box-title {
+            font-size: clamp(11px, 0.74vw, 14px) !important;
+            line-height: 1.18 !important;
+        }
+
+        .chart-css-grid {
+            margin-left: clamp(36px, 2.7vw, 55px) !important;
+            margin-top: clamp(12px, 1.1vw, 25px) !important;
+            margin-bottom: clamp(18px, 1.35vw, 25px) !important;
+            min-height: 0;
+        }
+
+        .chart-line-label {
+            left: clamp(-46px, -2.4vw, -34px) !important;
+            font-size: clamp(10px, 0.68vw, 13px) !important;
+        }
+
+        .chart-css-label {
+            font-size: clamp(8px, 0.58vw, 11px) !important;
+            bottom: -19px !important;
+        }
+
+        .comments-box-container {
+            padding: clamp(8px, 0.65vw, 12px) !important;
+            height: 100% !important;
+            min-height: 0;
+        }
+
+        .comments-box-list {
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .comment-box-item {
+            padding: clamp(7px, 0.58vw, 10px) clamp(8px, 0.75vw, 14px) !important;
+            font-size: clamp(11px, 0.78vw, 15px) !important;
+            line-height: 1.22 !important;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .comment-box-date {
+            white-space: nowrap;
+        }
+
+        .comment-box-icon {
+            font-size: clamp(10px, 0.72vw, 18px) !important;
+        }
+
+        /* TV / duży ekran: wypełnienie wysokości ekranu bez pustego dołu i bez nakładania */
+        @media (min-width: 1200px) {
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+            }
+
+            .container {
+                height: calc(100dvh - (var(--page-pad-r) * 2)) !important;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: minmax(440px, 0.94fr) minmax(560px, 1.36fr) !important;
+                height: 100%;
+                min-height: 0;
+                flex: 1 1 auto;
+                overflow: hidden;
+            }
+
+            .dashboard-column {
+                height: 100% !important;
+                min-height: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .dashboard-column:first-child .panel-section:first-child {
+                flex: 0 0 auto;
+                min-height: 0;
+            }
+
+            .left-bottom-section {
+                flex: 1 1 auto !important;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .weekly-container {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .dashboard-column:nth-child(2) .right-top-section {
+                flex: 1.18 1 0 !important;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .dashboard-column:nth-child(2) .right-bottom-section {
+                flex: 0.82 1 0 !important;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .chart-css-grid {
+                flex: 1 1 auto;
+            }
+        }
+
+        /* TV / laptop z paskiem adresu — mocniejsze zagęszczenie wysokości */
+        @media (min-width: 1200px) and (max-height: 880px) {
+            :root {
+                --page-pad-r: 6px;
+                --panel-pad-r: 8px;
+                --gap-r: 7px;
+            }
+
+            .header-container {
+                padding-bottom: 5px !important;
+            }
+
+            .calendar-cell {
+                min-height: clamp(28px, 4.0vh, 39px);
+            }
+
+            .gema-counter-card {
+                min-height: clamp(38px, 4.6vh, 50px);
+            }
+
+            .stat-card-value {
+                font-size: clamp(20px, 1.55vw, 28px) !important;
+            }
+
+            .stat-card-range {
+                font-size: clamp(9px, 0.7vw, 12px) !important;
+            }
+
+            .dashboard-column:nth-child(2) .right-top-section {
+                flex: 1.12 1 0 !important;
+            }
+
+            .dashboard-column:nth-child(2) .right-bottom-section {
+                flex: 0.88 1 0 !important;
+            }
+        }
+
+        /* Jeżeli wysokość jest naprawdę niska, komentarze mają własny scroll zamiast rozpychać ekran */
+        @media (min-width: 1200px) and (max-height: 760px) {
+            h2 { font-size: 20px !important; }
+            h3 { font-size: 14px !important; }
+            .calendar-cell { min-height: 27px; }
+            .calendar-day-num { font-size: 12px !important; }
+            .calendar-day-value { font-size: 8px !important; }
+            .gema-counter-title { font-size: 8px !important; }
+        }
+
+        /* Tablet / mały laptop: jedna kolumna i pionowe przewijanie */
+        @media (max-width: 1199px) {
+            html,
+            body {
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            .container {
+                height: auto !important;
+                min-height: calc(100dvh - (var(--page-pad-r) * 2));
+                overflow: visible;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr !important;
+                height: auto !important;
+            }
+
+            .dashboard-column {
+                height: auto !important;
+                overflow: visible;
+            }
+
+            .chart-css-container {
+                min-height: 330px;
+            }
+
+            .comments-box-container {
+                min-height: 260px;
+            }
+
+            .comments-box-list {
+                max-height: 340px;
+            }
+        }
+
+        /* Smartfon */
+        @media (max-width: 700px) {
+            body {
+                padding: 6px !important;
+                font-size: 13px !important;
+            }
+
+            .container {
+                border-radius: 8px;
+                padding: 8px !important;
+            }
+
+            .header-container {
+                align-items: flex-start;
+            }
+
+            .controls-wrapper {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .theme-select,
+            .fullscreen-btn,
+            .calendar-nav-btn {
+                font-size: 12px !important;
+                padding: 5px 8px !important;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 28px repeat(7, minmax(0, 1fr)) !important;
+                gap: 3px !important;
+            }
+
+            .calendar-cell {
+                min-height: 34px;
+                border-radius: 5px;
+            }
+
+            .gema-counters-container {
+                flex-direction: column;
+            }
+
+            .weekly-container {
+                grid-template-columns: 1fr !important;
+                grid-template-rows: none !important;
+            }
+
+            .stat-card-single {
+                min-height: 86px;
+            }
+
+            .chart-css-container {
+                min-height: 310px;
+            }
+
+            .chart-css-grid {
+                margin-left: 34px !important;
+                overflow-x: hidden;
+            }
+
+            .comment-box-item {
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+
+        /* KONIEC BLOKU RESPONSYWNOŚCI V2 */
 
     </style>
     
@@ -696,59 +1074,6 @@
 </div>
 
 <script>
-
-    // =========================================================================
-    // AUTO-DOPASOWANIE DO TV
-    // Skaluje cały panel, jeśli przeglądarka TV ma za mały obszar roboczy.
-    // Dzięki temu nie trzeba ręcznie ustawiać zoomu 67% w menu przeglądarki.
-    // =========================================================================
-    function applyTvAutoFit() {
-        const body = document.body;
-        const container = document.querySelector('.container');
-        if (!body || !container) return;
-
-        // Najpierw reset — mierzymy naturalny rozmiar panelu.
-        body.style.zoom = '1';
-        body.style.transform = '';
-        body.style.width = '';
-        body.style.height = '';
-
-        requestAnimationFrame(function () {
-            const viewportW = window.innerWidth;
-            const viewportH = window.innerHeight;
-            const neededW = Math.max(container.scrollWidth + 24, document.documentElement.scrollWidth);
-            const neededH = Math.max(container.scrollHeight + 24, document.documentElement.scrollHeight);
-
-            let scale = Math.min(viewportW / neededW, viewportH / neededH, 1);
-
-            // Mały margines bezpieczeństwa, żeby elementy nie dotykały krawędzi TV.
-            if (scale < 1) scale = Math.max(0.55, scale * 0.985);
-            scale = Math.floor(scale * 1000) / 1000;
-
-            if (scale < 0.995) {
-                body.style.zoom = String(scale);
-                // Fallback dla przeglądarek bez pełnego wsparcia zoom.
-                if (!('zoom' in body.style)) {
-                    body.style.transform = 'scale(' + scale + ')';
-                    body.style.width = (100 / scale) + 'vw';
-                    body.style.height = (100 / scale) + 'vh';
-                }
-                console.log('TV AutoFit aktywny. Skala:', scale);
-            } else {
-                body.style.zoom = '1';
-                console.log('TV AutoFit: skala 1, panel mieści się bez skalowania.');
-            }
-        });
-    }
-
-    window.addEventListener('resize', function () {
-        clearTimeout(window.__tvAutoFitTimer);
-        window.__tvAutoFitTimer = setTimeout(applyTvAutoFit, 150);
-    });
-    document.addEventListener('fullscreenchange', function () {
-        setTimeout(applyTvAutoFit, 250);
-    });
-
     // =========================================================================
     // DYNAMICZNA KONFIGURACJA PROGÓW OEE (Pobierana automatycznie z Supabase)
     // Wartości poniżej służą jako awaryjne progi (gdyby odłączono internet).
@@ -957,13 +1282,11 @@
         selectDay(selectedDayGlobal);
         renderChart();
         await renderCommentsBox();
-        setTimeout(applyTvAutoFit, 100);
     }
 
     window.onload = async function() {
         initTheme(); 
         await refreshDashboardView();
-        setTimeout(applyTvAutoFit, 300);
 
         const CZAS_ODSWIEZANIA_SEKUNDY = 300; 
         setInterval(async function() {
@@ -1608,7 +1931,6 @@ function buildCalendar() {
             chartGrid.appendChild(barWrapper);
         }
         calculateWeeklyAverageFromDay(selectedDayGlobal);
-        setTimeout(applyTvAutoFit, 50);
     }
 </script>
 </body>
