@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Miesięczny Panel OEE - Lakiernia Gema</title>
+    <style>
+        /* ZMIENNE Z KOLORAMI DLA OBU TRYBÓW */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-container: #ffffff;
+            --bg-input-box: #f1f5f9;
+            --bg-inputs-flex: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-heading: #1e293b;
+            --border-color: #cbd5e1;
+            --calendar-cell-bg: #ffffff;
+            --calendar-cell-text: #334155;
+            --calendar-weekend-bg: #f8fafc;
+            --calendar-weekend-text: #94a3b8;
+            --table-hover: #f1f5f9;
+            --table-th-bg: #f1f5f9;
+            --chart-bg: #f8fafc;
+            --chart-bar-empty: #e2e8f0;
+            --modal-overlay: rgba(15, 23, 42, 0.4);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --bg-input-box: #1e293b;
+            --bg-inputs-flex: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-heading: #f8fafc;
+            --border-color: #334155;
+            --calendar-cell-bg: #1e293b;
+            --calendar-cell-text: #cbd5e1;
+            --calendar-weekend-bg: #1e293b;
+            --calendar-weekend-text: #475569;
+            --table-hover: #24334d;
+            --table-th-bg: #0f172a;
+            --chart-bg: #0f172a;
+            --chart-bar-empty: #334155;
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+        }
+
+        /* NOWOCZESNY I DOPASOWANY SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 20px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .header-container {
+            border-bottom: 2px solid #3b82f6; 
+            padding-bottom: 12px; 
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-switcher label {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .theme-select {
+            padding: 5px 10px;
+            height: auto;
+            width: auto;
+            font-size: 13px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-config-trigger {
+            background: #475569;
+            color: #ffffff;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-config-trigger:hover {
+            background: #64748b;
+        }
+
+        h2 { 
+            color: var(--text-heading); 
+            margin: 0;
+            font-weight: 600;
+        }
+        h3 { 
+            color: #38bdf8; 
+            margin-top: 25px; 
+            margin-bottom: 12px; 
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .main-layout { display: flex; flex-wrap: wrap; gap: 25px; margin-bottom: 20px; }
+        .left-panel { flex: 1; min-width: 320px; max-width: 450px; }
+        .right-panel { flex: 2; min-width: 500px; }
+
+        .calendar-box { background: var(--bg-inputs-flex); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; }
+        .calendar-header { font-weight: bold; font-size: 16px; margin-bottom: 15px; color: var(--text-heading); text-transform: capitalize; }
+        .calendar-grid { display: grid; grid-template-columns: 48px repeat(7, 1fr); gap: 6px; text-align: center; }
+        .calendar-day-name { font-size: 13px; font-weight: bold; color: var(--text-muted); padding-bottom: 5px; text-transform: uppercase; }
+        
+        .calendar-cell { 
+            padding: 12px 5px; font-size: 13px; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; 
+            transition: all 0.2s; background: var(--calendar-cell-bg); font-weight: 500; color: var(--calendar-cell-text); position: relative; 
+        }
+        .calendar-cell:hover { background: var(--border-color); }
+        
+        .calendar-cell.oee-good { background: #10b981 !important; border-color: #059669 !important; color: #ffffff !important; }
+        .calendar-cell.oee-warn { background: #f59e0b !important; border-color: #d97706 !important; color: #ffffff !important; }
+        .calendar-cell.oee-bad { background: #ef4444 !important; border-color: #dc2626 !important; color: #ffffff !important; }
+        
+        .calendar-cell.active { 
+            outline: 3px solid #2563eb !important; 
+            outline-offset: -3px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6) !important; 
+            font-weight: bold; 
+            z-index: 5;
+        }
+        .calendar-cell.active:not(.oee-good):not(.oee-warn):not(.oee-bad) { 
+            background: #2563eb !important; 
+            color: #ffffff !important; 
+        }
+
+        .calendar-cell.weekend { background: var(--calendar-weekend-bg); color: var(--calendar-weekend-text); }
+
+        .calendar-week-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+        .calendar-cell.other-month {
+            opacity: 0.35;
+        }
+
+        .calendar-cell.holiday { 
+			background: #a855f7 !important; 
+			border-color: #9333ea !important; 
+			color: #ffffff !important; 
+		}
+        
+        .calendar-cell .mini-oee { display: block; font-size: 11px; font-weight: 700; margin-top: 2px; color: var(--text-muted); line-height: 1.1; }
+        .calendar-cell.oee-good .mini-oee, .calendar-cell.oee-warn .mini-oee, .calendar-cell.oee-bad .mini-oee { color: #f0fdf4 !important; }
+        .calendar-cell.active:not(.oee-good):not(.oee-warn):not(.oee-bad) .mini-oee { color: #ffffff !important; }
+        
+        .flex-inputs { display: flex; flex-wrap: wrap; gap: 15px; background: var(--bg-inputs-flex); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .form-group { flex: 1 1 180px; display: flex; flex-direction: column; min-width: 170px; }
+        
+        .gema-columns-container { 
+            display: flex; 
+            gap: 20px; 
+            background: var(--bg-inputs-flex); 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+        }
+        .gema-column { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            background: var(--bg-container);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .gema-input-box {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 12px;
+            background: var(--bg-input-box);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            flex: 1; 
+        }
+        .gema-input-box.block-start { border-left: 4px solid #3b82f6 !important; }
+        .gema-input-box.block-end { border-left: 4px solid #ef4444 !important; }
+
+        .gema-input-box label {
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        input, select { 
+            padding: 10px; background-color: var(--bg-inputs-flex); border: 1px solid var(--border-color); border-radius: 6px; 
+            font-size: 14px; color: var(--text-main); width: 100%; box-sizing: border-box; height: 42px; transition: all 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
+        
+        /* STYL DLA RÓŻNICY WYNIKÓW */
+        .gema-diff-box {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--bg-input-box);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+            margin-top: auto;
+            transition: all 0.3s;
+        }
+        .gema-diff-box.valid { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        .gema-diff-box.error { color: #ef4444; border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+
+        .edit-banner { display: none; background: #78350f; color: #fef3c7; border: 1px solid #d97706; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; text-align: center; }
+        
+        .btn-box { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        
+        .btn-local { 
+            background: #059669; 
+            color: white; 
+            flex: 2; 
+            min-width: 250px; 
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.15);
+        }
+        .btn-local:hover { 
+            background: #10b981; 
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .btn-export { 
+            background: transparent; 
+            color: var(--text-main); 
+            flex: 1; 
+            min-width: 180px; 
+            border: 2px dashed var(--border-color); 
+        }
+        .btn-export:hover { 
+            background: var(--table-hover); 
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .weekly-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 20px; 
+            background: var(--bg-inputs-flex); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-top: 25px; 
+        }
+        .weekly-header-box { grid-column: 1 / -1; margin-bottom: -5px; }
+        
+        .stat-card-single { 
+            background: var(--bg-container); 
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border-color); 
+            border-top: 6px solid #64748b; 
+            text-align: center; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+        }
+        .stat-card-title { font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card-value { font-size: 34px; font-weight: 800; margin-top: 5px; color: var(--text-main); transition: color 0.3s; }
+        .stat-card-range { font-size: 11px; margin-top: 6px; color: var(--text-muted); font-weight: 500; line-height: 1.3; }
+        
+        .table-responsive { max-height: 320px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border-color); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: var(--bg-container); font-size: 14px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        th { background: var(--table-th-bg); color: var(--text-muted); position: sticky; top: 0; z-index: 5; font-weight: 600; text-transform: uppercase; font-size: 11px; }
+        tr:hover { background: var(--table-hover); }
+        .btn-edit-row { background: #2563eb; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-edit-row:hover { background: #1d4ed8; }
+        .badge { font-weight: bold; padding: 4px 10px; border-radius: 4px; display: inline-block; color: white; }
+        
+        .chart-css-container { background: var(--chart-bg); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 25px; }
+        .chart-css-title { font-weight: 600; color: var(--text-muted); margin-bottom: 20px; text-transform: uppercase; font-size: 13px; }
+        .chart-css-grid { 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: space-between; 
+            height: 200px; 
+            border-left: 2px solid var(--border-color); 
+            border-bottom: 2px solid var(--border-color); 
+            padding-top: 10px; 
+            padding-right: 10px; 
+            margin-left: 45px; 
+            position: relative; 
+        }
+        .chart-line-guide {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed var(--border-color);
+            opacity: 0.35;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .chart-line-label {
+            position: absolute;
+            left: -42px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            transform: translateY(-50%);
+        }
+        .chart-css-bar-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex: 1; 
+            margin: 0 3px; 
+            height: 100%; 
+            justify-content: flex-end; 
+            position: relative;
+            z-index: 2;
+        }
+        .chart-css-bar { width: 85%; max-width: 28px; background: var(--chart-bar-empty); border-radius: 4px 4px 0 0; transition: all 0.3s; position: relative; min-height: 1px; }
+        .chart-css-grid:hover .chart-css-bar { opacity: 0.4; }
+        .chart-css-bar:hover { opacity: 1 !important; transform: scaleX(1.05); cursor: pointer; }
+        .chart-css-bar:hover .chart-css-tooltip { display: block; }
+        .chart-css-label { font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center; font-weight: 600; }
+        .chart-css-tooltip { display: none; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #fc3; color: #000; padding: 5px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; z-index: 10; }
+
+        /* OKNO MODALNE KONFIGURACJI PROGÓW OEE - WERSJA ZWARTA */
+        .gema-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .gema-modal {
+            background: var(--bg-container);
+            border: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+        .gema-modal-header {
+            font-size: 14px;
+            font-weight: bold;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .gema-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .gema-modal-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .gema-modal-group label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .gema-modal-group input {
+            height: 34px;
+            padding: 6px 10px;
+            font-size: 13px;
+            background-color: var(--bg-inputs-flex);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .gema-modal-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .gema-modal-footer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+        .gema-modal-footer button {
+            padding: 6px 14px;
+            font-size: 12px;
+            border-radius: 4px;
+            height: auto;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .gema-modal-footer button:active {
+            transform: translateY(1px);
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h2>Miesięczny Panel OEE - Lakiernia Gema</h2>
+        <div class="header-controls">
+            <button class="btn-config-trigger" onclick="openConfigModal()">⚙️ Konfiguracja progów</button>
+            <div class="theme-switcher">
+                <label for="themeChooser">Motyw:</label>
+                <select id="themeChooser" class="theme-select" onchange="changeTheme(this.value)">
+                    <option value="light">Jasny (Light)</option>
+                    <option value="dark">Ciemny (Dark)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editBanner" class="edit-banner">TRYB KOREKTY BŁĘDU: Poprawiasz dane dla wybranego dnia.</div>
+
+    <div class="main-layout">
+        <div class="left-panel">
+            <h3>Kalendarz miesiąca</h3>
+            <div class="calendar-box">
+                <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button onclick="changeMonth(-1)" class="btn-config-trigger" style="padding: 4px 10px; font-size: 12px; margin-right: 10px;">&#9664; </button>
+                    <div id="calendarMonthTitle" style="flex: 1; text-align: center;">Miesiąc Rok</div>
+                    <button onclick="changeMonth(1)" class="btn-config-trigger" style="padding: 4px 10px; font-size: 12px; margin-left: 10px;"> &#9654;</button>
+                </div>
+                                <div class="calendar-grid" id="calendarGrid">
+                    <div class="calendar-day-name">TW</div>
+                    <div class="calendar-day-name">Pn</div><div class="calendar-day-name">Wt</div>
+                    <div class="calendar-day-name">Śr</div><div class="calendar-day-name">Cz</div>
+                    <div class="calendar-day-name">Pt</div><div class="calendar-day-name">Sb</div>
+                    <div class="calendar-day-name">Nd</div>
+                </div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <h3>1. Wprowadź dane z raportu dobowego</h3>
+            <div class="flex-inputs">
+                <div class="form-group" style="max-width: 130px;">
+                    <label>Wybrany dzień:</label>
+                    <input type="text" id="dayOfMonthDisplay" readonly style="background:var(--bg-input-box); font-weight:bold; text-align:center; border-color:var(--border-color);">
+                </div>
+                <div class="form-group">
+                    <label>Prędkość zadana (m/min):</label>
+                    <input type="number" id="targetSpeed" step="0.1" value="0.8">
+                </div>
+                <div class="form-group">
+                    <label>Awarie/Usterki (minuty):</label>
+                    <input type="number" id="breakdownMinutes" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Czyszczenie kabiny (minuty):</label>
+                    <input type="number" id="cleaningMinutes" value="30">
+                </div>
+                <div class="form-group">
+                    <label>Sztuki wadliwe (poprawki):</label>
+                    <input type="number" id="badPieces" value="0">
+                </div>
+                
+                <div class="form-group" style="min-width: 160px;">
+                    <label>Główna przyczyna przestoju:</label>
+                    <select id="downtimeCategory">
+                        <option value="Brak przestojów">✔️ Brak przestojów</option>
+                        <option value="Zmiana koloru">🎨 Zmiana koloru</option>
+						<option value="Przemalowanie">🖌️ Przemalowanie</option>
+                        <option value="Awaria maszyny">⚙️ Awaria maszyny</option>
+						<option value="Usterka maszyny">🔧 Usterka maszyny</option>
+                        <option value="Czyszczenie/Konserwacja">🧹 Czyszczenie/Konserwacja</option>
+                        <option value="Brak proszku">📦 Brak proszku</option>
+                        <option value="Inne">⚠️ Inne</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 2 1 200px;">
+                    <label>Szczegóły / Dodatkowa notatka:</label>
+                    <input type="text" id="dayNotes" placeholder="np. wymiana łańcucha, mycie pistoletów">
+                </div>
+            </div>
+
+            <h3>2. Liczniki ze sterownika Gema</h3>
+            <div class="gema-columns-container">
+                <div class="gema-column">
+                    <div class="gema-input-box block-start">
+                        <label style="color: #3b82f6; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Automatyka START (godziny:minuty):</label>
+                        <input type="text" id="hStart" value="" placeholder="np. 34821:00">
+                    </div>
+                    <div class="gema-input-box block-end">
+                        <label style="color: #ef4444; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Automatyka KONIEC (godziny:minuty):</label>
+                        <input type="text" id="hEnd" value="" placeholder="np. 34829:30">
+                    </div>
+                    <div class="gema-diff-box" id="diffTime">⏱️ Różnica: —</div>
+                </div>
+
+                <div class="gema-column">
+                    <div class="gema-input-box block-start">
+                        <label style="color: #3b82f6; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Licznik metrów (START):</label>
+                        <input type="number" id="mStart" value="">
+                    </div>
+                    <div class="gema-input-box block-end">
+                        <label style="color: #ef4444; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Licznik metrów (KONIEC):</label>
+                        <input type="number" id="mEnd" value="">
+                    </div>
+                    <div class="gema-diff-box" id="diffMeters">📏 Przerób: —</div>
+                </div>
+
+                <div class="gema-column">
+                    <div class="gema-input-box block-start">
+                        <label style="color: #3b82f6; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Licznik sztuk (START):</label>
+                        <input type="number" id="pcsStart" value="">
+                    </div>
+                    <div class="gema-input-box block-end">
+                        <label style="color: #ef4444; font-weight: 600; font-size: 11px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Licznik sztuk (KONIEC):</label>
+                        <input type="number" id="pcsEnd" value="">
+                    </div>
+                    <div class="gema-diff-box" id="diffPieces">📦 Ilość: —</div>
+                </div>
+            </div>
+
+            <div class="btn-box">
+                <button id="btnSubmit" class="btn-local" onclick="saveDataLocally()">ZAPISZ RAPORT W BAZIE CHMURY</button>
+                <button class="btn-export" style="border-color: #10b981; color: #10b981;" onclick="copyToExcelClipboard()">KOPIUJ DO EXCELA</button>
+                <button class="btn-export" onclick="exportToBackupFile()">KOPIA DO PLIKU</button>
+                <button class="btn-export" onclick="triggerImportClick()">WCZYTAJ KOPIĘ</button>
+                <input type="file" id="localFileInput" style="display: none;" accept=".txt" onchange="importFromBackupFile(this)">
+            </div>
+        </div>
+    </div>
+
+    <div class="weekly-container">
+        <div class="weekly-header-box">
+            <h3 style="margin-top: 0; color: #38bdf8; margin-bottom: 5px;">3. Podsumowanie okresowe wyników OEE</h3>
+        </div>
+        
+        <div class="stat-card-single" id="currentWeekOeeCard">
+            <div class="stat-card-title" id="currentWeekCardTitle">Obecny Tydzień</div>
+            <div class="stat-card-value" id="currentWeekOee">—</div>
+            <div class="stat-card-range" id="currentWeekTextInfo">Bieżący okres pracy</div>
+        </div>
+
+        <div class="stat-card-single" id="lastWeekOeeCard">
+            <div class="stat-card-title" id="lastWeekCardTitle">Zeszły Tydzień</div>
+            <div class="stat-card-value" id="lastWeekOee">—</div>
+            <div class="stat-card-range" id="lastWeekTextInfo">Poprzedni okres pracy</div>
+        </div>
+
+        <div class="stat-card-single" id="monthOeeCard">
+            <div class="stat-card-title" id="monthCardTitle">Średnia Miesięczna</div>
+            <div class="stat-card-value" id="monthOee">—</div>
+            <div class="stat-card-range" id="monthTextInfo">Cały bieżący miesiąc</div>
+        </div>
+
+        <div class="stat-card-single" id="recordOeeCard">
+            <div class="stat-card-title">Rekord Miesiąca</div>
+            <div class="stat-card-value" id="recordOee">—</div>
+            <div class="stat-card-range" id="recordTextInfo">Najwyższy dobowy wynik</div>
+        </div>
+    </div>
+
+    <div class="chart-css-container">
+        <div class="chart-css-title">Wykres Wyników OEE [%] za bieżący miesiąc</div>
+        <div class="chart-css-grid" id="chartGrid"></div>
+    </div>
+
+    <div class="history-section">
+        <h3>Tabela szczegółowa za bieżący miesiąc</h3>
+        <div class="table-responsive">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Dzień</th>
+                        <th>Przejechane metry</th>
+                        <th>Sztuki Łącznie</th>
+                        <th>Poprawki</th>
+                        <th>Dostępność</th>
+                        <th>Wydajność</th>
+                        <th>Jakość</th>
+                        <th>Wynik OEE</th>
+                        <th>Uwagi</th>
+                        <th>Akcja</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="configModal" class="gema-modal-overlay">
+    <div class="gema-modal">
+        <div class="gema-modal-header">Konfiguracja progów OEE</div>
+        <div class="gema-modal-body">
+            <div class="gema-modal-group">
+                <label>Cel produkcyjny (Target %):</label>
+                <input type="number" id="cfgTarget" min="0" max="100">
+            </div>
+            <div class="gema-modal-group">
+                <label>Próg koloru zielonego (od %):</label>
+                <input type="number" id="cfgGreenMin" min="0" max="100">
+            </div>
+            <div class="gema-modal-group">
+                <label>Próg koloru żółtego (od %):</label>
+                <input type="number" id="cfgYellowMin" min="0" max="100">
+            </div>
+            <div class="gema-modal-group">
+                <label>Linie pomocnicze (rozdzielone przecinkiem):</label>
+                <input type="text" id="cfgGuides" placeholder="np. 50, 60, 75, 80">
+            </div>
+        </div>
+        <div class="gema-modal-footer">
+            <button onclick="closeConfigModal()" style="background:#475569; color:white;">Anuluj</button>
+            <button onclick="saveOeeConfig()" style="background:#0284c7; color:white;">Zapisz</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var isEditMode = false;
+    var hasUnsavedChanges = false;
+    var gemaBazaDanych = {};
+
+    // =========================================================================
+    // DYNAMICZNA KONFIGURACJA PROGÓW OEE
+    // =========================================================================
+    let OEE_CONFIG = {
+        target: 70,
+        greenMin: 70,
+        yellowMin: 60,
+        chartGuides: [50, 60, 75, 80]
+    };
+
+    const SUPABASE_URL = 'https://vyobsgknuxxlglkyhulb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    var currentDateObj = new Date();
+    var currentYear = currentDateObj.getFullYear();
+    var currentMonth = currentDateObj.getMonth();
+    var selectedDayGlobal = formatDateKey(currentDateObj);
+
+    const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+
+    function formatDateKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function parseDateKey(dateKey) {
+        if (dateKey instanceof Date) return new Date(dateKey);
+        const parts = String(dateKey).split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function getDateKeyForDay(day) {
+        return `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function normalizeToDateKey(dayOrDateKey) {
+        if (typeof dayOrDateKey === 'string' && dayOrDateKey.includes('-')) return dayOrDateKey;
+        return getDateKeyForDay(parseInt(dayOrDateKey, 10));
+    }
+
+    function getWorkWeekRange(baseDate) {
+        const dayOfWeek = baseDate.getDay() || 7;
+        const monday = new Date(baseDate);
+        monday.setDate(baseDate.getDate() - (dayOfWeek - 1));
+        monday.setHours(0, 0, 0, 0);
+
+        const friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
+        friday.setHours(23, 59, 59, 999);
+
+        return { monday, friday };
+    }
+
+    function initTheme() {
+        var savedTheme = localStorage.getItem('gema_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeChooser').value = savedTheme;
+    }
+
+    function changeTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        localStorage.setItem('gema_theme', themeName);
+        calculateWeeklyAverageFromDay(selectedDayGlobal);
+    }
+
+    function loadOeeConfig() {
+        let localConfig = localStorage.getItem('gema_oee_config');
+        if (localConfig) {
+            try {
+                OEE_CONFIG = JSON.parse(localConfig);
+            } catch(e) {
+                console.error("Błąd parsowania lokalnej konfiguracji", e);
+            }
+        }
+    }
+
+    async function loadOeeConfigFromSupabase() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('oee_config')
+                .select('*')
+                .eq('id', 1)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                OEE_CONFIG = {
+                    target: parseInt(data.target, 10),
+                    greenMin: parseInt(data.green_min, 10),
+                    yellowMin: parseInt(data.yellow_min, 10),
+                    chartGuides: Array.isArray(data.chart_guides) && data.chart_guides.length > 0 ? data.chart_guides : [50, 60, 75, 80]
+                };
+                localStorage.setItem('gema_oee_config', JSON.stringify(OEE_CONFIG));
+            }
+        } catch (err) {
+            console.warn("Brak config z bazy – używam lokalnego:", err.message);
+        }
+    }
+
+    function openConfigModal() {
+        document.getElementById('cfgTarget').value = OEE_CONFIG.target;
+        document.getElementById('cfgGreenMin').value = OEE_CONFIG.greenMin;
+        document.getElementById('cfgYellowMin').value = OEE_CONFIG.yellowMin;
+        document.getElementById('cfgGuides').value = OEE_CONFIG.chartGuides.join(', ');
+        document.getElementById('configModal').style.display = 'flex';
+    }
+
+    function closeConfigModal() {
+        document.getElementById('configModal').style.display = 'none';
+    }
+
+    async function saveOeeConfig() {
+        let target = parseInt(document.getElementById('cfgTarget').value, 10) || 70;
+        let greenMin = parseInt(document.getElementById('cfgGreenMin').value, 10) || 70;
+        let yellowMin = parseInt(document.getElementById('cfgYellowMin').value, 10) || 60;
+        let guidesStr = document.getElementById('cfgGuides').value;
+
+        let chartGuides = guidesStr.split(',')
+            .map(x => parseInt(x.trim(), 10))
+            .filter(x => !isNaN(x) && x >= 0 && x <= 100);
+
+        if (chartGuides.length === 0) chartGuides = [50, 60, 75, 80];
+
+        OEE_CONFIG = { target, greenMin, yellowMin, chartGuides };
+        localStorage.setItem('gema_oee_config', JSON.stringify(OEE_CONFIG));
+
+        try {
+            const { error } = await supabaseClient
+                .from('oee_config')
+                .upsert({
+                    id: 1,
+                    target: target,
+                    green_min: greenMin,
+                    yellow_min: yellowMin,
+                    chart_guides: chartGuides
+                }, { onConflict: 'id' });
+
+            if (error) throw error;
+        } catch (err) {
+            console.error("Błąd zapisu konfiguracji do Supabase:", err.message);
+            alert("Konfiguracja zapisana lokalnie, ale nie udało się zapisać jej w chmurze: " + err.message);
+        }
+
+        closeConfigModal();
+        buildCalendar();
+        renderTableAndChart();
+        selectDay(selectedDayGlobal);
+    }
+
+    async function changeMonth(dir) {
+        if (isEditMode) {
+            alert("Najpierw wyjdź z trybu edycji lub zapisz zmiany!");
+            return;
+        }
+
+        if (hasUnsavedChanges) {
+            if (!confirm("Masz niezapisane zmiany. Czy na pewno chcesz zmienić miesiąc? Niezapisane dane przepadną.")) return;
+        }
+
+        currentMonth += dir;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        } else if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+
+        hasUnsavedChanges = false;
+        selectedDayGlobal = getDateKeyForDay(1);
+
+        await loadDataFromSupabase();
+        buildCalendar();
+        selectDay(selectedDayGlobal);
+        renderTableAndChart();
+    }
+
+    async function loadDataFromSupabase() {
+        // Pobieramy od początku poprzedniego miesiąca, żeby statystyki tygodniowe działały na przełomie miesięcy.
+        const queryStart = new Date(currentYear, currentMonth - 1, 1);
+        const queryEnd = new Date(currentYear, currentMonth + 1, 0);
+        const startOfRange = formatDateKey(queryStart);
+        const endOfRange = formatDateKey(queryEnd);
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('oee_reports')
+                .select('*')
+                .gte('date', startOfRange)
+                .lte('date', endOfRange)
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            gemaBazaDanych = {};
+
+            if (data) {
+                data.forEach(row => {
+                    const dateKey = row.date;
+                    const dateObj = parseDateKey(dateKey);
+                    const dayNum = dateObj.getDate();
+
+                    gemaBazaDanych[dateKey] = {
+                        date: dateKey,
+                        day: dayNum,
+                        targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
+                        breakdown: row.breakdown != null ? parseInt(row.breakdown, 10) : 0,
+                        cleaning: row.cleaning != null ? parseInt(row.cleaning, 10) : 0,
+                        bad: row.bad != null ? parseInt(row.bad, 10) : 0,
+                        mStart: row.m_start != null ? parseInt(row.m_start, 10) : null,
+                        mEnd: row.m_end != null ? parseInt(row.m_end, 10) : null,
+                        pcsStart: row.pcs_start != null ? parseInt(row.pcs_start, 10) : null,
+                        pcsEnd: row.pcs_end != null ? parseInt(row.pcs_end, 10) : null,
+                        hStart: row.h_start || "",
+                        hEnd: row.h_end || "",
+                        meters: row.meters != null ? parseInt(row.meters, 10) : 0,
+                        pieces: row.pieces != null ? parseInt(row.pieces, 10) : 0,
+                        av: row.av != null ? parseFloat(row.av).toFixed(1) : "0.0",
+                        perf: row.perf != null ? parseFloat(row.perf).toFixed(1) : "0.0",
+                        qual: row.qual != null ? parseFloat(row.qual).toFixed(1) : "0.0",
+                        oee: row.oee != null ? parseFloat(row.oee).toFixed(1) : "0.0",
+                        notes: row.notes || ""
+                    };
+                });
+            }
+        } catch (err) {
+            console.error("Błąd połączenia z Supabase, używam bazy lokalnej:", err.message);
+            gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db_dates')) || {};
+        }
+    }
+
+    function markChanged() {
+        hasUnsavedChanges = true;
+    }
+
+    function setupTimeFormatter(input) {
+        input.addEventListener('input', function(e) {
+            markChanged();
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length > 8) val = val.slice(0, 8);
+            if (val.length > 5) {
+                e.target.value = val.slice(0, 5) + ':' + val.slice(5);
+            } else {
+                e.target.value = val;
+            }
+            calculateDifferences();
+        });
+
+        input.addEventListener('blur', function(e) {
+            let val = e.target.value;
+            let clean = val.replace(/\D/g, '');
+            if (clean.length >= 6) {
+                let mins = clean.slice(-2);
+                let hrs = clean.slice(0, -2);
+                e.target.value = hrs + ':' + mins;
+            }
+            calculateDifferences();
+        });
+    }
+
+    gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db_dates')) || {};
+
+    window.onload = async function() {
+        initTheme();
+        loadOeeConfig();
+        await loadOeeConfigFromSupabase();
+        await loadDataFromSupabase();
+
+        buildCalendar();
+        setupTimeFormatter(document.getElementById('hStart'));
+        setupTimeFormatter(document.getElementById('hEnd'));
+
+        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                markChanged();
+                calculateDifferences();
+            });
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+            if (hasUnsavedChanges || isEditMode) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        selectDay(selectedDayGlobal);
+        renderTableAndChart();
+    };
+
+    function calculateDifferences() {
+        let hS = document.getElementById('hStart').value;
+        let hE = document.getElementById('hEnd').value;
+        let diffTBox = document.getElementById('diffTime');
+        let mStartMin = parseHoursToMinutes(hS);
+        let mEndMin = parseHoursToMinutes(hE);
+
+        if (mStartMin !== -1 && mEndMin !== -1) {
+            let diffMin = mEndMin - mStartMin;
+            if (diffMin >= 0) {
+                let displayDiffMin = Math.max(0, diffMin - 120);
+                let hrs = Math.floor(displayDiffMin / 60);
+                let mins = displayDiffMin % 60;
+                diffTBox.innerText = `⏱️ Różnica: ${hrs}h ${mins.toString().padStart(2, '0')}m`;
+                diffTBox.className = "gema-diff-box valid";
+            } else {
+                diffTBox.innerText = "⚠️ Różnica: BŁĄD (ujemny wynik)";
+                diffTBox.className = "gema-diff-box error";
+            }
+        } else {
+            diffTBox.innerText = "⏱️ Różnica: —";
+            diffTBox.className = "gema-diff-box";
+        }
+
+        let mS = parseInt(document.getElementById('mStart').value, 10);
+        let mE = parseInt(document.getElementById('mEnd').value, 10);
+        let diffMBox = document.getElementById('diffMeters');
+        if (!isNaN(mS) && !isNaN(mE)) {
+            let diffM = mE - mS;
+            diffMBox.innerText = `📏 Przerób: ${diffM} m`;
+            diffMBox.className = diffM >= 0 ? "gema-diff-box valid" : "gema-diff-box error";
+        } else {
+            diffMBox.innerText = "📏 Przerób: —";
+            diffMBox.className = "gema-diff-box";
+        }
+
+        let pS = parseInt(document.getElementById('pcsStart').value, 10);
+        let pE = parseInt(document.getElementById('pcsEnd').value, 10);
+        let diffPBox = document.getElementById('diffPieces');
+        if (!isNaN(pS) && !isNaN(pE)) {
+            let diffP = pE - pS;
+            diffPBox.innerText = `📦 Ilość: ${diffP} szt`;
+            diffPBox.className = diffP >= 0 ? "gema-diff-box valid" : "gema-diff-box error";
+        } else {
+            diffPBox.innerText = "📦 Ilość: —";
+            diffPBox.className = "gema-diff-box";
+        }
+    }
+
+    function getISOWeekNumber(date) {
+        var d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        var dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function isPolishHoliday(year, month, day) {
+        var m = month + 1;
+        if (m === 1 && day === 1) return "Nowy Rok";
+        if (m === 1 && day === 6) return "Trzech Króli";
+        if (m === 5 && day === 1) return "Święto Pracy";
+        if (m === 5 && day === 3) return "Święto Konstytucji 3 Maja";
+        if (m === 8 && day === 15) return "Wniebowzięcie NMP / Święto Wojska Polskiego";
+        if (m === 11 && day === 1) return "Wszystkich Świętych";
+        if (m === 11 && day === 11) return "Święto Niepodległości";
+        if (m === 12 && day === 24) return "Wigilia";
+        if (m === 12 && day === 25) return "Boże Narodzenie (Pierwszy Dzień)";
+        if (m === 12 && day === 26) return "Boże Narodzenie (Drugi Dzień)";
+
+        var a = year % 19;
+        var b = Math.floor(year / 100);
+        var c = year % 100;
+        var d = Math.floor(b / 4);
+        var e = b % 4;
+        var f = Math.floor((b + 8) / 25);
+        var g = Math.floor((b - f + 1) / 3);
+        var h = (19 * a + b - d - g + 15) % 30;
+        var i = Math.floor(c / 4);
+        var k = c % 4;
+        var l = (32 + 2 * e + 2 * i - h - k) % 7;
+        var m_calc = Math.floor((a + 11 * h + 22 * l) / 451);
+        var p = (h + l - 7 * m_calc + 114) % 31;
+
+        var easterDay = p + 1;
+        var easterMonth = Math.floor((h + l - 7 * m_calc + 114) / 31);
+        var easterDate = new Date(year, easterMonth - 1, easterDay);
+        var easterMonday = new Date(easterDate); easterMonday.setDate(easterDate.getDate() + 1);
+        var pentecost = new Date(easterDate); pentecost.setDate(easterDate.getDate() + 49);
+        var corpusChristi = new Date(easterDate); corpusChristi.setDate(easterDate.getDate() + 60);
+        var checkDate = new Date(year, month, day);
+
+        if (checkDate.getTime() === easterMonday.getTime()) return "Poniedziałek Wielkanocny";
+        if (checkDate.getTime() === pentecost.getTime()) return "Zielone Świątki";
+        if (checkDate.getTime() === corpusChristi.getTime()) return "Boże Ciało";
+        return null;
+    }
+
+    function buildCalendar() {
+        document.getElementById('calendarMonthTitle').innerText = MONTH_NAMES[currentMonth] + " " + currentYear;
+        var grid = document.getElementById('calendarGrid');
+
+        while (grid.children.length > 8) {
+            grid.removeChild(grid.lastChild);
+        }
+
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        let firstWeekDay = firstDay.getDay();
+        if (firstWeekDay === 0) firstWeekDay = 7;
+
+        const calendarStart = new Date(currentYear, currentMonth, 1);
+        calendarStart.setDate(calendarStart.getDate() - (firstWeekDay - 1));
+
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        let lastWeekDay = lastDay.getDay();
+        if (lastWeekDay === 0) lastWeekDay = 7;
+
+        const calendarEnd = new Date(lastDay);
+        calendarEnd.setDate(lastDay.getDate() + (7 - lastWeekDay));
+
+        let monday = new Date(calendarStart);
+
+        while (monday <= calendarEnd) {
+            const weekCell = document.createElement('div');
+            weekCell.className = 'calendar-week-number';
+            weekCell.innerText = 'T' + getISOWeekNumber(monday);
+            grid.appendChild(weekCell);
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+
+                const day = date.getDate();
+                const month = date.getMonth();
+                const year = date.getFullYear();
+                const dateKey = formatDateKey(date);
+
+                var cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+                cell.id = 'cal-day-' + dateKey;
+                cell.setAttribute('data-date', dateKey);
+
+                if (month !== currentMonth) {
+                    cell.className += ' other-month';
+                }
+
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    cell.className += ' weekend';
+                }
+
+                var titleText = '';
+                var holidayName = isPolishHoliday(year, month, day);
+                if (holidayName) {
+                    cell.className += ' holiday';
+                    titleText = holidayName;
+                }
+
+                cell.innerHTML = '<div>' + day + '</div>';
+
+                if (gemaBazaDanych[dateKey]) {
+                    var oeeValue = parseFloat(gemaBazaDanych[dateKey].oee);
+                    if (oeeValue >= OEE_CONFIG.greenMin) cell.className += ' oee-good';
+                    else if (oeeValue >= OEE_CONFIG.yellowMin) cell.className += ' oee-warn';
+                    else cell.className += ' oee-bad';
+
+                    cell.innerHTML += '<span class="mini-oee">' + gemaBazaDanych[dateKey].oee + '%</span>';
+                    if (gemaBazaDanych[dateKey].notes) {
+                        titleText = titleText ? titleText + ' | ' + gemaBazaDanych[dateKey].notes : gemaBazaDanych[dateKey].notes;
+                    }
+                } else {
+                    cell.innerHTML += '<span class="mini-oee" style="visibility: hidden;">&nbsp;</span>';
+                }
+
+                if (titleText) cell.setAttribute('title', titleText);
+
+                cell.onclick = function() {
+                    if (month !== currentMonth) {
+                        return;
+                    }
+                    if (isEditMode) {
+                        alert('Wyjdź najpierw z trybu korekty błędu lub zapisz wprowadzone poprawki!');
+                        return;
+                    }
+                    if (hasUnsavedChanges) {
+                        if (!confirm('Masz niezapisane zmiany w formularzu dla obecnego dnia. Czy na pewno chcesz zmienić dzień bez zapisu?')) return;
+                    }
+                    selectDay(this.getAttribute('data-date'));
+                };
+
+                grid.appendChild(cell);
+            }
+
+            monday.setDate(monday.getDate() + 7);
+        }
+    }
+
+    function clearEndCountersOnly() {
+        document.getElementById('hEnd').value = "";
+        document.getElementById('mEnd').value = "";
+        document.getElementById('pcsEnd').value = "";
+    }
+
+    function selectDay(dayOrDateKey) {
+        const dateKey = normalizeToDateKey(dayOrDateKey);
+        const selectedDate = parseDateKey(dateKey);
+        const day = selectedDate.getDate();
+
+        selectedDayGlobal = dateKey;
+
+        document.querySelectorAll('.calendar-cell.active').forEach(c => c.classList.remove('active'));
+        var currentCell = document.getElementById('cal-day-' + dateKey);
+        if (currentCell) currentCell.classList.add('active');
+
+        document.getElementById('dayOfMonthDisplay').value = "Dzień " + day;
+
+        if (gemaBazaDanych[dateKey]) {
+            var rec = gemaBazaDanych[dateKey];
+            document.getElementById('targetSpeed').value = rec.targetSpeed;
+            document.getElementById('breakdownMinutes').value = rec.breakdown;
+            document.getElementById('cleaningMinutes').value = rec.cleaning;
+            document.getElementById('badPieces').value = rec.bad;
+            document.getElementById('mStart').value = rec.mStart;
+            document.getElementById('mEnd').value = rec.mEnd;
+            document.getElementById('pcsStart').value = rec.pcsStart;
+            document.getElementById('pcsEnd').value = rec.pcsEnd;
+            document.getElementById('hStart').value = rec.hStart;
+            document.getElementById('hEnd').value = rec.hEnd;
+
+            var fullNotes = rec.notes || "";
+            if (fullNotes.startsWith("[")) {
+                var bracketEnd = fullNotes.indexOf("]");
+                if (bracketEnd > -1) {
+                    var category = fullNotes.substring(1, bracketEnd);
+                    var cleanNote = fullNotes.substring(bracketEnd + 1).trim();
+                    var selectEl = document.getElementById('downtimeCategory');
+                    var exists = Array.from(selectEl.options).some(opt => opt.value === category);
+                    if (exists) {
+                        selectEl.value = category;
+                        document.getElementById('dayNotes').value = cleanNote;
+                    } else {
+                        selectEl.value = "Inne";
+                        document.getElementById('dayNotes').value = fullNotes;
+                    }
+                } else {
+                    document.getElementById('downtimeCategory').value = "Brak przestojów";
+                    document.getElementById('dayNotes').value = fullNotes;
+                }
+            } else {
+                document.getElementById('downtimeCategory').value = fullNotes === "" ? "Brak przestojów" : "Inne";
+                document.getElementById('dayNotes').value = fullNotes;
+            }
+        } else {
+            document.getElementById('breakdownMinutes').value = 0;
+            document.getElementById('cleaningMinutes').value = 30;
+            document.getElementById('badPieces').value = 0;
+            document.getElementById('downtimeCategory').value = "Brak przestojów";
+            document.getElementById('dayNotes').value = "";
+            clearEndCountersOnly();
+
+            var lastSpeed = 0.8;
+            var previousRecord = findPreviousRecord(dateKey);
+            if (previousRecord) lastSpeed = previousRecord.targetSpeed;
+            document.getElementById('targetSpeed').value = lastSpeed;
+            restoreLatestCounters();
+        }
+
+        calculateWeeklyAverageFromDay(dateKey);
+        hasUnsavedChanges = false;
+        calculateDifferences();
+    }
+
+    function getAllRecordKeysSorted() {
+        return Object.keys(gemaBazaDanych).filter(k => k.includes('-')).sort();
+    }
+
+    function findPreviousRecord(dateKey) {
+        const keys = getAllRecordKeysSorted().filter(k => k < dateKey);
+        if (keys.length === 0) return null;
+        return gemaBazaDanych[keys[keys.length - 1]];
+    }
+
+    function findPreviousRecordWithKey(dateKey) {
+        const keys = getAllRecordKeysSorted().filter(k => k < dateKey);
+        if (keys.length === 0) return null;
+        const key = keys[keys.length - 1];
+        return { key, rec: gemaBazaDanych[key] };
+    }
+
+    function findNextRecordWithKey(dateKey) {
+        const keys = getAllRecordKeysSorted().filter(k => k > dateKey);
+        if (keys.length === 0) return null;
+        const key = keys[0];
+        return { key, rec: gemaBazaDanych[key] };
+    }
+
+    function getAverageForWorkRange(monday, friday) {
+        var sumOee = 0;
+        var count = 0;
+        const start = new Date(monday); start.setHours(0, 0, 0, 0);
+        const end = new Date(friday); end.setHours(23, 59, 59, 999);
+
+        for (const dateKey in gemaBazaDanych) {
+            const checkDate = parseDateKey(dateKey);
+            if (checkDate >= start && checkDate <= end && checkDate.getDay() !== 0 && checkDate.getDay() !== 6) {
+                const oee = parseFloat(gemaBazaDanych[dateKey].oee);
+                if (!isNaN(oee) && oee > 0) {
+                    sumOee += oee;
+                    count++;
+                }
+            }
+        }
+
+        return count > 0 ? (sumOee / count).toFixed(1) : null;
+    }
+
+    function getWeekAverageStats(weekNum) {
+        var sumOee = 0;
+        var count = 0;
+        for (const dateKey in gemaBazaDanych) {
+            const checkDate = parseDateKey(dateKey);
+            if (getISOWeekNumber(checkDate) === weekNum && checkDate.getDay() !== 0 && checkDate.getDay() !== 6) {
+                const oee = parseFloat(gemaBazaDanych[dateKey].oee);
+                if (!isNaN(oee) && oee > 0) {
+                    sumOee += oee;
+                    count++;
+                }
+            }
+        }
+        return count > 0 ? (sumOee / count).toFixed(1) : null;
+    }
+
+    function getMonthAverageStats() {
+        var sumOee = 0;
+        var count = 0;
+        for (const dateKey in gemaBazaDanych) {
+            const checkDate = parseDateKey(dateKey);
+            if (checkDate.getFullYear() === currentYear && checkDate.getMonth() === currentMonth) {
+                const oee = parseFloat(gemaBazaDanych[dateKey].oee);
+                if (!isNaN(oee) && oee > 0) {
+                    sumOee += oee;
+                    count++;
+                }
+            }
+        }
+        return count > 0 ? (sumOee / count).toFixed(1) : null;
+    }
+
+    function updateWeekCardVisuals(cardId, valueId, avgOee) {
+        var card = document.getElementById(cardId);
+        var valueDisplay = document.getElementById(valueId);
+        if (avgOee !== null) {
+            valueDisplay.innerText = avgOee + "%";
+            if (avgOee >= OEE_CONFIG.greenMin) {
+                card.style.borderTopColor = '#10b981';
+                valueDisplay.style.color = '#10b981';
+            } else if (avgOee >= OEE_CONFIG.yellowMin) {
+                card.style.borderTopColor = '#f59e0b';
+                valueDisplay.style.color = '#f59e0b';
+            } else {
+                card.style.borderTopColor = '#ef4444';
+                valueDisplay.style.color = '#ef4444';
+            }
+        } else {
+            valueDisplay.innerText = "—";
+            card.style.borderTopColor = '#64748b';
+            valueDisplay.style.color = 'var(--text-main)';
+        }
+    }
+
+    function calculateWeeklyAverageFromDay(targetDay) {
+        var activeDate = parseDateKey(normalizeToDateKey(targetDay));
+        var currentWeekNum = getISOWeekNumber(activeDate);
+        var currentRange = getWorkWeekRange(activeDate);
+
+        document.getElementById('currentWeekCardTitle').innerText = `Tydzień ${currentWeekNum}`;
+        document.getElementById('currentWeekTextInfo').innerHTML = `Zakres roboczy:<br><b>${currentRange.monday.getDate()}.${currentRange.monday.getMonth()+1} - ${currentRange.friday.getDate()}.${currentRange.friday.getMonth()+1}</b>`;
+
+        var currentAvg = getAverageForWorkRange(currentRange.monday, currentRange.friday);
+        updateWeekCardVisuals('currentWeekOeeCard', 'currentWeekOee', currentAvg);
+
+        var lastWeekDate = new Date(activeDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        var lastWeekNum = getISOWeekNumber(lastWeekDate);
+        var lastRange = getWorkWeekRange(lastWeekDate);
+
+        document.getElementById('lastWeekCardTitle').innerText = `Zeszły Tydzień ${lastWeekNum}`;
+        document.getElementById('lastWeekTextInfo').innerHTML = `Zakres roboczy:<br><b>${lastRange.monday.getDate()}.${lastRange.monday.getMonth()+1} - ${lastRange.friday.getDate()}.${lastRange.friday.getMonth()+1}</b>`;
+
+        var lastAvg = getAverageForWorkRange(lastRange.monday, lastRange.friday);
+        updateWeekCardVisuals('lastWeekOeeCard', 'lastWeekOee', lastAvg);
+
+        document.getElementById('monthCardTitle').innerText = `Średnia Miesięczna`;
+        document.getElementById('monthTextInfo').innerHTML = `Okres rozliczeniowy:<br><b>${MONTH_NAMES[currentMonth]} ${currentYear}</b>`;
+
+        var monthAvg = getMonthAverageStats();
+        updateWeekCardVisuals('monthOeeCard', 'monthOee', monthAvg);
+
+        var maxOee = -1;
+        var maxDay = null;
+        for (const dateKey in gemaBazaDanych) {
+            const checkDate = parseDateKey(dateKey);
+            if (checkDate.getFullYear() === currentYear && checkDate.getMonth() === currentMonth) {
+                var val = parseFloat(gemaBazaDanych[dateKey].oee);
+                if (!isNaN(val) && val > maxOee) {
+                    maxOee = val;
+                    maxDay = checkDate.getDate();
+                }
+            }
+        }
+
+        var recordCard = document.getElementById('recordOeeCard');
+        var recordDisplay = document.getElementById('recordOee');
+        if (maxDay !== null && maxOee > 0) {
+            recordDisplay.innerText = maxOee.toFixed(1) + "%";
+            document.getElementById('recordTextInfo').innerHTML = `Dzień <b>${maxDay}</b><br>Najlepszy wynik w tym miesiącu`;
+            if (maxOee >= OEE_CONFIG.greenMin) { recordCard.style.borderTopColor = '#10b981'; recordDisplay.style.color = '#10b981'; }
+            else if (maxOee >= OEE_CONFIG.yellowMin) { recordCard.style.borderTopColor = '#f59e0b'; recordDisplay.style.color = '#f59e0b'; }
+            else { recordCard.style.borderTopColor = '#ef4444'; recordDisplay.style.color = '#ef4444'; }
+        } else {
+            recordDisplay.innerText = "—";
+            recordCard.style.borderTopColor = '#64748b';
+            recordDisplay.style.color = 'var(--text-main)';
+            document.getElementById('recordTextInfo').innerHTML = `Brak danych<br>w tym miesiącu`;
+        }
+    }
+
+    function parseHoursToMinutes(timeStr) {
+        if (!timeStr || typeof timeStr !== 'string' || !timeStr.includes(':')) return -1;
+        var parts = timeStr.split(':');
+        var hours = parseInt(parts[0], 10);
+        var minutes = parseInt(parts[1], 10);
+        if (isNaN(hours) || isNaN(minutes)) return -1;
+        return (hours * 60) + minutes;
+    }
+
+    async function saveDataLocally() {
+        var dateKey = selectedDayGlobal;
+        var selectedDate = parseDateKey(dateKey);
+        var dayNum = selectedDate.getDate();
+
+        var targetSpeed = parseFloat(document.getElementById('targetSpeed').value);
+        var breakdownMinutes = parseFloat(document.getElementById('breakdownMinutes').value) || 0;
+        var cleaningMinutes = parseFloat(document.getElementById('cleaningMinutes').value) || 0;
+        var badPieces = parseFloat(document.getElementById('badPieces').value) || 0;
+
+        var category = document.getElementById('downtimeCategory').value;
+        var noteText = document.getElementById('dayNotes').value.trim();
+        var dayNotes = noteText;
+        if (category !== "Brak przestojów") {
+            dayNotes = `[${category}] ${noteText}`;
+        }
+
+        var valMStart = document.getElementById('mStart').value;
+        var valMEnd = document.getElementById('mEnd').value;
+        var valPcsStart = document.getElementById('pcsStart').value;
+        var valPcsEnd = document.getElementById('pcsEnd').value;
+        var valHStart = document.getElementById('hStart').value;
+        var valHEnd = document.getElementById('hEnd').value;
+
+        if (!valMStart || !valMEnd || !valPcsStart || !valPcsEnd || !valHStart || !valHEnd || isNaN(targetSpeed)) {
+            alert("BŁĄD: Wszystkie liczniki oraz prędkość zadana muszą być uzupełnione przed zapisem!");
+            return;
+        }
+
+        var diffMeters = parseFloat(valMEnd) - parseFloat(valMStart);
+        var diffPieces = parseFloat(valPcsEnd) - parseFloat(valPcsStart);
+        var minStart = parseHoursToMinutes(valHStart);
+        var minEnd = parseHoursToMinutes(valHEnd);
+        var diffWorkingMinutes = minEnd - minStart;
+
+        var errorMessage = "";
+        if (minStart === -1 || minEnd === -1) errorMessage += "• Błędny format licznika czasu. Liczba musi zawierać dwukropek przed minutami (np. 34821:00).\n";
+        if (diffWorkingMinutes <= 0) errorMessage += "• Licznik czasu KONIEC musi wskazywać większą wartość niż START.\n";
+        if (isNaN(diffMeters) || diffMeters < 0) errorMessage += "• Licznik metrów KONIEC nie może być mniejszy niż START.\n";
+        if (isNaN(diffPieces) || diffPieces < 0) errorMessage += "• Licznik sztuk KONIEC nie może być mniejszy niż START.\n";
+        if ((breakdownMinutes + cleaningMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii i czyszczenia nie może przekraczać całkowitego czasu załączenia linii.\n";
+
+        var prev = findPreviousRecordWithKey(dateKey);
+        if (prev) {
+            var prevRec = prev.rec;
+            var prevDate = parseDateKey(prev.key);
+            var prevHMinutes = parseHoursToMinutes(prevRec.hEnd);
+            if (parseInt(valMStart, 10) < prevRec.mEnd) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów START (${valMStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.mEnd})!\n`;
+            }
+            if (parseInt(valPcsStart, 10) < prevRec.pcsEnd) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk START (${valPcsStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.pcsEnd})!\n`;
+            }
+            if (minStart < prevHMinutes && minStart !== -1 && prevHMinutes !== -1) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu START (${valHStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.hEnd})!\n`;
+            }
+        }
+
+        var next = findNextRecordWithKey(dateKey);
+        if (next) {
+            var nextRec = next.rec;
+            var nextDate = parseDateKey(next.key);
+            var nextHStartMinutes = parseHoursToMinutes(nextRec.hStart);
+            if (parseInt(valMEnd, 10) > nextRec.mStart) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów KONIEC (${valMEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.mStart})!\n`;
+            }
+            if (parseInt(valPcsEnd, 10) > nextRec.pcsStart) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk KONIEC (${valPcsEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.pcsStart})!\n`;
+            }
+            if (minEnd > nextHStartMinutes && minEnd !== -1 && nextHStartMinutes !== -1) {
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu KONIEC (${valHEnd}) najeżdża na START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.hStart})!\n`;
+            }
+        }
+
+        if (errorMessage !== "") {
+            alert("BLOKADA ZAPISU - WYKRYTO NIELOGICZNE DANE:\n\n" + errorMessage);
+            return;
+        }
+
+        var totalLoss = breakdownMinutes + cleaningMinutes;
+        var basePlannedTime = diffWorkingMinutes;
+        var availability = basePlannedTime > 0 ? Math.max(0, Math.min(1, (basePlannedTime - totalLoss) / basePlannedTime)) : 0;
+        var pureWorkingTime = Math.max(1, diffWorkingMinutes - totalLoss);
+        var performance = diffMeters > 0 ? Math.max(0, Math.min(1, diffMeters / (pureWorkingTime * targetSpeed))) : 0;
+        var quality = diffPieces > 0 ? Math.max(0, Math.min(1, (diffPieces - badPieces) / diffPieces)) : 1;
+        var oee = availability * performance * quality;
+
+        const dbRow = {
+            date: dateKey,
+            target_speed: targetSpeed,
+            breakdown: breakdownMinutes,
+            cleaning: cleaningMinutes,
+            bad: badPieces,
+            m_start: parseInt(valMStart, 10),
+            m_end: parseInt(valMEnd, 10),
+            pcs_start: parseInt(valPcsStart, 10),
+            pcs_end: parseInt(valPcsEnd, 10),
+            h_start: valHStart,
+            h_end: valHEnd,
+            meters: diffMeters,
+            pieces: diffPieces,
+            av: parseFloat((availability * 100).toFixed(1)),
+            perf: parseFloat((performance * 100).toFixed(1)),
+            qual: parseFloat((quality * 100).toFixed(1)),
+            oee: parseFloat((oee * 100).toFixed(1)),
+            notes: dayNotes
+        };
+
+        try {
+            const { error } = await supabaseClient
+                .from('oee_reports')
+                .upsert(dbRow, { onConflict: 'date' });
+
+            if (error) throw error;
+
+            gemaBazaDanych[dateKey] = {
+                date: dateKey,
+                day: dayNum,
+                targetSpeed: targetSpeed,
+                breakdown: breakdownMinutes,
+                cleaning: cleaningMinutes,
+                bad: badPieces,
+                mStart: parseInt(valMStart, 10),
+                mEnd: parseInt(valMEnd, 10),
+                pcsStart: parseInt(valPcsStart, 10),
+                pcsEnd: parseInt(valPcsEnd, 10),
+                hStart: valHStart,
+                hEnd: valHEnd,
+                meters: diffMeters,
+                pieces: diffPieces,
+                av: parseFloat((availability * 100).toFixed(1)).toFixed(1),
+                perf: parseFloat((performance * 100).toFixed(1)).toFixed(1),
+                qual: parseFloat((quality * 100).toFixed(1)).toFixed(1),
+                oee: parseFloat((oee * 100).toFixed(1)).toFixed(1),
+                notes: dayNotes
+            };
+
+            localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
+            hasUnsavedChanges = false;
+
+            if (isEditMode) {
+                isEditMode = false;
+                document.getElementById('editBanner').style.display = "none";
+                document.getElementById('btnSubmit').innerText = "ZAPISZ RAPORT W BAZIE CHMURY";
+                document.getElementById('btnSubmit').style.background = "#059669";
+            }
+
+            buildCalendar();
+
+            var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const nextDay = dayNum < daysInMonth ? dayNum + 1 : dayNum;
+            selectDay(getDateKeyForDay(nextDay));
+            renderTableAndChart();
+            alert("Pomyślnie zweryfikowano ciągłość i zapisano raport w Supabase dla dnia " + dayNum + ".");
+        } catch (err) {
+            console.error("Błąd zapisu Supabase:", err.message);
+            alert("BŁĄD ZAPISU W CHMURZE: " + err.message + "\nDane nie zostały utrwalone na serwerze zewnętrznym.");
+        }
+    }
+
+    function editDay(dateKey) {
+        selectDay(dateKey);
+        isEditMode = true;
+        hasUnsavedChanges = false;
+        const dateObj = parseDateKey(dateKey);
+        document.getElementById('editBanner').style.display = "block";
+        document.getElementById('editBanner').innerText = "TRYB KOREKTY BŁĘDU: Edycja dnia " + dateObj.getDate() + "." + (dateObj.getMonth() + 1);
+        document.getElementById('btnSubmit').innerText = "ZAPISZ POPRAWKI W BAZIE CHMURY";
+        document.getElementById('btnSubmit').style.background = "#d97706";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function restoreLatestCounters() {
+        var previousRecord = findPreviousRecord(selectedDayGlobal);
+
+        if (previousRecord) {
+            document.getElementById('hStart').value = previousRecord.hEnd;
+            document.getElementById('mStart').value = previousRecord.mEnd;
+            document.getElementById('pcsStart').value = previousRecord.pcsEnd;
+        } else {
+            document.getElementById('hStart').value = "";
+            document.getElementById('mStart').value = "";
+            document.getElementById('pcsStart').value = "";
+        }
+    }
+
+    function exportToBackupFile() {
+        var dataStr = JSON.stringify(gemaBazaDanych);
+        var blob = new Blob([dataStr], { type: "text/plain;charset=utf-8" });
+        var tempLink = document.createElement("a");
+        tempLink.download = `kopia_bazy_oee_${MONTH_NAMES[currentMonth].toLowerCase()}_${currentYear}.txt`;
+        tempLink.href = window.URL.createObjectURL(blob);
+        tempLink.click();
+    }
+
+    function triggerImportClick() {
+        document.getElementById('localFileInput').click();
+    }
+
+    function importFromBackupFile(input) {
+        var file = input.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                const normalized = {};
+
+                Object.keys(imported).forEach(key => {
+                    if (key.includes('-')) {
+                        normalized[key] = imported[key];
+                    } else {
+                        const day = parseInt(key, 10);
+                        if (!isNaN(day)) {
+                            normalized[getDateKeyForDay(day)] = imported[key];
+                        }
+                    }
+                });
+
+                gemaBazaDanych = normalized;
+                localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
+                buildCalendar();
+                selectDay(selectedDayGlobal);
+                renderTableAndChart();
+                alert("Baza danych zaimportowana pomyślnie! Kliknij Zapisz przy wybranym dniu, aby przesłać rekordy również do Supabase.");
+            } catch(err) {
+                alert("Błąd: Nieprawidłowy plik kopii!");
+            }
+        };
+        reader.readAsText(file);
+        input.value = "";
+    }
+
+    function renderTableAndChart() {
+        var tbody = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = "";
+        var chartGrid = document.getElementById('chartGrid');
+        chartGrid.innerHTML = "";
+
+        OEE_CONFIG.chartGuides.forEach(function(t) {
+            var guide = document.createElement('div');
+            guide.className = 'chart-line-guide';
+            guide.style.bottom = t + '%';
+            guide.innerHTML = `<span class="chart-line-label">${t}%</span>`;
+            chartGrid.appendChild(guide);
+        });
+
+        var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (var d = 1; d <= daysInMonth; d++) {
+            const dateKey = getDateKeyForDay(d);
+
+            var barWrapper = document.createElement('div');
+            barWrapper.className = 'chart-css-bar-wrapper';
+            var bar = document.createElement('div');
+            bar.className = 'chart-css-bar';
+            var label = document.createElement('div');
+            label.className = 'chart-css-label';
+            label.innerText = d;
+
+            if (gemaBazaDanych[dateKey]) {
+                var rec = gemaBazaDanych[dateKey];
+                var flatColor = rec.oee >= OEE_CONFIG.greenMin ? '#10b981' : (rec.oee >= OEE_CONFIG.yellowMin ? '#f59e0b' : '#ef4444');
+                var gradient = rec.oee >= OEE_CONFIG.greenMin ? 'linear-gradient(180deg, #34d399 0%, #10b981 100%)' : (rec.oee >= OEE_CONFIG.yellowMin ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' : 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)');
+
+                bar.style.height = rec.oee + '%';
+                bar.style.background = gradient;
+
+                var tooltipText = `Dzień ${d}: ${rec.oee}%`;
+                if (rec.notes) tooltipText += ` (${rec.notes})`;
+                bar.innerHTML = `<div class="chart-css-tooltip">${tooltipText}</div>`;
+
+                var notesDisplay = rec.notes ? rec.notes : "—";
+                var row = tbody.insertRow();
+                row.innerHTML = `<td><strong>Dzień ${rec.day}</strong></td><td>${rec.meters} m</td><td>${rec.pieces} szt</td><td>${rec.bad} szt</td><td>${rec.av}%</td><td>${rec.perf}%</td><td>${rec.qual}%</td><td><span class="badge" style="background-color: ${flatColor};">${rec.oee}%</span></td><td style="text-align:left; font-size:13px; font-style:italic; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${notesDisplay}">${notesDisplay}</td><td><button class="btn-edit-row" onclick="editDay('${dateKey}')">Edytuj</button></td>`;
+            } else {
+                bar.style.height = '0%';
+            }
+
+            barWrapper.appendChild(bar);
+            barWrapper.appendChild(label);
+            chartGrid.appendChild(barWrapper);
+        }
+
+        calculateWeeklyAverageFromDay(selectedDayGlobal);
+    }
+
+    function copyToExcelClipboard() {
+        let csvContent = "Dzień\tPrzejechane metry\tSztuki Łącznie\tPoprawki\tDostępność [%]\tWydajność [%]\tJakość [%]\tWynik OEE [%]\tUwagi\n";
+
+        var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        let rowsCount = 0;
+
+        for (var d = 1; d <= daysInMonth; d++) {
+            const dateKey = getDateKeyForDay(d);
+            if (gemaBazaDanych[dateKey]) {
+                var rec = gemaBazaDanych[dateKey];
+                let av = String(rec.av).replace('.', ',');
+                let perf = String(rec.perf).replace('.', ',');
+                let qual = String(rec.qual).replace('.', ',');
+                let oeeVal = String(rec.oee).replace('.', ',');
+                let notes = rec.notes ? rec.notes.replace(/\t|\n/g, " ") : "";
+                csvContent += `Dzień ${rec.day}\t${rec.meters}\t${rec.pieces}\t${rec.bad}\t${av}\t${perf}\t${qual}\t${oeeVal}\t${notes}\n`;
+                rowsCount++;
+            }
+        }
+
+        if (rowsCount === 0) {
+            alert("Brak danych w tym miesiącu do skopiowania!");
+            return;
+        }
+
+        navigator.clipboard.writeText(csvContent).then(function() {
+            alert(`Sukces! Skopiowano dane z ${rowsCount} dni. Możesz teraz otworzyć Excela i wkleić dane za pomocą CTRL+V.`);
+        }).catch(function(err) {
+            console.error('Błąd kopiowania do schowka: ', err);
+            alert("Nie udało się automatycznie skopiować.");
+        });
+    }
+</script>
+</body>
+</html>
