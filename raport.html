@@ -1,139 +1,877 @@
 <!DOCTYPE html>
-<html lang="pl" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Panel Obróbki Blach CNC</title><style>*{box-sizing:border-box}:root{--bg:#f8fafc;--panel:#fff;--box:#f1f5f9;--text:#0f172a;--muted:#64748b;--border:#cbd5e1;--blue:#2563eb;--cyan:#38bdf8;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--violet:#8b5cf6;--shadow:0 10px 25px -8px rgba(0,0,0,.14)}[data-theme=dark]{--bg:#0f172a;--panel:#1e293b;--box:#0f172a;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--shadow:0 14px 34px -12px rgba(0,0,0,.55)}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif}body{padding:clamp(8px,1.2vw,20px)}.container{max-width:1900px;margin:0 auto;background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:clamp(14px,1.4vw,28px)}.header{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;border-bottom:2px solid var(--blue);padding-bottom:12px;margin-bottom:18px}h1{font-size:clamp(22px,1.7vw,34px);margin:0;color:var(--text);line-height:1.1}h2{font-size:clamp(18px,1.25vw,25px);margin:0 0 12px;color:var(--cyan);text-transform:uppercase;letter-spacing:.5px}.muted{color:var(--muted)}.controls,.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button,.btn,input,select,textarea{font-family:inherit}button,.btn{border:0;border-radius:8px;background:#475569;color:#fff;font-weight:800;padding:10px 13px;cursor:pointer;transition:.18s}button:hover{filter:brightness(1.08);transform:translateY(-1px)}.btn-main{background:#059669}.btn-blue{background:var(--blue)}.btn-red{background:var(--red)}.btn-amber{background:var(--amber);color:#111827}.btn-ghost{background:transparent;color:var(--text);border:2px dashed var(--border)}.btn-small{font-size:12px;padding:7px 10px}input,select,textarea{width:100%;min-height:42px;border:1px solid var(--border);border-radius:8px;background:var(--box);color:var(--text);padding:10px}textarea{resize:vertical;min-height:82px}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.25)}label{font-size:12px;font-weight:800;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:var(--box);border:1px solid var(--border);border-radius:12px;padding:14px}.field{display:flex;flex-direction:column;gap:5px}.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}.hidden{display:none!important}.stats{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;margin-bottom:14px}.stat{background:var(--box);border:1px solid var(--border);border-top:5px solid #64748b;border-radius:12px;padding:12px;text-align:center}.stat b{display:block;font-size:30px}.stat span{font-size:11px;font-weight:900;text-transform:uppercase;color:var(--muted)}.table-wrap{overflow:auto;max-height:60vh;border:1px solid var(--border);border-radius:12px}.tbl{width:100%;min-width:1180px;border-collapse:collapse;background:var(--panel)}th,td{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{position:sticky;top:0;background:var(--box);color:var(--muted);font-size:11px;text-transform:uppercase;z-index:2}tr:hover{background:rgba(59,130,246,.06)}.badge{display:inline-block;border-radius:999px;color:#fff;font-size:12px;font-weight:900;padding:4px 9px;white-space:nowrap}.b-work{background:#2563eb}.b-hold{background:#f59e0b;color:#111827}.b-done{background:#10b981}.b-bad{background:#ef4444}.priority{font-weight:900}.p-pilne{color:var(--red)}.p-normalne{color:var(--green)}.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}.step{border:1px solid var(--border);border-radius:9px;padding:9px;background:var(--box)}.step.done{border-color:var(--green);background:rgba(16,185,129,.12)}.step.active{border-color:var(--amber);background:rgba(245,158,11,.12)}.step-title{font-weight:900;font-size:13px}.step-time{font-size:11px;color:var(--muted);margin-top:4px}.progress{height:8px;background:var(--border);border-radius:999px;overflow:hidden;margin:8px 0}.bar{height:100%;background:var(--green);width:0%}.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.kcol{background:var(--box);border:1px solid var(--border);border-radius:12px;padding:10px;min-height:240px}.khead{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;margin-bottom:10px}.order-card{background:var(--panel);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:10px;padding:10px;margin-bottom:10px}.order-card.done{border-left-color:var(--green)}.order-card.late{border-left-color:var(--red)}.order-card.pilne{box-shadow:0 0 0 2px rgba(239,68,68,.25)}.config{background:rgba(245,158,11,.12);border:1px dashed var(--amber);border-radius:12px;padding:12px;margin-bottom:14px}.config code{color:var(--cyan)}@media(max-width:1100px){.c2,.c3,.c4,.c6{grid-column:span 12}.stats{grid-template-columns:repeat(2,1fr)}.kanban{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr 1fr}.table-wrap{max-height:none}}@media(max-width:680px){body{padding:0}.container{border-radius:0;border-left:0;border-right:0}.stats,.kanban,.steps{grid-template-columns:1fr}.controls button,.controls select{flex:1}.tbl{min-width:1050px}}
-/* V6: widok tylko aktualnego etapu + szerszy przycisk wykonania */
-.stage-action{margin-top:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:rgba(59,130,246,.08)}
-.stage-action-title{font-weight:900;color:var(--cyan);text-transform:uppercase;font-size:12px;letter-spacing:.4px;margin-bottom:10px;line-height:1.2}
-.stage-current-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,auto);gap:10px;align-items:end}
-.stage-complete-btn{width:100%;min-width:180px;min-height:52px;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.15;white-space:normal;overflow-wrap:break-word;padding:10px 14px}
-.stage-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.stage-pill{font-size:11px;font-weight:800;border:1px solid var(--border);border-radius:999px;padding:3px 8px;color:var(--muted)}
-.stage-pill.done{border-color:var(--green);color:var(--green)}
-.order-card{overflow:hidden!important}.btn-main,.btn-amber,.btn-ghost,.btn-blue{white-space:normal}
-@media(max-width:1450px){.stage-current-grid{grid-template-columns:1fr}.stage-complete-btn{min-width:0}}
-</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
-<body><div class="container"><div class="header"><div><h1>Panel Obróbki Blach</h1><div class="muted">Zaznaczanie wykonania etapów: Wykrawanie → Gięcie → Kołkowanie → Lakiernia.</div></div><div class="controls"><select id="theme" onchange="setTheme(this.value)"><option value="dark">Ciemny</option><option value="light">Jasny</option></select><button class="btn-blue" onclick="toggleFull()">Pełny ekran</button><button class="btn-ghost" onclick="loadOrders()">Odśwież</button><button class="btn-ghost" onclick="exportJson()">Kopia JSON</button></div></div>
-<div id="configWarning" class="config hidden">Uzupełnij w pliku wartości <code>SUPABASE_URL</code> i <code>SUPABASE_ANON_KEY</code>. Wcześniej uruchom plik SQL w Supabase.</div>
-<h2>Zlecenia aktywne</h2><div class="row" style="margin-bottom:12px"><input id="search" placeholder="Szukaj zlecenia / elementu..." oninput="renderAll()" style="max-width:520px"><select id="filter" onchange="renderAll()" style="max-width:240px"><option value="">Wszystkie aktywne</option><option value="Wykrawanie">Wykrawanie</option><option value="Gięcie">Gięcie</option><option value="Kołkowanie">Kołkowanie</option><option value="Lakiernia">Lakiernia</option><option value="Gotowe">Gotowe</option><option value="Wstrzymane">Wstrzymane</option></select></div><div class="kanban" id="board"></div></div>
-<script>const SUPABASE_URL = 'https://idvodsnxacfsvzwzueft.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_25klU-wXITJiu6VFNwQz9g_daDBGOkZ';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const STEP_DEF=[['cutting','Wykrawanie'],['bending','Gięcie'],['pinning','Kołkowanie'],['painting','Lakiernia']];
-const THEME='cnc_panels_theme_v1';
-let orders=[];
-function $(id){return document.getElementById(id)}
-function configured(){return !SUPABASE_URL.includes('WKLEJ') && !SUPABASE_ANON_KEY.includes('WKLEJ')}
-function setConfigWarning(){const el=$('configWarning'); if(el) el.classList.toggle('hidden', configured())}
-function nowLocal(){return new Date().toLocaleString('pl-PL')}
-function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function safe(v){return String(v??'').replace(/[&<>]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))}
-function slug(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
-function setTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem(THEME,t)}
-function initTheme(){const t=localStorage.getItem(THEME)||'dark';document.documentElement.setAttribute('data-theme',t); if($('theme')) $('theme').value=t}
-function toggleFull(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen()}
-function stepRequired(o,k){if(k==='pinning')return !!o.pinning_required; const prop=k+'_required'; return o[prop]!==false}
-function stepList(o){return STEP_DEF.filter(([k])=>stepRequired(o,k))}
-function stepDone(o,k){return !!o[`${k}_done`]}
-function stepAt(o,k){return o[`${k}_at`] ? new Date(o[`${k}_at`]).toLocaleString('pl-PL') : ''}
-function progress(o){const s=stepList(o); if(!s.length)return 0; return Math.round(s.filter(([k])=>stepDone(o,k)).length/s.length*100)}
-function isDone(o){return progress(o)===100}
-function isLate(o){return !isDone(o)&&o.due_date&&o.due_date<today()}
-function currentStage(o){if(o.hold)return 'Wstrzymane'; for(const [k,n] of stepList(o)){if(!stepDone(o,k))return n} return 'Gotowe'}
-function badge(o){if(o.hold)return '<span class="badge b-hold">Wstrzymane</span>'; if(isDone(o))return '<span class="badge b-done">Gotowe</span>'; if(isLate(o))return '<span class="badge b-bad">Po terminie</span>'; return '<span class="badge b-work">'+safe(currentStage(o))+'</span>'}
-function stepsHtml(o){return stepList(o).map(([k,n])=>`<div class="step ${stepDone(o,k)?'done':'active'}"><div class="step-title">${stepDone(o,k)?'✅':'⬜'} ${n}</div><div class="step-time">${safe(stepAt(o,k)||'do wykonania')}</div></div>`).join('')}
-async function loadOrders(){
-  if(!configured()){setConfigWarning(); orders=[]; renderAll(); return}
-  const {data,error}=await supabaseClient.from('cnc_orders').select('*').order('due_date',{ascending:true,nullsFirst:false}).order('created_at',{ascending:false});
-  if(error){alert('Błąd pobierania z Supabase: '+error.message); return}
-  orders=data||[]; renderAll();
-}
-function subscribeRealtime(){
-  if(!configured())return;
-  supabaseClient.channel('cnc_orders_changes').on('postgres_changes',{event:'*',schema:'public',table:'cnc_orders'},()=>loadOrders()).subscribe();
-}
-async function addEvent(orderId,type,text,user){
-  if(!configured())return;
-  await supabaseClient.from('cnc_order_events').insert({order_id:orderId,event_type:type,event_text:text,created_by:user||''});
-}
-function exportJson(){const blob=new Blob([JSON.stringify({exportedAt:nowLocal(),orders},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kopia_zlecen_cnc_supabase.json';a.click();URL.revokeObjectURL(a.href)}
-async function initCommon(){initTheme();setConfigWarning();await loadOrders();subscribeRealtime();setInterval(loadOrders,30000)}
+<html lang="pl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Obróbki Blach CNC</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-function matches(o){
-  if(o.archived===true) return false;
-  const q=$('search').value.toLowerCase();
-  const f=$('filter').value;
-  return (!q || JSON.stringify(o).toLowerCase().includes(q)) && (!f || currentStage(o)===f);
-}
-function byStage(stage){return orders.filter(matches).filter(o=>currentStage(o)===stage)}
-function stageSummaryHtml(o){
-  return `<div class="stage-summary">${stepList(o).map(([k,n])=>`<span class="stage-pill ${stepDone(o,k)?'done':''}">${stepDone(o,k)?'✓':'•'} ${n}</span>`).join('')}</div>`;
-}
-function stageActionHtml(o){
-  const stage=currentStage(o);
-  if(o.hold){
-    return `<div class="stage-action"><div class="stage-action-title">Zlecenie wstrzymane</div><div class="muted">${safe(o.hold_reason||o.shop_notes||'Brak powodu')}</div></div>`;
-  }
-  if(stage==='Gotowe'){
-    return `<div class="stage-action"><div class="stage-action-title">Zlecenie gotowe</div>${stageSummaryHtml(o)}</div>`;
-  }
-  if(stage==='Wykrawanie'){
-    return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Wykrawanie</div><div class="stage-current-grid"><div class="field"><label>Czas wykrawania</label><input id="cut_time_${o.id}" value="${safe(o.cut_time||'')}" placeholder="np. 5h / 30 min"></div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button></div>${stageSummaryHtml(o)}</div>`;
-  }
-  if(stage==='Gięcie'){
-    return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Gięcie</div><div class="stage-current-grid"><div class="field"><label>Czas gięcia</label><input id="bend_time_${o.id}" value="${safe(o.bend_time||'')}" placeholder="np. 7h / 30 min"></div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button></div>${stageSummaryHtml(o)}</div>`;
-  }
-  if(stage==='Kołkowanie'){
-    return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Kołkowanie</div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button>${stageSummaryHtml(o)}</div>`;
-  }
-  if(stage==='Lakiernia'){
-    return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Lakiernia</div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button>${stageSummaryHtml(o)}</div>`;
-  }
-  return '';
-}
-async function completeStageWithTime(id,k){
-  const o=orders.find(x=>x.id===id); if(!o)return;
-  const payload={[`${k}_done`]:true,[`${k}_at`]:new Date().toISOString(),updated_by:'Obróbka Blach'};
-  if(k==='cutting') payload.cut_time=document.getElementById('cut_time_'+id)?.value || '';
-  if(k==='bending') payload.bend_time=document.getElementById('bend_time_'+id)?.value || '';
-  const temp={...o,...payload};
-  payload.status=isDone(temp)?'Gotowe':'Aktywne';
-  const {error}=await supabaseClient.from('cnc_orders').update(payload).eq('id',id);
-  if(error)return alert('Błąd zapisu: '+error.message);
-  await addEvent(id,'step_done',`${k} => wykonane`,'Obróbka Blach');
-  loadOrders();
-}
-async function setHold(id){
-  const o=orders.find(x=>x.id===id); if(!o)return;
-  const reason=prompt(o.hold?'Odblokować? Możesz zmienić uwagę:':'Powód wstrzymania:',o.hold_reason||o.shop_notes||'');
-  if(reason===null)return;
-  const payload={hold:!o.hold,hold_reason:reason,shop_notes:reason,updated_by:'Obróbka Blach'};
-  const {error}=await supabaseClient.from('cnc_orders').update(payload).eq('id',id);
-  if(error)alert(error.message); else {await addEvent(id,payload.hold?'hold':'unhold',reason,'Obróbka Blach');loadOrders()}
-}
-async function noteShop(id){
-  const o=orders.find(x=>x.id===id); if(!o)return;
-  const n=prompt('Uwagi Obróbki Blach:',o.shop_notes||'');
-  if(n===null)return;
-  const {error}=await supabaseClient.from('cnc_orders').update({shop_notes:n,updated_by:'Obróbka Blach'}).eq('id',id);
-  if(error)alert(error.message); else {await addEvent(id,'shop_note',n,'Obróbka Blach');loadOrders()}
-}
-function cardHtml(o){
-  return `<div class="order-card ${isDone(o)?'done':''} ${isLate(o)?'late':''} ${o.priority==='Pilne'?'pilne':''}">
-    <div class="row" style="justify-content:space-between">
-      <div><b>${safe(o.order_no||'-')}</b> <span class="priority p-${slug(o.priority)}">${safe(o.priority)}</span><br><span>${safe(o.element)}</span><br><span class="muted">Ilość: ${safe(o.qty||'-')} · Termin: ${safe(o.due_date||'-')} · ${safe(o.owner)}</span></div>${badge(o)}
+        :root {
+            --bg: #f8fafc;
+            --panel: #fff;
+            --box: #f1f5f9;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #cbd5e1;
+            --blue: #2563eb;
+            --cyan: #38bdf8;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --violet: #8b5cf6;
+            --shadow: 0 10px 25px -8px rgba(0, 0, 0, .14);
+        }
+
+        [data-theme=dark] {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --box: #0f172a;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 14px 34px -12px rgba(0, 0, 0, .55);
+        }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            padding: clamp(8px, 1.2vw, 20px);
+        }
+
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: clamp(14px, 1.4vw, 28px);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 2px solid var(--blue);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: clamp(22px, 1.7vw, 34px);
+            margin: 0;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-size: clamp(18px, 1.25vw, 25px);
+            margin: 0 0 12px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .controls, .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button, .btn, input, select, textarea {
+            font-family: inherit;
+        }
+
+        button, .btn {
+            border: 0;
+            border-radius: 8px;
+            background: #475569;
+            color: #fff;
+            font-weight: 800;
+            padding: 10px 13px;
+            cursor: pointer;
+            transition: .18s;
+        }
+
+        button:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+
+        .btn-main {
+            background: #059669;
+        }
+
+        .btn-blue {
+            background: var(--blue);
+        }
+
+        .btn-red {
+            background: var(--red);
+        }
+
+        .btn-amber {
+            background: var(--amber);
+            color: #111827;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 2px dashed var(--border);
+        }
+
+        .btn-small {
+            font-size: 12px;
+            padding: 7px 10px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            min-height: 42px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--box);
+            color: var(--text);
+            padding: 10px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 82px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .25);
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 14px;
+        }
+
+        .card {
+            background: var(--box);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .c2 { grid-column: span 2; }
+        .c3 { grid-column: span 3; }
+        .c4 { grid-column: span 4; }
+        .c6 { grid-column: span 6; }
+        .c12 { grid-column: span 12; }
+        .hidden { display: none !important; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .stat {
+            background: var(--box);
+            border: 1px solid var(--border);
+            border-top: 5px solid #64748b;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat b {
+            display: block;
+            font-size: 30px;
+        }
+
+        .stat span {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .table-wrap {
+            overflow: auto;
+            max-height: 60vh;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .tbl {
+            width: 100%;
+            min-width: 1180px;
+            border-collapse: collapse;
+            background: var(--panel);
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: var(--box);
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, .06);
+        }
+
+        .badge {
+            display: inline-block;
+            border-radius: 999px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 900;
+            padding: 4px 9px;
+            white-space: nowrap;
+        }
+
+        .b-work { background: #2563eb; }
+        .b-hold { background: #f59e0b; color: #111827; }
+        .b-done { background: #10b981; }
+        .b-bad { background: #ef4444; }
+
+        .priority { font-weight: 900; }
+        .p-pilne { color: var(--red); }
+        .p-normalne { color: var(--green); }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .step {
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            padding: 9px;
+            background: var(--box);
+        }
+
+        .step.done {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, .12);
+        }
+
+        .step.active {
+            border-color: var(--amber);
+            background: rgba(245, 158, 11, .12);
+        }
+
+        .step-title {
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .step-time {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .progress {
+            height: 8px;
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .bar {
+            height: 100%;
+            background: var(--green);
+            width: 0%;
+        }
+
+        .kanban {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .kcol {
+            background: var(--box);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            min-height: 240px;
+        }
+
+        .khead {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .order-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--blue);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow: hidden !important;
+        }
+
+        .order-card.done {
+            border-left-color: var(--green);
+        }
+
+        .order-card.late {
+            border-left-color: var(--red);
+        }
+
+        .order-card.pilne {
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, .25);
+        }
+
+        .config {
+            background: rgba(245, 158, 11, .12);
+            border: 1px dashed var(--amber);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .config code {
+            color: var(--cyan);
+        }
+
+        /* V6: widok tylko aktualnego etapu + szerszy przycisk wykonania */
+        .stage-action {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(59, 130, 246, .08);
+        }
+
+        .stage-action-title {
+            font-weight: 900;
+            color: var(--cyan);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: .4px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .stage-current-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+            gap: 10px;
+            align-items: end;
+        }
+
+        .stage-complete-btn {
+            width: 100%;
+            min-width: 180px;
+            min-height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.15;
+            white-space: normal;
+            overflow-wrap: break-word;
+            padding: 10px 14px;
+        }
+
+        .stage-summary {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .stage-pill {
+            font-size: 11px;
+            font-weight: 800;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 3px 8px;
+            color: var(--muted);
+        }
+
+        .stage-pill.done {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-main, .btn-amber, .btn-ghost, .btn-blue {
+            white-space: normal;
+        }
+
+        /* Media Queries */
+        @media (max-width: 1100px) {
+            .c2, .c3, .c4, .c6 { grid-column: span 12; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .kanban { grid-template-columns: 1fr 1fr; }
+            .steps { grid-template-columns: 1fr 1fr; }
+            .table-wrap { max-height: none; }
+        }
+
+        @media (max-width: 1450px) {
+            .stage-current-grid { grid-template-columns: 1fr; }
+            .stage-complete-btn { min-width: 0; }
+        }
+
+        @media (max-width: 680px) {
+            body { padding: 0; }
+            .container { border-radius: 0; border-left: 0; border-right: 0; }
+            .stats, .kanban, .steps { grid-template-columns: 1fr; }
+            .controls button, .controls select { flex: 1; }
+            .tbl { min-width: 1050px; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Panel Obróbki Blach</h1>
+                <div class="muted">Zaznaczanie wykonania etapów: Wykrawanie → Gięcie → Kołkowanie → Lakiernia.</div>
+            </div>
+            <div class="controls">
+                <select id="theme" onchange="setTheme(this.value)">
+                    <option value="dark">Ciemny</option>
+                    <option value="light">Jasny</option>
+                </select>
+                <button class="btn-blue" onclick="toggleFull()">Pełny ekran</button>
+                <button class="btn-ghost" onclick="loadOrders()">Odśwież</button>
+                <button class="btn-ghost" onclick="exportJson()">Kopia JSON</button>
+            </div>
+        </div>
+
+        <div id="configWarning" class="config hidden">
+            Uzupełnij w pliku wartości <code>SUPABASE_URL</code> i <code>SUPABASE_ANON_KEY</code>. Wcześniej uruchom plik SQL w Supabase.
+        </div>
+
+        <h2>Zlecenia aktywne</h2>
+        <div class="row" style="margin-bottom: 12px">
+            <input id="search" placeholder="Szukaj zlecenia / elementu..." oninput="renderAll()" style="max-width: 520px">
+            <select id="filter" onchange="renderAll()" style="max-width: 240px">
+                <option value="">Wszystkie aktywne</option>
+                <option value="Wykrawanie">Wykrawanie</option>
+                <option value="Gięcie">Gięcie</option>
+                <option value="Kołkowanie">Kołkowanie</option>
+                <option value="Lakiernia">Lakiernia</option>
+                <option value="Gotowe">Gotowe</option>
+                <option value="Wstrzymane">Wstrzymane</option>
+            </select>
+        </div>
+
+        <div class="kanban" id="board"></div>
     </div>
-    <div class="progress"><div class="bar" style="width:${progress(o)}%"></div></div>
-    ${stageActionHtml(o)}
-    <div class="row" style="margin-top:10px"><button class="btn-small btn-amber" onclick="setHold('${o.id}')">${o.hold?'Odblokuj':'Wstrzymaj'}</button><button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button></div>
-    ${o.description||o.planner_notes||o.shop_notes?`<div class="muted" style="margin-top:8px">${safe(o.description)} ${safe(o.planner_notes)} ${o.shop_notes?'<br>Obróbka: '+safe(o.shop_notes):''}</div>`:''}
-  </div>`;
-}
-function renderAll(){
-  const cols=['Wykrawanie','Gięcie','Kołkowanie','Lakiernia'];
-  let html=cols.map(c=>`<div class="kcol"><div class="khead">${c}</div>${byStage(c).map(cardHtml).join('')||'<div class="muted">Brak</div>'}</div>`).join('');
-  const extra=orders.filter(matches).filter(o=>isDone(o)||o.hold);
-  html+=`<div class="kcol" style="grid-column:1/-1"><div class="khead">Gotowe / wstrzymane / wynik filtra</div>${extra.map(cardHtml).join('')||'<div class="muted">Brak</div>'}</div>`;
-  $('board').innerHTML=html;
-}
-initCommon();
 
-</script></body></html>
+    <script>
+        const SUPABASE_URL = 'https://idvodsnxacfsvzwzueft.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_25klU-wXITJiu6VFNwQz9g_daDBGOkZ';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const STEP_DEF = [
+            ['cutting', 'Wykrawanie'],
+            ['bending', 'Gięcie'],
+            ['pinning', 'Kołkowanie'],
+            ['painting', 'Lakiernia']
+        ];
+        const THEME = 'cnc_panels_theme_v1';
+        let orders = [];
+
+        function $(id) { 
+            return document.getElementById(id); 
+        }
+        
+        function configured() { 
+            return !SUPABASE_URL.includes('WKLEJ') && !SUPABASE_ANON_KEY.includes('WKLEJ'); 
+        }
+        
+        function setConfigWarning() { 
+            const el = $('configWarning'); 
+            if (el) el.classList.toggle('hidden', configured()); 
+        }
+        
+        function nowLocal() { 
+            return new Date().toLocaleString('pl-PL'); 
+        }
+        
+        function today() { 
+            const d = new Date(); 
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; 
+        }
+        
+        function safe(v) { 
+            return String(v ?? '').replace(/[&<>]/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[s])); 
+        }
+        
+        function slug(s) { 
+            return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); 
+        }
+        
+        function setTheme(t) { 
+            document.documentElement.setAttribute('data-theme', t); 
+            localStorage.setItem(THEME, t); 
+        }
+        
+        function initTheme() { 
+            const t = localStorage.getItem(THEME) || 'dark'; 
+            document.documentElement.setAttribute('data-theme', t); 
+            if ($('theme')) $('theme').value = t; 
+        }
+        
+        function toggleFull() { 
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function stepRequired(o, k) { 
+            if (k === 'pinning') return !!o.pinning_required; 
+            const prop = k + '_required'; 
+            return o[prop] !== false; 
+        }
+        
+        function stepList(o) { 
+            return STEP_DEF.filter(([k]) => stepRequired(o, k)); 
+        }
+        
+        function stepDone(o, k) { 
+            return !!o[`${k}_done`]; 
+        }
+        
+        function stepAt(o, k) { 
+            return o[`${k}_at`] ? new Date(o[`${k}_at`]).toLocaleString('pl-PL') : ''; 
+        }
+        
+        function progress(o) { 
+            const s = stepList(o); 
+            if (!s.length) return 0; 
+            return Math.round(s.filter(([k]) => stepDone(o, k)).length / s.length * 100); 
+        }
+        
+        function isDone(o) { 
+            return progress(o) === 100; 
+        }
+        
+        function isLate(o) { 
+            return !isDone(o) && o.due_date && o.due_date < today(); 
+        }
+        
+        function currentStage(o) { 
+            if (o.hold) return 'Wstrzymane'; 
+            for (const [k, n] of stepList(o)) { 
+                if (!stepDone(o, k)) return n; 
+            } 
+            return 'Gotowe'; 
+        }
+        
+        function badge(o) { 
+            if (o.hold) return '<span class="badge b-hold">Wstrzymane</span>'; 
+            if (isDone(o)) return '<span class="badge b-done">Gotowe</span>'; 
+            if (isLate(o)) return '<span class="badge b-bad">Po terminie</span>'; 
+            return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>'; 
+        }
+        
+        function stepsHtml(o) { 
+            return stepList(o).map(([k, n]) => `
+                <div class="step ${stepDone(o, k) ? 'done' : 'active'}">
+                    <div class="step-title">${stepDone(o, k) ? '✅' : '⬜'} ${n}</div>
+                    <div class="step-time">${safe(stepAt(o, k) || 'do wykonania')}</div>
+                </div>
+            `).join(''); 
+        }
+
+        async function loadOrders() {
+            if (!configured()) { 
+                setConfigWarning(); 
+                orders = []; 
+                renderAll(); 
+                return; 
+            }
+            const { data, error } = await supabaseClient
+                .from('cnc_orders')
+                .select('*')
+                .order('due_date', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: false });
+                
+            if (error) { 
+                alert('Błąd pobierania z Supabase: ' + error.message); 
+                return; 
+            }
+            orders = data || []; 
+            renderAll();
+        }
+
+        function subscribeRealtime() {
+            if (!configured()) return;
+            supabaseClient
+                .channel('cnc_orders_changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cnc_orders' }, () => loadOrders())
+                .subscribe();
+        }
+
+        async function addEvent(orderId, type, text, user) {
+            if (!configured()) return;
+            await supabaseClient
+                .from('cnc_order_events')
+                .insert({ order_id: orderId, event_type: type, event_text: text, created_by: user || '' });
+        }
+
+        function exportJson() {
+            const blob = new Blob([JSON.stringify({ exportedAt: nowLocal(), orders }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'kopia_zlecen_cnc_supabase.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function initCommon() {
+            initTheme();
+            setConfigWarning();
+            await loadOrders();
+            subscribeRealtime();
+            setInterval(loadOrders, 30000);
+        }
+
+        function matches(o) {
+            if (o.archived === true) return false;
+            const q = $('search').value.toLowerCase();
+            const f = $('filter').value;
+            return (!q || JSON.stringify(o).toLowerCase().includes(q)) && (!f || currentStage(o) === f);
+        }
+
+        function byStage(stage) { 
+            return orders.filter(matches).filter(o => currentStage(o) === stage); 
+        }
+
+        function stageSummaryHtml(o) {
+            return `
+                <div class="stage-summary">
+                    ${stepList(o).map(([k, n]) => `
+                        <span class="stage-pill ${stepDone(o, k) ? 'done' : ''}">${stepDone(o, k) ? '✓' : '•'} ${n}</span>
+                    `).join('')}
+                </div>`;
+        }
+
+        function stageActionHtml(o) {
+            const stage = currentStage(o);
+            if (o.hold) {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Zlecenie wstrzymane</div>
+                        <div class="muted">${safe(o.hold_reason || o.shop_notes || 'Brak powodu')}</div>
+                    </div>`;
+            }
+            if (stage === 'Gotowe') {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Zlecenie gotowe</div>
+                        ${stageSummaryHtml(o)}
+                    </div>`;
+            }
+            if (stage === 'Wykrawanie') {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Aktualny etap: Wykrawanie</div>
+                        <div class="stage-current-grid">
+                            <div class="field">
+                                <label>Czas wykrawania</label>
+                                <input id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="np. 5h / 30 min">
+                            </div>
+                            <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button>
+                        </div>
+                        ${stageSummaryHtml(o)}
+                    </div>`;
+            }
+            if (stage === 'Gięcie') {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Aktualny etap: Gięcie</div>
+                        <div class="stage-current-grid">
+                            <div class="field">
+                                <label>Czas gięcia</label>
+                                <input id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="np. 7h / 30 min">
+                            </div>
+                            <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button>
+                        </div>
+                        ${stageSummaryHtml(o)}
+                    </div>`;
+            }
+            if (stage === 'Kołkowanie') {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Aktualny etap: Kołkowanie</div>
+                        <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button>
+                        ${stageSummaryHtml(o)}
+                    </div>`;
+            }
+            if (stage === 'Lakiernia') {
+                return `
+                    <div class="stage-action">
+                        <div class="stage-action-title">Aktualny etap: Lakiernia</div>
+                        <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button>
+                        ${stageSummaryHtml(o)}
+                    </div>`;
+            }
+            return '';
+        }
+
+        async function completeStageWithTime(id, k) {
+            const o = orders.find(x => x.id === id); 
+            if (!o) return;
+            
+            const payload = { 
+                [`${k}_done`]: true, 
+                [`${k}_at`]: new Date().toISOString(), 
+                updated_by: 'Obróbka Blach' 
+            };
+            
+            if (k === 'cutting') payload.cut_time = document.getElementById('cut_time_' + id)?.value || '';
+            if (k === 'bending') payload.bend_time = document.getElementById('bend_time_' + id)?.value || '';
+            
+            const temp = { ...o, ...payload };
+            payload.status = isDone(temp) ? 'Gotowe' : 'Aktywne';
+            
+            const { error } = await supabaseClient.from('cnc_orders').update(payload).eq('id', id);
+            if (error) return alert('Błąd zapisu: ' + error.message);
+            
+            await addEvent(id, 'step_done', `${k} => wykonane`, 'Obróbka Blach');
+            loadOrders();
+        }
+
+        async function setHold(id) {
+            const o = orders.find(x => x.id === id); 
+            if (!o) return;
+            
+            const reason = prompt(o.hold ? 'Odblokować? Możesz zmienić uwagę:' : 'Powód wstrzymania:', o.hold_reason || o.shop_notes || '');
+            if (reason === null) return;
+            
+            const payload = { hold: !o.hold, hold_reason: reason, shop_notes: reason, updated_by: 'Obróbka Blach' };
+            const { error } = await supabaseClient.from('cnc_orders').update(payload).eq('id', id);
+            
+            if (error) {
+                alert(error.message);
+            } else {
+                await addEvent(id, payload.hold ? 'hold' : 'unhold', reason, 'Obróbka Blach');
+                loadOrders();
+            }
+        }
+
+        async function noteShop(id) {
+            const o = orders.find(x => x.id === id); 
+            if (!o) return;
+            
+            const n = prompt('Uwagi Obróbki Blach:', o.shop_notes || '');
+            if (n === null) return;
+            
+            const { error } = await supabaseClient.from('cnc_orders').update({ shop_notes: n, updated_by: 'Obróbka Blach' }).eq('id', id);
+            if (error) {
+                alert(error.message);
+            } else {
+                await addEvent(id, 'shop_note', n, 'Obróbka Blach');
+                loadOrders();
+            }
+        }
+
+        function cardHtml(o) {
+            return `
+                <div class="order-card ${isDone(o) ? 'done' : ''} ${isLate(o) ? 'late' : ''} ${o.priority === 'Pilne' ? 'pilne' : ''}">
+                    <div class="row" style="justify-content:space-between">
+                        <div>
+                            <b>${safe(o.order_no || '-')}</b> 
+                            <span class="priority p-${slug(o.priority)}">${safe(o.priority)}</span><br>
+                            <span>${safe(o.element)}</span><br>
+                            <span class="muted">Ilość: ${safe(o.qty || '-')} · Termin: ${safe(o.due_date || '-')} · ${safe(o.owner)}</span>
+                        </div>
+                        ${badge(o)}
+                    </div>
+                    <div class="progress">
+                        <div class="bar" style="width:${progress(o)}%"></div>
+                    </div>
+                    ${stageActionHtml(o)}
+                    <div class="row" style="margin-top:10px">
+                        <button class="btn-small btn-amber" onclick="setHold('${o.id}')">${o.hold ? 'Odblokuj' : 'Wstrzymaj'}</button>
+                        <button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button>
+                    </div>
+                    ${o.description || o.planner_notes || o.shop_notes ? `
+                        <div class="muted" style="margin-top:8px">
+                            ${safe(o.description)} ${safe(o.planner_notes)} 
+                            ${o.shop_notes ? '<br>Obróbka: ' + safe(o.shop_notes) : ''}
+                        </div>
+                    ` : ''}
+                </div>`;
+        }
+
+        function renderAll() {
+            const cols = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia'];
+            let html = cols.map(c => `
+                <div class="kcol">
+                    <div class="khead">${c}</div>
+                    ${byStage(c).map(cardHtml).join('') || '<div class="muted">Brak</div>'}
+                </div>
+            `).join('');
+            
+            const extra = orders.filter(matches).filter(o => isDone(o) || o.hold);
+            html += `
+                <div class="kcol" style="grid-column: 1 / -1">
+                    <div class="khead">Gotowe / wstrzymane / wynik filtra</div>
+                    ${extra.map(cardHtml).join('') || '<div class="muted">Brak</div>'}
+                </div>`;
+                
+            $('board').innerHTML = html;
+        }
+
+        initCommon();
+    </script>
+</body>
+</html>
