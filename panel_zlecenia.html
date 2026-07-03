@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Produkcji CNC</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f8fafc;
+      --panel: #fff;
+      --box: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --blue: #2563eb;
+      --cyan: #38bdf8;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --violet: #8b5cf6;
+      --shadow: 0 10px 25px -8px rgba(0, 0, 0, .14);
+    }
+
+    [data-theme=dark] {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --box: #0f172a;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --shadow: 0 14px 34px -12px rgba(0, 0, 0, .55);
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      padding: clamp(8px, 1.2vw, 20px);
+    }
+
+    .container {
+      max-width: 1900px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 1.4vw, 28px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 2px solid var(--blue);
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(24px, 2vw, 38px);
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    h2 {
+      font-size: clamp(17px, 1.2vw, 23px);
+      margin: 0 0 12px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .controls, .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select, input {
+      font-family: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #475569;
+      color: #fff;
+      font-weight: 800;
+      padding: 10px 13px;
+      cursor: pointer;
+      transition: .18s;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-blue {
+      background: var(--blue);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 2px dashed var(--border);
+    }
+
+    select, input {
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--box);
+      color: var(--text);
+      padding: 10px;
+    }
+
+    .config {
+      background: rgba(245, 158, 11, .12);
+      border: 1px dashed var(--amber);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat {
+      background: var(--box);
+      border: 1px solid var(--border);
+      border-top: 5px solid #64748b;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      min-height: 105px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stat b {
+      display: block;
+      font-size: clamp(26px, 2.1vw, 42px);
+      line-height: 1;
+    }
+
+    .stat span {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--box);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .c4 { grid-column: span 4; }
+    .c5 { grid-column: span 5; }
+    .c7 { grid-column: span 7; }
+    .c12 { grid-column: span 12; }
+
+    .chart-wrap {
+      height: 340px;
+      position: relative;
+    }
+
+    .chart-small {
+      height: 310px;
+      position: relative;
+    }
+
+    .stage-cards {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .stage-card {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 12px;
+    }
+
+    .stage-card b {
+      font-size: 28px;
+    }
+
+    .stage-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .stage-card .bar-bg {
+      height: 8px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 9px;
+    }
+
+    .stage-card .bar {
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 420px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .tbl {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      background: var(--panel);
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--box);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    tr:hover {
+      background: rgba(59, 130, 246, .06);
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 4px 9px;
+      white-space: nowrap;
+    }
+
+    .b-work { background: #2563eb; }
+    .b-hold { background: #f59e0b; color: #111827; }
+    .b-done { background: #10b981; }
+    .b-bad { background: #ef4444; }
+
+    .priority {
+      font-weight: 900;
+    }
+    .p-pilne { color: var(--red); }
+    .p-normalne { color: var(--green); }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    /* RWD */
+    @media(max-width: 1400px) {
+      .stats { grid-template-columns: repeat(4, 1fr); }
+      .c4, .c5, .c7 { grid-column: span 12; }
+      .stage-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media(max-width: 800px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media(max-width: 680px) {
+      body { padding: 0; }
+      .container { border-radius: 0; border-left: 0; border-right: 0; }
+      .stats, .stage-cards { grid-template-columns: 1fr; }
+      .controls button, .controls select { flex: 1; }
+      .chart-wrap, .chart-small { height: 280px; }
+      .tbl { min-width: 900px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>Dashboard Produkcji CNC</h1>
+      <div class="muted">Prezentacja zleceń Obróbki Blach: ilości miesięczne, statusy, etapy, terminy oraz dane z archiwum.</div>
+    </div>
+    <div class="controls">
+      <select id="theme" onchange="setTheme(this.value)">
+        <option value="dark">Ciemny</option>
+        <option value="light">Jasny</option>
+      </select>
+      <select id="yearFilter" onchange="renderAll()"></select>
+      <select id="archiveFilter" onchange="populateYears();renderAll()">
+        <option value="active">Tylko aktywne</option>
+        <option value="all">Aktywne + archiwum</option>
+        <option value="archive">Tylko archiwum</option>
+      </select>
+      <button class="btn-blue" onclick="toggleFull()">Pełny ekran</button>
+      <button class="btn-ghost" onclick="loadOrders()">Odśwież</button>
+    </div>
+  </div>
+
+  <div id="configWarning" class="config hidden">
+    Uzupełnij wartości <b>SUPABASE_URL</b> i <b>SUPABASE_ANON_KEY</b>. Dashboard korzysta z tej samej tabeli <b>cnc_orders</b>.
+  </div>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="grid">
+    <div class="card c7">
+      <h2>Ilość zleceń w miesiącu</h2>
+      <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+    </div>
+
+    <div class="card c5">
+      <h2>Aktualne etapy</h2>
+      <div class="chart-small"><canvas id="stageChart"></canvas></div>
+    </div>
+
+    <div class="card c12">
+      <h2>Obciążenie działów</h2>
+      <div class="stage-cards" id="stageCards"></div>
+    </div>
+
+    <div class="card c7">
+      <h2>Najbliższe terminy</h2>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Zlecenie</th>
+              <th>Element</th>
+              <th>Ilość</th>
+              <th>Termin</th>
+              <th>Status</th>
+              <th>Priorytet</th>
+            </tr>
+          </thead>
+          <tbody id="deadlineBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card c5">
+      <h2>Zlecenia pilne / po terminie</h2>
+      <div class="table-wrap">
+        <table class="tbl" style="min-width:620px">
+          <thead>
+            <tr>
+              <th>Zlecenie</th>
+              <th>Termin</th>
+              <th>Status</th>
+              <th>Uwagi</th>
+            </tr>
+          </thead>
+          <tbody id="alertsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Automatyczne odświeżanie co 30 sekund · Widok można przełączyć na archiwum · Ostatnia aktualizacja: <span id="lastUpdate">-</span>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://idvodsnxacfsvzwzueft.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_25klU-wXITJiu6VFNwQz9g_daDBGOkZ';
+
+  // Supabase Rest Client Builder
+  function createSupabaseRestClient(baseUrl, anonKey) {
+    const api = baseUrl.replace(/\/$/, '') + '/rest/v1/';
+    const baseHeaders = {
+      'apikey': anonKey,
+      'Authorization': 'Bearer ' + anonKey,
+      'Content-Type': 'application/json'
+    };
+    const enc = v => encodeURIComponent(String(v));
+
+    class Builder {
+      constructor(t) {
+        this.table = t;
+        this.method = 'GET';
+        this.params = [];
+        this.body = null;
+        this.headers = { ...baseHeaders };
+      }
+
+      select(c = '*') {
+        this.params.push('select=' + enc(c));
+        return this;
+      }
+
+      order(c, o = {}) {
+        const d = o.ascending === false ? 'desc' : 'asc';
+        const n = o.nullsFirst === false ? 'nullslast' : 'nullsfirst';
+        this.params.push('order=' + enc(c + '.' + d + '.' + n));
+        return this;
+      }
+
+      async exec() {
+        const url = api + this.table + (this.params.length ? '?' + this.params.join('&') : '');
+        try {
+          const r = await fetch(url, { method: this.method, headers: this.headers, body: this.body });
+          const txt = await r.text();
+          let data = null;
+          
+          if (txt) {
+            try { data = JSON.parse(txt); } catch { data = txt; }
+          }
+          
+          if (!r.ok) {
+            return { 
+              data: null, 
+              error: { message: (data && data.message) || txt || r.statusText, status: r.status } 
+            };
+          }
+          return { data, error: null };
+        } catch (e) {
+          return { data: null, error: { message: e.message || String(e) } };
+        }
+      }
+
+      then(res, rej) {
+        return this.exec().then(res, rej);
+      }
+    }
+
+    return { from: t => new Builder(t) };
+  }
+
+  const supabaseClient = createSupabaseRestClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const STEP_DEF = [['cutting', 'Wykrawanie'], ['bending', 'Gięcie'], ['pinning', 'Kołkowanie'], ['painting', 'Lakiernia']];
+  const THEME = 'cnc_panels_theme_v1';
+  
+  let orders = [];
+  let monthlyChart = null;
+  let stageChart = null;
+
+  // Helpers
+  const $ = id => document.getElementById(id);
+  const configured = () => !SUPABASE_URL.includes('WKLEJ') && !SUPABASE_ANON_KEY.includes('WKLEJ');
+  
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem(THEME, t);
+    renderCharts();
+  }
+
+  function initTheme() {
+    const t = localStorage.getItem(THEME) || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    $('theme').value = t;
+  }
+
+  function toggleFull() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function today() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  const safe = v => String(v ?? '').replace(/[&<>]/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[s]));
+  const slug = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  function stepRequired(o, k) {
+    if (k === 'pinning') return !!o.pinning_required;
+    const prop = k + '_required';
+    return o[prop] !== false;
+  }
+
+  function stepList(o) {
+    return STEP_DEF.filter(([k]) => stepRequired(o, k));
+  }
+
+  const stepDone = (o, k) => !!o[`${k}_done`];
+  
+  function progress(o) {
+    const s = stepList(o);
+    if (!s.length) return 0;
+    return Math.round(s.filter(([k]) => stepDone(o, k)).length / s.length * 100);
+  }
+
+  const isDone = o => progress(o) === 100;
+  const isLate = o => !isDone(o) && o.due_date && o.due_date < today();
+
+  function currentStage(o) {
+    if (o.hold) return 'Wstrzymane';
+    for (const [k, n] of stepList(o)) {
+      if (!stepDone(o, k)) return n;
+    }
+    return 'Gotowe';
+  }
+
+  function badge(o) {
+    if (o.hold) return '<span class="badge b-hold">Wstrzymane</span>';
+    if (isDone(o)) return '<span class="badge b-done">Gotowe</span>';
+    if (isLate(o)) return '<span class="badge b-bad">Po terminie</span>';
+    return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>';
+  }
+
+  const orderDate = o => o.due_date || (o.created_at ? o.created_at.slice(0, 10) : '');
+  const selectedYear = () => $('yearFilter').value;
+  const archiveMode = () => $('archiveFilter') ? $('archiveFilter').value : 'active';
+  const isArchived = o => o.archived === true;
+
+  function visibleOrders() {
+    const y = selectedYear();
+    const mode = archiveMode();
+    return orders
+      .filter(o => (mode === 'all') || (mode === 'archive' ? isArchived(o) : !isArchived(o)))
+      .filter(o => !y || orderDate(o).slice(0, 4) === y);
+  }
+
+  function visibleModeLabel() {
+    const m = archiveMode();
+    return m === 'all' ? 'aktywne + archiwum' : (m === 'archive' ? 'tylko archiwum' : 'tylko aktywne');
+  }
+
+  const monthLabel = i => ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'][i];
+  const chartTextColor = () => getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#f1f5f9';
+  const chartGridColor = () => getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#334155';
+
+  // Data Fetching
+  async function loadOrders() {
+    $('configWarning').classList.toggle('hidden', configured());
+    if (!configured()) {
+      orders = [];
+      renderAll();
+      return;
+    }
+    const { data, error } = await supabaseClient.from('cnc_orders').select('*').order('due_date', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
+    if (error) {
+      alert('Błąd pobierania z Supabase: ' + error.message);
+      return;
+    }
+    orders = data || [];
+    populateYears();
+    renderAll();
+    $('lastUpdate').textContent = new Date().toLocaleString('pl-PL');
+  }
+
+  function populateYears() {
+    const sel = $('yearFilter');
+    const current = sel.value;
+    const mode = archiveMode();
+    const base = orders.filter(o => (mode === 'all') || (mode === 'archive' ? isArchived(o) : !isArchived(o)));
+    const years = [...new Set(base.map(orderDate).filter(Boolean).map(d => d.slice(0, 4)))].sort().reverse();
+    const thisYear = String(new Date().getFullYear());
+    
+    sel.innerHTML = '<option value="">Wszystkie lata</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+    sel.value = years.includes(current) ? current : (years.includes(thisYear) ? thisYear : '');
+  }
+
+  // Rendering
+  function renderStats() {
+    const list = visibleOrders();
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    
+    const monthCount = list.filter(o => orderDate(o).slice(0, 7) === thisMonth).length;
+    const done = list.filter(isDone).length;
+    const late = list.filter(isLate).length;
+    const urgent = list.filter(o => o.priority === 'Pilne').length;
+    const held = list.filter(o => o.hold).length;
+    const archived = list.filter(isArchived).length;
+    const onTimeDone = list.filter(o => isDone(o) && (!o.due_date || !o.painting_at || o.painting_at.slice(0, 10) <= o.due_date)).length;
+    const termPct = done ? Math.round(onTimeDone / done * 100) : 0;
+
+    const items = [
+      ['Wszystkie', list.length, '#64748b', visibleModeLabel()],
+      ['W miesiącu', monthCount, '#2563eb', thisMonth],
+      ['Zakończone', done, '#10b981', termPct + '% terminowo*'],
+      ['Po terminie', late, '#ef4444', 'otwarte'],
+      ['Pilne', urgent, '#f59e0b', 'priorytet'],
+      ['Wstrzymane', held, '#8b5cf6', 'hold'],
+      ['Archiwum', archived, '#0ea5e9', 'w widoku']
+    ];
+
+    $('stats').innerHTML = items.map(x => `
+      <div class="stat" style="border-top-color:${x[2]}">
+        <span>${x[0]}</span>
+        <b>${x[1]}</b>
+        <small>${x[3]}</small>
+      </div>
+    `).join('');
+  }
+
+  function renderCharts() {
+    const list = visibleOrders();
+    const monthly = Array(12).fill(0);
+    
+    list.forEach(o => {
+      const d = orderDate(o);
+      if (d) {
+        const m = parseInt(d.slice(5, 7), 10) - 1;
+        if (m >= 0 && m < 12) monthly[m]++;
+      }
+    });
+
+    const stageNames = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia', 'Gotowe', 'Wstrzymane'];
+    const stageCounts = stageNames.map(s => list.filter(o => currentStage(o) === s).length);
+    const text = chartTextColor();
+    const grid = chartGridColor();
+
+    if (monthlyChart) monthlyChart.destroy();
+    monthlyChart = new Chart($('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels: monthly.map((_, i) => monthLabel(i)),
+        datasets: [{
+          label: 'Ilość zleceń',
+          data: monthly,
+          backgroundColor: '#2563eb',
+          borderColor: '#38bdf8',
+          borderWidth: 1,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: text } } },
+        scales: {
+          x: { ticks: { color: text }, grid: { color: grid } },
+          y: { beginAtZero: true, ticks: { color: text, precision: 0 }, grid: { color: grid } }
+        }
+      }
+    });
+
+    if (stageChart) stageChart.destroy();
+    stageChart = new Chart($('stageChart'), {
+      type: 'doughnut',
+      data: {
+        labels: stageNames,
+        datasets: [{
+          data: stageCounts,
+          backgroundColor: ['#2563eb', '#38bdf8', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444'],
+          borderColor: grid,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: text } } }
+      }
+    });
+  }
+
+  function renderStageCards() {
+    const list = visibleOrders();
+    const stages = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia', 'Gotowe'];
+    const max = Math.max(1, ...stages.map(s => list.filter(o => currentStage(o) === s).length));
+    const colors = ['#2563eb', '#38bdf8', '#8b5cf6', '#f59e0b', '#10b981'];
+
+    $('stageCards').innerHTML = stages.map((s, i) => {
+      const n = list.filter(o => currentStage(o) === s).length;
+      return `
+        <div class="stage-card">
+          <span>${s}</span>
+          <b>${n}</b>
+          <div class="bar-bg">
+            <div class="bar" style="width:${Math.round(n / max * 100)}%; background:${colors[i]}"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderTables() {
+    const list = visibleOrders();
+    
+    const next = list.filter(o => !isDone(o) && o.due_date).sort((a, b) => a.due_date.localeCompare(b.due_date)).slice(0, 12);
+    $('deadlineBody').innerHTML = next.map(o => `
+      <tr>
+        <td><b>${safe(o.order_no || '-')}</b>${isArchived(o) ? '<br><span class="muted">Archiwum</span>' : ''}</td>
+        <td>${safe(o.element || '-')}</td>
+        <td>${safe(o.qty || '-')}</td>
+        <td>${safe(o.due_date || '-')}</td>
+        <td>${badge(o)}</td>
+        <td class="priority p-${slug(o.priority)}">${safe(o.priority || '-')}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="6" class="muted">Brak najbliższych terminów.</td></tr>';
+
+    const alerts = list.filter(o => isLate(o) || o.priority === 'Pilne' || o.hold).sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999')).slice(0, 14);
+    $('alertsBody').innerHTML = alerts.map(o => `
+      <tr>
+        <td><b>${safe(o.order_no || '-')}</b>${isArchived(o) ? '<br><span class="muted">Archiwum</span>' : ''}<br>${safe(o.element || '')}</td>
+        <td>${safe(o.due_date || '-')}</td>
+        <td>${badge(o)}</td>
+        <td>${safe(o.planner_notes || o.shop_notes || o.description || '-')}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" class="muted">Brak zleceń pilnych lub po terminie.</td></tr>';
+  }
+
+  function renderAll() {
+    renderStats();
+    renderCharts();
+    renderStageCards();
+    renderTables();
+  }
+
+  // Init
+  initTheme();
+  loadOrders();
+  setInterval(loadOrders, 30000);
+</script>
+
+</body>
+</html>
