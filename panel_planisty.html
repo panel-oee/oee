@@ -245,6 +245,17 @@
       background: rgba(59, 130, 246, .06);
     }
 
+
+    .tbl tr.late-row td {
+      background: rgba(239, 68, 68, .18) !important;
+      border-bottom-color: rgba(239, 68, 68, .45) !important;
+    }
+    .tbl tr.late-row td:first-child {
+      box-shadow: inset 5px 0 0 var(--red);
+    }
+    .tbl tr.late-row:hover td {
+      background: rgba(239, 68, 68, .26) !important;
+    }
     .badge {
       display: inline-block;
       border-radius: 999px;
@@ -1304,7 +1315,7 @@
       renderCalendar();
       renderStats();
       $('body').innerHTML = filtered().map(o => `
-        <tr>
+        <tr class="${isLate(o) ? 'late-row' : ''}">
           <td><b>${safe(o.order_no)}</b><br><span class="priority p-${slug(o.priority)}">${safe(o.priority)}</span><br>${badge(o)}</td>
           <td>${safe(o.qty)}</td>
           <td>${safe(o.element)}</td>
