@@ -193,7 +193,10 @@
         .c4 { grid-column: span 4; }
         .c6 { grid-column: span 6; }
         .c12 { grid-column: span 12; }
-        .hidden { display: none !important; }
+
+        .hidden {
+            display: none !important;
+        }
 
         .stats {
             display: grid;
@@ -273,7 +276,10 @@
         .b-done { background: #10b981; }
         .b-bad { background: #ef4444; }
 
-        .priority { font-weight: 900; }
+        .priority {
+            font-weight: 900;
+        }
+
         .p-pilne { color: var(--red); }
         .p-normalne { color: var(--green); }
 
@@ -355,7 +361,6 @@
             border-radius: 10px;
             padding: 10px;
             margin-bottom: 10px;
-            overflow: hidden !important;
         }
 
         .order-card.done {
@@ -364,6 +369,14 @@
 
         .order-card.late {
             border-left-color: var(--red);
+            border-color: rgba(239, 68, 68, .75);
+            background: rgba(239, 68, 68, .18);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, .32);
+        }
+
+        .order-card.late .stage-action {
+            border-color: rgba(239, 68, 68, .55);
+            background: rgba(239, 68, 68, .10);
         }
 
         .order-card.pilne {
@@ -380,6 +393,22 @@
 
         .config code {
             color: var(--cyan);
+        }
+
+        @media(max-width:1100px) {
+            .c2, .c3, .c4, .c6 { grid-column: span 12; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .kanban { grid-template-columns: 1fr 1fr; }
+            .steps { grid-template-columns: 1fr 1fr; }
+            .table-wrap { max-height: none; }
+        }
+
+        @media(max-width:680px) {
+            body { padding: 0; }
+            .container { border-radius: 0; border-left: 0; border-right: 0; }
+            .stats, .kanban, .steps { grid-template-columns: 1fr; }
+            .controls button, .controls select { flex: 1; }
+            .tbl { min-width: 1050px; }
         }
 
         /* V6: widok tylko aktualnego etapu + szerszy przycisk wykonania */
@@ -443,41 +472,27 @@
             color: var(--green);
         }
 
+        .order-card {
+            overflow: hidden !important;
+        }
+
         .btn-main, .btn-amber, .btn-ghost, .btn-blue {
             white-space: normal;
         }
 
-        /* Media Queries */
-        @media (max-width: 1100px) {
-            .c2, .c3, .c4, .c6 { grid-column: span 12; }
-            .stats { grid-template-columns: repeat(2, 1fr); }
-            .kanban { grid-template-columns: 1fr 1fr; }
-            .steps { grid-template-columns: 1fr 1fr; }
-            .table-wrap { max-height: none; }
-        }
-
-        @media (max-width: 1450px) {
+        @media(max-width:1450px) {
             .stage-current-grid { grid-template-columns: 1fr; }
             .stage-complete-btn { min-width: 0; }
-        }
-
-        @media (max-width: 680px) {
-            body { padding: 0; }
-            .container { border-radius: 0; border-left: 0; border-right: 0; }
-            .stats, .kanban, .steps { grid-template-columns: 1fr; }
-            .controls button, .controls select { flex: 1; }
-            .tbl { min-width: 1050px; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
     <div class="container">
         <div class="header">
             <div>
                 <h1>Panel Obróbki Blach</h1>
-                <div class="muted">Zaznaczanie wykonania etapów: Wykrawanie → Gięcie → Kołkowanie → Lakiernia.</div>
+                <div class="muted">Zaznaczanie wykonania etapów: Wykrawanie &rarr; Gięcie &rarr; Kołkowanie &rarr; Lakiernia.</div>
             </div>
             <div class="controls">
                 <select id="theme" onchange="setTheme(this.value)">
@@ -495,9 +510,9 @@
         </div>
 
         <h2>Zlecenia aktywne</h2>
-        <div class="row" style="margin-bottom: 12px">
-            <input id="search" placeholder="Szukaj zlecenia / elementu..." oninput="renderAll()" style="max-width: 520px">
-            <select id="filter" onchange="renderAll()" style="max-width: 240px">
+        <div class="row" style="margin-bottom:12px">
+            <input id="search" placeholder="Szukaj zlecenia / elementu..." oninput="renderAll()" style="max-width:520px">
+            <select id="filter" onchange="renderAll()" style="max-width:240px">
                 <option value="">Wszystkie aktywne</option>
                 <option value="Wykrawanie">Wykrawanie</option>
                 <option value="Gięcie">Gięcie</option>
@@ -507,7 +522,7 @@
                 <option value="Wstrzymane">Wstrzymane</option>
             </select>
         </div>
-
+        
         <div class="kanban" id="board"></div>
     </div>
 
@@ -533,69 +548,66 @@
             return !SUPABASE_URL.includes('WKLEJ') && !SUPABASE_ANON_KEY.includes('WKLEJ'); 
         }
         
-        function setConfigWarning() { 
+        function setConfigWarning() {
             const el = $('configWarning'); 
-            if (el) el.classList.toggle('hidden', configured()); 
+            if (el) el.classList.toggle('hidden', configured());
         }
         
         function nowLocal() { 
             return new Date().toLocaleString('pl-PL'); 
         }
         
-        function today() { 
-            const d = new Date(); 
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; 
+        function today() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
         
-        function safe(v) { 
-            return String(v ?? '').replace(/[&<>]/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[s])); 
+        function safe(v) {
+            return String(v ?? '').replace(/[&<>]/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[s]));
         }
         
-        function slug(s) { 
-            return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); 
+        function slug(s) {
+            return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         }
         
-        function setTheme(t) { 
+        function setTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem(THEME, t);
+        }
+        
+        function initTheme() {
+            const t = localStorage.getItem(THEME) || 'dark';
             document.documentElement.setAttribute('data-theme', t); 
-            localStorage.setItem(THEME, t); 
+            if ($('theme')) $('theme').value = t;
         }
         
-        function initTheme() { 
-            const t = localStorage.getItem(THEME) || 'dark'; 
-            document.documentElement.setAttribute('data-theme', t); 
-            if ($('theme')) $('theme').value = t; 
+        function toggleFull() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); 
+            else document.exitFullscreen();
         }
         
-        function toggleFull() { 
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        function stepRequired(o, k) { 
+        function stepRequired(o, k) {
             if (k === 'pinning') return !!o.pinning_required; 
             const prop = k + '_required'; 
-            return o[prop] !== false; 
+            return o[prop] !== false;
         }
         
-        function stepList(o) { 
-            return STEP_DEF.filter(([k]) => stepRequired(o, k)); 
+        function stepList(o) {
+            return STEP_DEF.filter(([k]) => stepRequired(o, k));
         }
         
         function stepDone(o, k) { 
             return !!o[`${k}_done`]; 
         }
         
-        function stepAt(o, k) { 
-            return o[`${k}_at`] ? new Date(o[`${k}_at`]).toLocaleString('pl-PL') : ''; 
+        function stepAt(o, k) {
+            return o[`${k}_at`] ? new Date(o[`${k}_at`]).toLocaleString('pl-PL') : '';
         }
         
-        function progress(o) { 
+        function progress(o) {
             const s = stepList(o); 
             if (!s.length) return 0; 
-            return Math.round(s.filter(([k]) => stepDone(o, k)).length / s.length * 100); 
+            return Math.round(s.filter(([k]) => stepDone(o, k)).length / s.length * 100);
         }
         
         function isDone(o) { 
@@ -606,36 +618,36 @@
             return !isDone(o) && o.due_date && o.due_date < today(); 
         }
         
-        function currentStage(o) { 
+        function currentStage(o) {
             if (o.hold) return 'Wstrzymane'; 
-            for (const [k, n] of stepList(o)) { 
-                if (!stepDone(o, k)) return n; 
+            for (const [k, n] of stepList(o)) {
+                if (!stepDone(o, k)) return n;
             } 
-            return 'Gotowe'; 
+            return 'Gotowe';
         }
         
-        function badge(o) { 
+        function badge(o) {
             if (o.hold) return '<span class="badge b-hold">Wstrzymane</span>'; 
             if (isDone(o)) return '<span class="badge b-done">Gotowe</span>'; 
             if (isLate(o)) return '<span class="badge b-bad">Po terminie</span>'; 
-            return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>'; 
+            return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>';
         }
         
-        function stepsHtml(o) { 
-            return stepList(o).map(([k, n]) => `
-                <div class="step ${stepDone(o, k) ? 'done' : 'active'}">
+        function stepsHtml(o) {
+            return stepList(o).map(([k, n]) => 
+                `<div class="step ${stepDone(o, k) ? 'done' : 'active'}">
                     <div class="step-title">${stepDone(o, k) ? '✅' : '⬜'} ${n}</div>
                     <div class="step-time">${safe(stepAt(o, k) || 'do wykonania')}</div>
-                </div>
-            `).join(''); 
+                </div>`
+            ).join('');
         }
-
+        
         async function loadOrders() {
             if (!configured()) { 
                 setConfigWarning(); 
                 orders = []; 
                 renderAll(); 
-                return; 
+                return;
             }
             const { data, error } = await supabaseClient
                 .from('cnc_orders')
@@ -650,7 +662,7 @@
             orders = data || []; 
             renderAll();
         }
-
+        
         function subscribeRealtime() {
             if (!configured()) return;
             supabaseClient
@@ -658,14 +670,14 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'cnc_orders' }, () => loadOrders())
                 .subscribe();
         }
-
+        
         async function addEvent(orderId, type, text, user) {
             if (!configured()) return;
             await supabaseClient
                 .from('cnc_order_events')
                 .insert({ order_id: orderId, event_type: type, event_text: text, created_by: user || '' });
         }
-
+        
         function exportJson() {
             const blob = new Blob([JSON.stringify({ exportedAt: nowLocal(), orders }, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -674,7 +686,7 @@
             a.click();
             URL.revokeObjectURL(a.href);
         }
-
+        
         async function initCommon() {
             initTheme();
             setConfigWarning();
@@ -689,83 +701,38 @@
             const f = $('filter').value;
             return (!q || JSON.stringify(o).toLowerCase().includes(q)) && (!f || currentStage(o) === f);
         }
-
+        
         function byStage(stage) { 
             return orders.filter(matches).filter(o => currentStage(o) === stage); 
         }
-
+        
         function stageSummaryHtml(o) {
-            return `
-                <div class="stage-summary">
-                    ${stepList(o).map(([k, n]) => `
-                        <span class="stage-pill ${stepDone(o, k) ? 'done' : ''}">${stepDone(o, k) ? '✓' : '•'} ${n}</span>
-                    `).join('')}
-                </div>`;
+            return `<div class="stage-summary">${stepList(o).map(([k, n]) => `<span class="stage-pill ${stepDone(o, k) ? 'done' : ''}">${stepDone(o, k) ? '✓' : '•'} ${n}</span>`).join('')}</div>`;
         }
-
+        
         function stageActionHtml(o) {
             const stage = currentStage(o);
             if (o.hold) {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Zlecenie wstrzymane</div>
-                        <div class="muted">${safe(o.hold_reason || o.shop_notes || 'Brak powodu')}</div>
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Zlecenie wstrzymane</div><div class="muted">${safe(o.hold_reason || o.shop_notes || 'Brak powodu')}</div></div>`;
             }
             if (stage === 'Gotowe') {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Zlecenie gotowe</div>
-                        ${stageSummaryHtml(o)}
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Zlecenie gotowe</div>${stageSummaryHtml(o)}</div>`;
             }
             if (stage === 'Wykrawanie') {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Aktualny etap: Wykrawanie</div>
-                        <div class="stage-current-grid">
-                            <div class="field">
-                                <label>Czas wykrawania</label>
-                                <input id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="np. 5h / 30 min">
-                            </div>
-                            <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button>
-                        </div>
-                        ${stageSummaryHtml(o)}
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Wykrawanie</div><div class="stage-current-grid"><div class="field"><label>Czas wykrawania</label><input id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="np. 5h / 30 min"></div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button></div>${stageSummaryHtml(o)}</div>`;
             }
             if (stage === 'Gięcie') {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Aktualny etap: Gięcie</div>
-                        <div class="stage-current-grid">
-                            <div class="field">
-                                <label>Czas gięcia</label>
-                                <input id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="np. 7h / 30 min">
-                            </div>
-                            <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button>
-                        </div>
-                        ${stageSummaryHtml(o)}
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Gięcie</div><div class="stage-current-grid"><div class="field"><label>Czas gięcia</label><input id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="np. 7h / 30 min"></div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button></div>${stageSummaryHtml(o)}</div>`;
             }
             if (stage === 'Kołkowanie') {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Aktualny etap: Kołkowanie</div>
-                        <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button>
-                        ${stageSummaryHtml(o)}
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Kołkowanie</div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button>${stageSummaryHtml(o)}</div>`;
             }
             if (stage === 'Lakiernia') {
-                return `
-                    <div class="stage-action">
-                        <div class="stage-action-title">Aktualny etap: Lakiernia</div>
-                        <button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button>
-                        ${stageSummaryHtml(o)}
-                    </div>`;
+                return `<div class="stage-action"><div class="stage-action-title">Aktualny etap: Lakiernia</div><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button>${stageSummaryHtml(o)}</div>`;
             }
             return '';
         }
-
+        
         async function completeStageWithTime(id, k) {
             const o = orders.find(x => x.id === id); 
             if (!o) return;
@@ -788,7 +755,7 @@
             await addEvent(id, 'step_done', `${k} => wykonane`, 'Obróbka Blach');
             loadOrders();
         }
-
+        
         async function setHold(id) {
             const o = orders.find(x => x.id === id); 
             if (!o) return;
@@ -801,12 +768,12 @@
             
             if (error) {
                 alert(error.message);
-            } else {
+            } else { 
                 await addEvent(id, payload.hold ? 'hold' : 'unhold', reason, 'Obróbka Blach');
                 loadOrders();
             }
         }
-
+        
         async function noteShop(id) {
             const o = orders.find(x => x.id === id); 
             if (!o) return;
@@ -817,60 +784,49 @@
             const { error } = await supabaseClient.from('cnc_orders').update({ shop_notes: n, updated_by: 'Obróbka Blach' }).eq('id', id);
             if (error) {
                 alert(error.message);
-            } else {
+            } else { 
                 await addEvent(id, 'shop_note', n, 'Obróbka Blach');
                 loadOrders();
             }
         }
-
+        
         function cardHtml(o) {
-            return `
-                <div class="order-card ${isDone(o) ? 'done' : ''} ${isLate(o) ? 'late' : ''} ${o.priority === 'Pilne' ? 'pilne' : ''}">
-                    <div class="row" style="justify-content:space-between">
-                        <div>
-                            <b>${safe(o.order_no || '-')}</b> 
-                            <span class="priority p-${slug(o.priority)}">${safe(o.priority)}</span><br>
-                            <span>${safe(o.element)}</span><br>
-                            <span class="muted">Ilość: ${safe(o.qty || '-')} · Termin: ${safe(o.due_date || '-')} · ${safe(o.owner)}</span>
-                        </div>
-                        ${badge(o)}
+            return `<div class="order-card ${isDone(o) ? 'done' : ''} ${isLate(o) ? 'late' : ''} ${o.priority === 'Pilne' ? 'pilne' : ''}">
+                <div class="row" style="justify-content:space-between">
+                    <div>
+                        <b>${safe(o.order_no || '-')}</b> 
+                        <span class="priority p-${slug(o.priority)}">${safe(o.priority)}</span><br>
+                        <span>${safe(o.element)}</span><br>
+                        <span class="muted">Ilość: ${safe(o.qty || '-')} · Termin: ${safe(o.due_date || '-')} · ${safe(o.owner)}</span>
                     </div>
-                    <div class="progress">
-                        <div class="bar" style="width:${progress(o)}%"></div>
-                    </div>
-                    ${stageActionHtml(o)}
-                    <div class="row" style="margin-top:10px">
-                        <button class="btn-small btn-amber" onclick="setHold('${o.id}')">${o.hold ? 'Odblokuj' : 'Wstrzymaj'}</button>
-                        <button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button>
-                    </div>
-                    ${o.description || o.planner_notes || o.shop_notes ? `
-                        <div class="muted" style="margin-top:8px">
-                            ${safe(o.description)} ${safe(o.planner_notes)} 
-                            ${o.shop_notes ? '<br>Obróbka: ' + safe(o.shop_notes) : ''}
-                        </div>
-                    ` : ''}
-                </div>`;
+                    ${badge(o)}
+                </div>
+                <div class="progress">
+                    <div class="bar" style="width:${progress(o)}%"></div>
+                </div>
+                ${stageActionHtml(o)}
+                <div class="row" style="margin-top:10px">
+                    <button class="btn-small btn-amber" onclick="setHold('${o.id}')">${o.hold ? 'Odblokuj' : 'Wstrzymaj'}</button>
+                    <button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button>
+                </div>
+                ${o.description || o.planner_notes || o.shop_notes ? `
+                    <div class="muted" style="margin-top:8px">
+                        ${safe(o.description)} ${safe(o.planner_notes)} 
+                        ${o.shop_notes ? '<br>Obróbka: ' + safe(o.shop_notes) : ''}
+                    </div>` : ''}
+            </div>`;
         }
-
+        
         function renderAll() {
             const cols = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia'];
-            let html = cols.map(c => `
-                <div class="kcol">
-                    <div class="khead">${c}</div>
-                    ${byStage(c).map(cardHtml).join('') || '<div class="muted">Brak</div>'}
-                </div>
-            `).join('');
+            let html = cols.map(c => `<div class="kcol"><div class="khead">${c}</div>${byStage(c).map(cardHtml).join('') || '<div class="muted">Brak</div>'}</div>`).join('');
             
             const extra = orders.filter(matches).filter(o => isDone(o) || o.hold);
-            html += `
-                <div class="kcol" style="grid-column: 1 / -1">
-                    <div class="khead">Gotowe / wstrzymane / wynik filtra</div>
-                    ${extra.map(cardHtml).join('') || '<div class="muted">Brak</div>'}
-                </div>`;
-                
+            html += `<div class="kcol" style="grid-column:1/-1"><div class="khead">Gotowe / wstrzymane / wynik filtra</div>${extra.map(cardHtml).join('') || '<div class="muted">Brak</div>'}</div>`;
+            
             $('board').innerHTML = html;
         }
-
+        
         initCommon();
     </script>
 </body>
