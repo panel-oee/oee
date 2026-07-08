@@ -1005,10 +1005,10 @@
         }
         .break-overlay.show { display: flex; animation: breakFadeIn 0.2s ease-out; }
         .break-overlay-title {
-            font-size: clamp(72px, 12vw, 180px);
+            font-size: clamp(72px, 11vw, 170px);
             font-weight: 1000;
             line-height: 0.95;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
             color: #fbbf24;
             text-shadow: 0 0 28px rgba(251, 191, 36, 0.45);
@@ -1153,8 +1153,8 @@
 
 
 <div id="breakOverlay" class="break-overlay" aria-live="assertive">
-    <div class="break-overlay-title">PRZERWA</div>
-    <div class="break-overlay-subtitle">Do końca przerwy pozostało:</div>
+    <div id="breakOverlayTitle" class="break-overlay-title">PRZERWA</div>
+    <div id="breakOverlaySubtitle" class="break-overlay-subtitle">Do końca przerwy pozostało:</div>
     <div id="breakCountdown" class="break-countdown">30:00</div>
     <div id="breakOverlayTime" class="break-overlay-time">Przerwa: --:-- – --:--</div>
 </div>
@@ -1361,15 +1361,20 @@
     }
 
     // =========================================================================
-    // AUTOMATYCZNY ALERT DŹWIĘKOWY PRZED PRZERWĄ + KOMUNIKAT PRZERWY 30 MINUT
-    // - alert startuje 5 sekund przed przerwą: 09:29:55 i 17:29:55,
-    // - komunikat PRZERWA pojawia się dokładnie od 09:30 i 17:30,
-    // - przerwy trwają 09:30-10:00 oraz 17:30-18:00,
-    // - bez przycisku pełnego ekranu i bez dodatkowego przycisku audio.
+    // AUTOMATYCZNY ALERT DŹWIĘKOWY PRZED PRZERWĄ + KOMUNIKAT PRZERWY
+    // Wariant dźwięku: SYRENA
+    // Przerwy główne:
+    // - 09:30-10:00 oraz 17:30-18:00, czas trwania 30 minut.
+    // Przerwy 5S/6S — sprzątanie / porządki:
+    // - 05:45-06:00, 13:45-14:00, 21:45-22:00, czas trwania 15 minut.
+    // Alert dźwiękowy startuje 5 sekund przed każdą przerwą.
     // =========================================================================
     const BREAK_SCHEDULE = [
-        { start: "09:30", durationMinutes: 30 },
-        { start: "17:30", durationMinutes: 30 }
+        { start: "09:30", durationMinutes: 30, kind: "main" },
+        { start: "17:30", durationMinutes: 30, kind: "main" },
+        { start: "05:45", durationMinutes: 15, kind: "6S" },
+        { start: "13:45", durationMinutes: 15, kind: "6S" },
+        { start: "11:41", durationMinutes: 15, kind: "6S" }
     ];
     const BREAK_ALERT_DURATION_SECONDS = 5;
     let breakAudioContext = null;
@@ -1398,9 +1403,7 @@
         try {
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
             if (!AudioContextClass) return;
-            if (!breakAudioContext) {
-                breakAudioContext = new AudioContextClass();
-            }
+            if (!breakAudioContext) breakAudioContext = new AudioContextClass();
             if (breakAudioContext.state === 'suspended') {
                 breakAudioContext.resume().catch(function(err) {
                     console.log("Audio nadal zablokowane przez przeglądarkę:", err);
@@ -1422,29 +1425,25 @@
             const endTime = nowAudio + seconds;
             const masterGain = breakAudioContext.createGain();
             masterGain.gain.setValueAtTime(0.0001, nowAudio);
-            masterGain.gain.exponentialRampToValueAtTime(0.34, nowAudio + 0.04);
-            masterGain.gain.setValueAtTime(0.34, Math.max(nowAudio + 0.04, endTime - 0.25));
+            masterGain.gain.exponentialRampToValueAtTime(0.38, nowAudio + 0.05);
+            masterGain.gain.setValueAtTime(0.38, Math.max(nowAudio + 0.05, endTime - 0.30));
             masterGain.gain.exponentialRampToValueAtTime(0.0001, endTime);
             masterGain.connect(breakAudioContext.destination);
-            const toneLength = 0.28;
-            const pauseLength = 0.10;
+            const osc = breakAudioContext.createOscillator();
+            const gain = breakAudioContext.createGain();
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.55, nowAudio);
+            osc.connect(gain);
+            gain.connect(masterGain);
             let t = nowAudio;
-            let i = 0;
             while (t < endTime) {
-                const osc = breakAudioContext.createOscillator();
-                const gain = breakAudioContext.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(i % 2 === 0 ? 950 : 700, t);
-                gain.gain.setValueAtTime(0.0001, t);
-                gain.gain.exponentialRampToValueAtTime(0.95, t + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.0001, Math.min(t + toneLength, endTime));
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start(t);
-                osc.stop(Math.min(t + toneLength, endTime));
-                t += toneLength + pauseLength;
-                i++;
+                osc.frequency.setValueAtTime(550, t);
+                osc.frequency.linearRampToValueAtTime(1250, Math.min(t + 0.45, endTime));
+                osc.frequency.linearRampToValueAtTime(550, Math.min(t + 0.90, endTime));
+                t += 0.90;
             }
+            osc.start(nowAudio);
+            osc.stop(endTime);
         } catch (err) {
             console.log("Nie udało się odtworzyć alertu przerwy:", err);
         }
@@ -1461,6 +1460,8 @@
                 return {
                     start: breakItem.start,
                     end: timeTextFromMinutes(startMinutes + breakItem.durationMinutes),
+                    durationMinutes: breakItem.durationMinutes,
+                    kind: breakItem.kind,
                     startSeconds: startSeconds,
                     endSeconds: endSeconds,
                     currentSeconds: currentSeconds,
@@ -1475,17 +1476,22 @@
 
     function updateBreakOverlay() {
         const overlay = document.getElementById('breakOverlay');
+        const titleEl = document.getElementById('breakOverlayTitle');
+        const subtitleEl = document.getElementById('breakOverlaySubtitle');
         const countdownEl = document.getElementById('breakCountdown');
         const timeEl = document.getElementById('breakOverlayTime');
         if (!overlay) return;
+
         const now = new Date();
         const timing = getBreakTimingInfo(now);
         if (!timing) {
             overlay.classList.remove('show');
             return;
         }
+
         const todayKey = formatDateKey(now);
         const alertKey = todayKey + ' ' + timing.start;
+
         if (timing.isAlertWindow) {
             overlay.classList.remove('show');
             if (lastBreakAlertKey !== alertKey) {
@@ -1495,15 +1501,22 @@
             }
             return;
         }
+
         if (timing.isBreakWindow) {
             overlay.classList.add('show');
+            if (timing.kind === '6S') {
+                if (titleEl) titleEl.textContent = 'PRZERWA 6S';
+                if (subtitleEl) subtitleEl.textContent = 'Sprzątanie / porządki — do końca pozostało:';
+                if (timeEl) timeEl.textContent = '5S/6S: ' + timing.start + ' – ' + timing.end + ' (' + timing.durationMinutes + ' min)';
+            } else {
+                if (titleEl) titleEl.textContent = 'PRZERWA';
+                if (subtitleEl) subtitleEl.textContent = 'Do końca przerwy pozostało:';
+                if (timeEl) timeEl.textContent = 'Przerwa: ' + timing.start + ' – ' + timing.end + ' (' + timing.durationMinutes + ' min)';
+            }
             if (countdownEl) countdownEl.textContent = formatRemainingTime(timing.remainingSeconds);
-            if (timeEl) timeEl.textContent = 'Przerwa: ' + timing.start + ' – ' + timing.end;
         }
     }
 
-    // Bez dodatkowych przycisków. Skrypt próbuje przygotować audio po załadowaniu strony
-    // oraz po naturalnej interakcji z ekranem. Odtwarzanie nie jest powiązane z pełnym ekranem.
     document.addEventListener('DOMContentLoaded', prepareBreakAudio);
     window.addEventListener('load', prepareBreakAudio);
     document.addEventListener('click', prepareBreakAudio);
