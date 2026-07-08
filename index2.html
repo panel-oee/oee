@@ -1365,7 +1365,7 @@
     // Wariant dźwięku: SYRENA
     // Przerwy główne:
     // - 09:30-10:00 oraz 17:30-18:00, czas trwania 30 minut.
-    // Przerwy 5S/6S — sprzątanie / porządki:
+    // Przerwy 6S — sprzątanie / porządki:
     // - 05:45-06:00, 13:45-14:00, 21:45-22:00, czas trwania 15 minut.
     // Alert dźwiękowy startuje 5 sekund przed każdą przerwą.
     // =========================================================================
@@ -1507,7 +1507,7 @@
             if (timing.kind === '6S') {
                 if (titleEl) titleEl.textContent = 'PRZERWA 6S';
                 if (subtitleEl) subtitleEl.textContent = 'Sprzątanie / porządki — do końca pozostało:';
-                if (timeEl) timeEl.textContent = '5S/6S: ' + timing.start + ' – ' + timing.end + ' (' + timing.durationMinutes + ' min)';
+                if (timeEl) timeEl.textContent = '6S: ' + timing.start + ' – ' + timing.end + ' (' + timing.durationMinutes + ' min)';
             } else {
                 if (titleEl) titleEl.textContent = 'PRZERWA';
                 if (subtitleEl) subtitleEl.textContent = 'Do końca przerwy pozostało:';
