@@ -749,6 +749,53 @@
       .form-actions-v11 button { flex: 1; }
       .form-grid-v11 .c2, .form-grid-v11 .c3, .form-grid-v11 .c4, .form-grid-v11 .c6, .form-grid-v11 .c12 { grid-column: span 12; }
     }
+  
+    /* V12 KOMPAKT: mniej przewijania, spójniejsze odstępy i czytelniejsze kafelki */
+    :root {
+      --compact-radius: 10px;
+      --compact-gap: 8px;
+    }
+    body { padding: clamp(4px, .7vw, 12px) !important; }
+    .container { padding: clamp(10px, 1vw, 18px) !important; border-radius: 12px !important; }
+    .header { margin-bottom: 12px !important; padding-bottom: 9px !important; gap: 10px !important; }
+    h1 { font-size: clamp(20px, 1.35vw, 28px) !important; }
+    h2 { font-size: clamp(15px, 1vw, 19px) !important; margin-bottom: 8px !important; }
+    .muted { line-height: 1.25 !important; }
+    .controls, .row { gap: 7px !important; }
+    button, .btn { padding: 8px 10px !important; border-radius: 7px !important; }
+    .btn-small { font-size: 11px !important; padding: 6px 8px !important; }
+    input, select, textarea { min-height: 36px !important; padding: 7px 9px !important; border-radius: 7px !important; }
+    textarea { min-height: 62px !important; }
+    .grid { gap: 10px !important; }
+    .card { padding: 10px !important; border-radius: var(--compact-radius) !important; }
+    .stats { gap: 8px !important; margin-bottom: 10px !important; }
+    .stat { padding: 8px !important; border-radius: var(--compact-radius) !important; min-height: 72px !important; }
+    .stat b { font-size: clamp(22px, 1.55vw, 30px) !important; }
+    .stat span { font-size: 10px !important; }
+    th, td { padding: 7px 8px !important; font-size: 13px !important; }
+    th { font-size: 10px !important; }
+    .badge { font-size: 11px !important; padding: 3px 7px !important; }
+    .progress { height: 5px !important; margin: 5px 0 !important; }
+
+    /* V12 KOMPAKT - Panel Planisty */
+    .planner-workspace { grid-template-columns: minmax(720px, 1fr) minmax(300px, 360px) !important; gap: 10px !important; margin-bottom: 12px !important; }
+    .planner-form-card { padding: 10px !important; }
+    .form-grid-v11 { gap: 9px !important; }
+    .stage-choice-box { padding: 8px !important; gap: 7px !important; }
+    .stage-choice { padding: 7px 9px !important; font-size: 13px !important; }
+    .form-actions-v11 { margin-top: 10px !important; gap: 8px !important; }
+    .calendar-card { padding: 9px !important; }
+    .calendar-day { min-height: 36px !important; padding: 3px !important; }
+    .calendar-num { font-size: 11px !important; }
+    .calendar-pill { font-size: 8px !important; padding: 1px 3px !important; }
+    .view-tabs { margin-bottom: 14px !important; gap: 8px !important; }
+    .view-tab { min-height: 42px !important; padding: 9px 14px !important; font-size: 14px !important; }
+    .table-wrap { max-height: 58vh !important; }
+    .steps { gap: 4px !important; }
+    .step { padding: 4px 7px !important; max-width: 130px !important; }
+    .step-title { font-size: 11px !important; }
+    @media(max-width:1450px) { .planner-workspace { grid-template-columns: 1fr !important; } }
+
   </style>
 </head>
 <body>
@@ -960,7 +1007,7 @@
         }
         then(res, rej) { return this.exec().then(res, rej) }
       }
-      return { from: t => new Builder(t), channel: () => ({ on() { return this }, subscribe() { return this } }) }
+      return { from: t => new Builder(t) }
     }
 
     const supabaseClient = createSupabaseRestClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1029,9 +1076,8 @@
       renderAll();
     }
 
-    function subscribeRealtime() {
-      if (!configured()) return;
-      supabaseClient.channel('cnc_orders_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'cnc_orders' }, () => loadOrders()).subscribe();
+    function setupAutoRefreshInfo() {
+      // Wersja REST: dane odświeżają się przyciskiem i automatycznie co 30 sekund.
     }
 
     async function addEvent(orderId, type, text, user) {
@@ -1052,7 +1098,7 @@
       initTheme();
       setConfigWarning();
       await loadOrders();
-      subscribeRealtime();
+      setupAutoRefreshInfo();
       setInterval(loadOrders, 30000);
     }
 
