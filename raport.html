@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Obróbki Blach</title>
+    <title>Panel Obróbki Blach - Tabela kompakt</title>
     <style>
         * {
             box-sizing: border-box;
@@ -484,6 +484,135 @@
             .stage-current-grid { grid-template-columns: 1fr; }
             .stage-complete-btn { min-width: 0; }
         }
+    
+        /* V17 TABELA KOMPAKT: bez kolumny Etapy, Uwagi w kolumnie Uwagi, Wszystkie na końcu */
+        #filter { display: none !important; }
+        body { padding: clamp(3px, .5vw, 9px) !important; }
+        .container { padding: clamp(8px, .8vw, 14px) !important; border-radius: 10px !important; }
+        .header { margin-bottom: 8px !important; padding-bottom: 8px !important; }
+        h1 { font-size: clamp(18px, 1.15vw, 24px) !important; }
+        h2 { font-size: clamp(14px, .9vw, 17px) !important; margin-bottom: 6px !important; }
+        .controls, .row { gap: 6px !important; }
+        button, .btn { padding: 7px 9px !important; border-radius: 7px !important; }
+        .btn-small { font-size: 10.5px !important; padding: 5px 8px !important; }
+        input, select, textarea { min-height: 32px !important; padding: 6px 8px !important; border-radius: 7px !important; }
+
+        .stage-tabs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 6px 0 9px;
+        }
+        .stage-tab {
+            border: 2px solid var(--border);
+            background: rgba(15, 23, 42, .24);
+            color: var(--text);
+            border-radius: 9px;
+            padding: 9px 13px !important;
+            min-height: 40px;
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1;
+            box-shadow: none;
+        }
+        .stage-tab:hover { transform: none !important; filter: none !important; border-color: var(--blue); }
+        .stage-tab.active {
+            background: var(--blue);
+            border-color: #93c5fd;
+            color: #fff;
+            box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #f8fafc;
+        }
+        .stage-tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 18px;
+            margin-left: 7px;
+            padding: 0 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.18);
+            font-size: 11px;
+        }
+
+        .kanban { display: block !important; }
+        .compact-table-wrap {
+            overflow: auto;
+            max-height: calc(100vh - 215px);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--panel);
+        }
+        .compact-table {
+            width: 100%;
+            min-width: 1280px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        .compact-table th,
+        .compact-table td {
+            padding: 8px 9px !important;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            font-size: 12px !important;
+        }
+        .compact-table th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #101827;
+            color: #bad7ff;
+            font-size: 10px !important;
+            text-transform: uppercase;
+            letter-spacing: .35px;
+        }
+        .compact-table tbody tr { height: 72px; }
+        .compact-table tbody tr:hover td { background: rgba(59, 130, 246, .08); }
+        .compact-table tr.row-late td {
+            background: rgba(239, 68, 68, .18) !important;
+            border-bottom-color: rgba(239, 68, 68, .45) !important;
+        }
+        .compact-table tr.row-late td:first-child { box-shadow: inset 5px 0 0 var(--red); }
+        .compact-table tr.row-new td:first-child { box-shadow: inset 5px 0 0 #22c55e; }
+        .compact-table tr.row-new.row-late td:first-child { box-shadow: inset 5px 0 0 var(--red), inset 10px 0 0 #22c55e; }
+
+        .col-order { width: 120px; }
+        .col-qty { width: 70px; }
+        .col-element { width: 330px; }
+        .col-sap { width: 110px; }
+        .col-date { width: 92px; }
+        .col-progress { width: 110px; }
+        .col-notes { width: 350px; }
+        .col-action { width: 210px; }
+
+        .cell-main { font-weight: 900; font-size: 13px; }
+        .cell-sub { color: var(--muted); font-size: 11px; line-height: 1.25; }
+        .text-clip { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .new-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #22c55e;
+            color: #052e16;
+            font-size: 10px;
+            font-weight: 900;
+            vertical-align: middle;
+        }
+        .badge { font-size: 10px !important; padding: 3px 7px !important; }
+        .progress { height: 5px !important; margin: 4px 0 !important; background: #334155 !important; }
+        .progress .bar { background: #10b981 !important; }
+        .action-inline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .action-inline input { width: 118px !important; min-height: 30px !important; font-size: 11px !important; }
+        .action-inline .stage-complete-btn { min-height: 30px !important; min-width: 100% !important; padding: 6px 9px !important; font-size: 11px !important; }
+        .notes-cell-layout { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+        .note-clip { max-height: 38px; overflow: hidden; line-height: 1.25; color: #b7c7df; min-width: 0; flex: 1; }
+        .notes-cell-layout .btn-small { flex: 0 0 auto; min-height: 28px !important; }
+        @media(max-width:900px) { .compact-table { min-width: 1180px; } .compact-table-wrap { max-height: calc(100vh - 240px); } }
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -491,8 +620,8 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1>Panel Obróbki Blach</h1>
-                <div class="muted">Zaznaczanie wykonania etapów: Wykrawanie &rarr; Gięcie &rarr; Kołkowanie &rarr; Lakiernia.</div>
+                <h1>Panel Obróbki Blach - Tabela kompakt</h1>
+                <div class="muted">Kompaktowy widok tabeli etapów: Wykrawanie &rarr; Gięcie &rarr; Kołkowanie &rarr; Lakiernia.</div>
             </div>
             <div class="controls">
                 <select id="theme" onchange="setTheme(this.value)">
@@ -519,11 +648,10 @@
                 <option value="Kołkowanie">Kołkowanie</option>
                 <option value="Lakiernia">Lakiernia</option>
                 <option value="Gotowe">Gotowe</option>
-                <option value="Wstrzymane">Wstrzymane</option>
-            </select>
-        </div>
-        
-        <div class="kanban" id="board"></div>
+                </select>
+            </div>
+            <div class="stage-tabs" id="stageTabs"></div>
+            <div class="kanban" id="board"></div>
     </div>
 
     <script>
@@ -806,7 +934,6 @@
                 </div>
                 ${stageActionHtml(o)}
                 <div class="row" style="margin-top:10px">
-                    <button class="btn-small btn-amber" onclick="setHold('${o.id}')">${o.hold ? 'Odblokuj' : 'Wstrzymaj'}</button>
                     <button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button>
                 </div>
                 ${o.description || o.planner_notes || o.shop_notes ? `
@@ -827,6 +954,105 @@
             $('board').innerHTML = html;
         }
         
+
+        // V17 TABELA KOMPAKT: bez kolumny Etapy, Uwagi w kolumnie Uwagi, Wszystkie na końcu
+        const COMPACT_STAGES = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia', 'Gotowe', 'Wszystkie'];
+        let currentStageTab = 'Wykrawanie';
+
+        function isNewOrder(o) {
+            return (o.created_at || '').slice(0, 10) === today();
+        }
+
+        function compactBaseMatches(o) {
+            if (o.archived === true || o.hold === true) return false;
+            const q = $('search').value.toLowerCase();
+            return !q || JSON.stringify(o).toLowerCase().includes(q);
+        }
+
+        function matches(o) {
+            return compactBaseMatches(o) && (currentStageTab === 'Wszystkie' || currentStage(o) === currentStageTab);
+        }
+
+        function setStageTab(stage) {
+            currentStageTab = stage;
+            renderAll();
+        }
+
+        function renderStageTabs() {
+            const el = $('stageTabs');
+            if (!el) return;
+            el.innerHTML = COMPACT_STAGES.map(stage => {
+                const count = orders.filter(compactBaseMatches).filter(o => stage === 'Wszystkie' || currentStage(o) === stage).length;
+                return `<button type="button" class="stage-tab ${currentStageTab === stage ? 'active' : ''}" onclick="setStageTab('${stage}')">${stage}<span class="stage-tab-count">${count}</span></button>`;
+            }).join('');
+        }
+
+        function compactBadge(o) {
+            if (isDone(o)) return '<span class="badge b-done">Gotowe</span>';
+            if (isLate(o)) return '<span class="badge b-bad">Po terminie</span>';
+            return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>';
+        }
+
+        function compactActionHtml(o) {
+            const stage = currentStage(o);
+            if (stage === 'Gotowe') return '<span class="badge b-done">Gotowe</span>';
+            if (stage === 'Wykrawanie') {
+                return `<div class="action-inline"><input id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="czas"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button></div>`;
+            }
+            if (stage === 'Gięcie') {
+                return `<div class="action-inline"><input id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="czas"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button></div>`;
+            }
+            if (stage === 'Kołkowanie') {
+                return `<div class="action-inline"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button></div>`;
+            }
+            if (stage === 'Lakiernia') {
+                return `<div class="action-inline"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button></div>`;
+            }
+            return '';
+        }
+
+        function compactNotesHtml(o) {
+            const notes = [o.description, o.planner_notes, o.shop_notes ? 'Obróbka: ' + o.shop_notes : ''].filter(Boolean).join(' ');
+            return `<div class="notes-cell-layout"><div class="note-clip" title="${safe(notes)}">${safe(notes || '-')}</div><button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button></div>`;
+        }
+
+        function compactRowHtml(o) {
+            const p = progress(o);
+            return `<tr class="${isLate(o) ? 'row-late' : ''} ${isNewOrder(o) ? 'row-new' : ''}">
+                <td class="col-order"><div class="cell-main">${safe(o.order_no || '-')} ${isNewOrder(o) ? '<span class="new-badge">NOWE</span>' : ''}</div><div class="priority p-${slug(o.priority)}">${safe(o.priority || '')}</div>${compactBadge(o)}</td>
+                <td class="col-qty">${safe(o.qty || '-')}</td>
+                <td class="col-element"><span class="text-clip" title="${safe(o.element || '')}">${safe(o.element || '-')}</span></td>
+                <td class="col-sap">SAP: <b>${safe(o.sap || '-')}</b><br>${safe(o.owner || '')}</td>
+                <td class="col-date">${safe(o.due_date || '-')}</td>
+                <td class="col-progress"><div class="progress"><div class="bar" style="width:${p}%"></div></div><b>${p}%</b><br><span class="cell-sub">${safe(currentStage(o))}</span></td>
+                <td class="col-notes">${compactNotesHtml(o)}</td>
+                <td class="col-action">${compactActionHtml(o)}</td>
+            </tr>`;
+        }
+
+        function renderAll() {
+            renderStageTabs();
+            const list = orders.filter(matches).sort((a, b) => (isLate(b) - isLate(a)) || (a.due_date || '9999').localeCompare(b.due_date || '9999'));
+            $('board').innerHTML = `
+                <div class="compact-table-wrap">
+                    <table class="compact-table">
+                        <thead>
+                            <tr>
+                                <th class="col-order">Zlecenie</th>
+                                <th class="col-qty">Ilość</th>
+                                <th class="col-element">Element</th>
+                                <th class="col-sap">SAP / dla kogo</th>
+                                <th class="col-date">Termin</th>
+                                <th class="col-progress">Postęp</th>
+                                <th class="col-notes">Uwagi</th>
+                                <th class="col-action">Akcja</th>
+                            </tr>
+                        </thead>
+                        <tbody>${list.map(compactRowHtml).join('') || '<tr><td colspan="8" class="muted">Brak zleceń.</td></tr>'}</tbody>
+                    </table>
+                </div>`;
+        }
+
         initCommon();
     </script>
 </body>
