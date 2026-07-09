@@ -485,8 +485,9 @@
             .stage-complete-btn { min-width: 0; }
         }
     
-        /* V17 TABELA KOMPAKT: bez kolumny Etapy, Uwagi w kolumnie Uwagi, Wszystkie na końcu */
+        /* V18 TABELA KOMPAKT: kolory etapów, tooltipy, bez przycisków nagłówka */
         #filter { display: none !important; }
+        .controls button { display: none !important; }
         body { padding: clamp(3px, .5vw, 9px) !important; }
         .container { padding: clamp(8px, .8vw, 14px) !important; border-radius: 10px !important; }
         .header { margin-bottom: 8px !important; padding-bottom: 8px !important; }
@@ -516,13 +517,23 @@
             line-height: 1;
             box-shadow: none;
         }
-        .stage-tab:hover { transform: none !important; filter: none !important; border-color: var(--blue); }
+        .stage-tab:hover { transform: none !important; filter: none !important; border-color: currentColor; }
         .stage-tab.active {
-            background: var(--blue);
-            border-color: #93c5fd;
             color: #fff;
             box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #f8fafc;
         }
+        .tab-cutting { color: #60a5fa; border-color: rgba(96,165,250,.65); }
+        .tab-cutting.active { background: #2563eb; border-color: #93c5fd; }
+        .tab-bending { color: #22d3ee; border-color: rgba(34,211,238,.65); }
+        .tab-bending.active { background: #0891b2; border-color: #67e8f9; }
+        .tab-pinning { color: #c084fc; border-color: rgba(192,132,252,.65); }
+        .tab-pinning.active { background: #7c3aed; border-color: #d8b4fe; }
+        .tab-painting { color: #fbbf24; border-color: rgba(251,191,36,.72); }
+        .tab-painting.active { background: #d97706; border-color: #fde68a; }
+        .tab-done { color: #34d399; border-color: rgba(52,211,153,.72); }
+        .tab-done.active { background: #059669; border-color: #a7f3d0; }
+        .tab-all { color: #cbd5e1; border-color: rgba(203,213,225,.65); }
+        .tab-all.active { background: #475569; border-color: #e2e8f0; }
         .stage-tab-count {
             display: inline-flex;
             align-items: center;
@@ -539,7 +550,7 @@
         .kanban { display: block !important; }
         .compact-table-wrap {
             overflow: auto;
-            max-height: calc(100vh - 215px);
+            max-height: calc(100vh - 205px);
             border: 1px solid var(--border);
             border-radius: 10px;
             background: var(--panel);
@@ -603,15 +614,25 @@
             vertical-align: middle;
         }
         .badge { font-size: 10px !important; padding: 3px 7px !important; }
+        .stage-badge-cutting { background: #2563eb !important; }
+        .stage-badge-bending { background: #0891b2 !important; }
+        .stage-badge-pinning { background: #7c3aed !important; }
+        .stage-badge-painting { background: #d97706 !important; color: #111827 !important; }
+        .stage-badge-done { background: #059669 !important; }
         .progress { height: 5px !important; margin: 4px 0 !important; background: #334155 !important; }
-        .progress .bar { background: #10b981 !important; }
+        .progress .bar { background: var(--progress-color, #10b981) !important; }
+        .progress-cutting { --progress-color: #2563eb; }
+        .progress-bending { --progress-color: #0891b2; }
+        .progress-pinning { --progress-color: #7c3aed; }
+        .progress-painting { --progress-color: #d97706; }
+        .progress-done { --progress-color: #059669; }
         .action-inline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .action-inline input { width: 118px !important; min-height: 30px !important; font-size: 11px !important; }
         .action-inline .stage-complete-btn { min-height: 30px !important; min-width: 100% !important; padding: 6px 9px !important; font-size: 11px !important; }
         .notes-cell-layout { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
         .note-clip { max-height: 38px; overflow: hidden; line-height: 1.25; color: #b7c7df; min-width: 0; flex: 1; }
         .notes-cell-layout .btn-small { flex: 0 0 auto; min-height: 28px !important; }
-        @media(max-width:900px) { .compact-table { min-width: 1180px; } .compact-table-wrap { max-height: calc(100vh - 240px); } }
+        @media(max-width:900px) { .compact-table { min-width: 1180px; } .compact-table-wrap { max-height: calc(100vh - 230px); } }
 
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -628,9 +649,6 @@
                     <option value="dark">Ciemny</option>
                     <option value="light">Jasny</option>
                 </select>
-                <button class="btn-blue" onclick="toggleFull()">Pełny ekran</button>
-                <button class="btn-ghost" onclick="loadOrders()">Odśwież</button>
-                <button class="btn-ghost" onclick="exportJson()">Kopia JSON</button>
             </div>
         </div>
 
@@ -955,12 +973,23 @@
         }
         
 
-        // V17 TABELA KOMPAKT: bez kolumny Etapy, Uwagi w kolumnie Uwagi, Wszystkie na końcu
+        // V18 TABELA KOMPAKT: kolory etapów, tooltipy, bez przycisków nagłówka
         const COMPACT_STAGES = ['Wykrawanie', 'Gięcie', 'Kołkowanie', 'Lakiernia', 'Gotowe', 'Wszystkie'];
         let currentStageTab = 'Wykrawanie';
 
         function isNewOrder(o) {
             return (o.created_at || '').slice(0, 10) === today();
+        }
+
+        function stageKey(stage) {
+            return {
+                'Wykrawanie': 'cutting',
+                'Gięcie': 'bending',
+                'Kołkowanie': 'pinning',
+                'Lakiernia': 'painting',
+                'Gotowe': 'done',
+                'Wszystkie': 'all'
+            }[stage] || 'all';
         }
 
         function compactBaseMatches(o) {
@@ -983,48 +1012,51 @@
             if (!el) return;
             el.innerHTML = COMPACT_STAGES.map(stage => {
                 const count = orders.filter(compactBaseMatches).filter(o => stage === 'Wszystkie' || currentStage(o) === stage).length;
-                return `<button type="button" class="stage-tab ${currentStageTab === stage ? 'active' : ''}" onclick="setStageTab('${stage}')">${stage}<span class="stage-tab-count">${count}</span></button>`;
+                const tip = stage === 'Wszystkie' ? 'Pokaż wszystkie aktywne zlecenia' : `Pokaż zlecenia na etapie: ${stage}`;
+                return `<button type="button" title="${tip}" aria-label="${tip}" class="stage-tab tab-${stageKey(stage)} ${currentStageTab === stage ? 'active' : ''}" onclick="setStageTab('${stage}')">${stage}<span class="stage-tab-count">${count}</span></button>`;
             }).join('');
         }
 
         function compactBadge(o) {
-            if (isDone(o)) return '<span class="badge b-done">Gotowe</span>';
+            if (isDone(o)) return '<span class="badge stage-badge-done">Gotowe</span>';
             if (isLate(o)) return '<span class="badge b-bad">Po terminie</span>';
-            return '<span class="badge b-work">' + safe(currentStage(o)) + '</span>';
+            const stage = currentStage(o);
+            return `<span class="badge stage-badge-${stageKey(stage)}">${safe(stage)}</span>`;
         }
 
         function compactActionHtml(o) {
             const stage = currentStage(o);
-            if (stage === 'Gotowe') return '<span class="badge b-done">Gotowe</span>';
+            if (stage === 'Gotowe') return '<span class="badge stage-badge-done" title="Zlecenie jest już zakończone">Gotowe</span>';
             if (stage === 'Wykrawanie') {
-                return `<div class="action-inline"><input id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="czas"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button></div>`;
+                return `<div class="action-inline"><input title="Wpisz czas wykrawania przed oznaczeniem wykonania" id="cut_time_${o.id}" value="${safe(o.cut_time || '')}" placeholder="czas"><button title="Oznacz etap Wykrawanie jako wykonany" class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','cutting')">Wykonano</button></div>`;
             }
             if (stage === 'Gięcie') {
-                return `<div class="action-inline"><input id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="czas"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button></div>`;
+                return `<div class="action-inline"><input title="Wpisz czas gięcia przed oznaczeniem wykonania" id="bend_time_${o.id}" value="${safe(o.bend_time || '')}" placeholder="czas"><button title="Oznacz etap Gięcie jako wykonany" class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','bending')">Wykonano</button></div>`;
             }
             if (stage === 'Kołkowanie') {
-                return `<div class="action-inline"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button></div>`;
+                return `<div class="action-inline"><button title="Oznacz etap Kołkowanie jako wykonany" class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','pinning')">Wykonano</button></div>`;
             }
             if (stage === 'Lakiernia') {
-                return `<div class="action-inline"><button class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button></div>`;
+                return `<div class="action-inline"><button title="Oznacz etap Lakiernia jako wykonany" class="btn-main stage-complete-btn" onclick="completeStageWithTime('${o.id}','painting')">Wykonano</button></div>`;
             }
             return '';
         }
 
         function compactNotesHtml(o) {
             const notes = [o.description, o.planner_notes, o.shop_notes ? 'Obróbka: ' + o.shop_notes : ''].filter(Boolean).join(' ');
-            return `<div class="notes-cell-layout"><div class="note-clip" title="${safe(notes)}">${safe(notes || '-')}</div><button class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button></div>`;
+            return `<div class="notes-cell-layout"><div class="note-clip" title="${safe(notes)}">${safe(notes || '-')}</div><button title="Dodaj lub edytuj uwagi do zlecenia" aria-label="Dodaj lub edytuj uwagi do zlecenia" class="btn-small btn-ghost" onclick="noteShop('${o.id}')">Uwagi</button></div>`;
         }
 
         function compactRowHtml(o) {
             const p = progress(o);
+            const stage = currentStage(o);
             return `<tr class="${isLate(o) ? 'row-late' : ''} ${isNewOrder(o) ? 'row-new' : ''}">
-                <td class="col-order"><div class="cell-main">${safe(o.order_no || '-')} ${isNewOrder(o) ? '<span class="new-badge">NOWE</span>' : ''}</div><div class="priority p-${slug(o.priority)}">${safe(o.priority || '')}</div>${compactBadge(o)}</td>
+                <td class="col-order"><div class="cell-main">${safe(o.order_no || '-')} ${isNewOrder(o) ? '<span class="new-badge" title="Zlecenie dodane dzisiaj">NOWE</span>' : ''}</div><div class="priority p-${slug(o.priority)}">${safe(o.priority || '')}</div>${compactBadge(o)}</td>
                 <td class="col-qty">${safe(o.qty || '-')}</td>
                 <td class="col-element"><span class="text-clip" title="${safe(o.element || '')}">${safe(o.element || '-')}</span></td>
                 <td class="col-sap">SAP: <b>${safe(o.sap || '-')}</b><br>${safe(o.owner || '')}</td>
                 <td class="col-date">${safe(o.due_date || '-')}</td>
-                <td class="col-progress"><div class="progress"><div class="bar" style="width:${p}%"></div></div><b>${p}%</b><br><span class="cell-sub">${safe(currentStage(o))}</span></td>
+                <td class="col-progress"><div class="progress progress-${stageKey(stage)}"><div class="bar" style="width:${p}%"></div></div><b>${p}%</b><br><span class="cell-sub">${safe(stage)}</span></td>
                 <td class="col-notes">${compactNotesHtml(o)}</td>
                 <td class="col-action">${compactActionHtml(o)}</td>
             </tr>`;
