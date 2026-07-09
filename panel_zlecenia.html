@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Produkcji CNC</title>
+  <title>Dashboard OB</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
   <style>
@@ -336,6 +336,47 @@
       .chart-wrap, .chart-small { height: 280px; }
       .tbl { min-width: 900px; }
     }
+  
+    /* V12 KOMPAKT: mniej przewijania, spójniejsze odstępy i czytelniejsze kafelki */
+    :root {
+      --compact-radius: 10px;
+      --compact-gap: 8px;
+    }
+    body { padding: clamp(4px, .7vw, 12px) !important; }
+    .container { padding: clamp(10px, 1vw, 18px) !important; border-radius: 12px !important; }
+    .header { margin-bottom: 12px !important; padding-bottom: 9px !important; gap: 10px !important; }
+    h1 { font-size: clamp(20px, 1.35vw, 28px) !important; }
+    h2 { font-size: clamp(15px, 1vw, 19px) !important; margin-bottom: 8px !important; }
+    .muted { line-height: 1.25 !important; }
+    .controls, .row { gap: 7px !important; }
+    button, .btn { padding: 8px 10px !important; border-radius: 7px !important; }
+    .btn-small { font-size: 11px !important; padding: 6px 8px !important; }
+    input, select, textarea { min-height: 36px !important; padding: 7px 9px !important; border-radius: 7px !important; }
+    textarea { min-height: 62px !important; }
+    .grid { gap: 10px !important; }
+    .card { padding: 10px !important; border-radius: var(--compact-radius) !important; }
+    .stats { gap: 8px !important; margin-bottom: 10px !important; }
+    .stat { padding: 8px !important; border-radius: var(--compact-radius) !important; min-height: 72px !important; }
+    .stat b { font-size: clamp(22px, 1.55vw, 30px) !important; }
+    .stat span { font-size: 10px !important; }
+    th, td { padding: 7px 8px !important; font-size: 13px !important; }
+    th { font-size: 10px !important; }
+    .badge { font-size: 11px !important; padding: 3px 7px !important; }
+    .progress { height: 5px !important; margin: 5px 0 !important; }
+
+    /* V12 KOMPAKT - Dashboard */
+    .stats { grid-template-columns: repeat(7, minmax(105px, 1fr)) !important; }
+    .chart-wrap { height: 260px !important; }
+    .chart-small { height: 240px !important; }
+    .stage-cards { gap: 8px !important; }
+    .stage-card { padding: 9px !important; border-radius: 9px !important; }
+    .stage-card b { font-size: 22px !important; }
+    .stage-card span { font-size: 10px !important; }
+    .stage-card .bar-bg { height: 6px !important; margin-top: 6px !important; }
+    .table-wrap { max-height: 320px !important; }
+    @media(max-width:1400px) { .stats { grid-template-columns: repeat(4, 1fr) !important; } }
+    @media(max-width:800px) { .stats { grid-template-columns: repeat(2, 1fr) !important; } }
+
   </style>
 </head>
 <body>
@@ -343,7 +384,7 @@
 <div class="container">
   <div class="header">
     <div>
-      <h1>Dashboard Produkcji CNC</h1>
+      <h1>Dashboard OB</h1>
       <div class="muted">Prezentacja zleceń Obróbki Blach: ilości miesięczne, statusy, etapy, terminy oraz dane z archiwum.</div>
     </div>
     <div class="controls">
