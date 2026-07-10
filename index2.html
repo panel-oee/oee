@@ -1183,8 +1183,10 @@
     
     var currentDateObj = new Date();
     var currentYear = currentDateObj.getFullYear();
-    var currentMonth = currentDateObj.getMonth(); 
-    var selectedDayGlobal = formatDateKey(currentDateObj);
+    var currentMonth = currentDateObj.getMonth();
+    // Domyślnie pokazujemy ostatni zakończony dzień, bo raport za dzisiaj
+    // często nie jest jeszcze zapisany po odświeżeniu panelu.
+    var selectedDayGlobal = formatDateKey(getDateOffset(currentDateObj, -1));
 
     const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -1202,6 +1204,16 @@
 
     function formatDateKey(date) {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function getDateOffset(baseDate, offsetDays) {
+        const result = new Date(baseDate);
+        result.setDate(result.getDate() + offsetDays);
+        return result;
+    }
+
+    function getDefaultDashboardDay() {
+        return formatDateKey(getDateOffset(new Date(), -1));
     }
 
     function parseDateKey(dateKey) {
@@ -1587,7 +1599,7 @@
             
             currentYear = dynamicDate.getFullYear();
             currentMonth = dynamicDate.getMonth();
-            selectedDayGlobal = formatDateKey(dynamicDate);
+            selectedDayGlobal = getDefaultDashboardDay();
             
             await refreshDashboardView();
         }, CZAS_ODSWIEZANIA_SEKUNDY * 1000);
@@ -1601,7 +1613,7 @@
             "Przemalowanie": { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
             "Zmiana koloru": { border: "#be185d", bg: "#fce7f3", text: "#9d174d" },
             "Brak proszku": { border: "#9333ea", bg: "#f3e8ff", text: "#7e22ce" },
-            "Awaria maszyny": { border: "#2563eb", bg: "#dbeafe", text: "#1d4ed8" },
+            "Awaria maszyny": { border: "#dc2626", bg: "#fee2e2", text: "#991b1b" },
             "Usterka maszyny": { border: "#d97706", bg: "#fef3c7", text: "#92400e" },
             "Czyszczenie/Konserwacja": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
             "Brak przestojów": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
@@ -1612,7 +1624,7 @@
             "Przemalowanie": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#60a5fa" },
             "Zmiana koloru": { border: "#ec4899", bg: "rgba(236, 72, 153, 0.18)", text: "#f472b6" },
             "Brak proszku": { border: "#a855f7", bg: "rgba(168, 85, 247, 0.22)", text: "#d946ef" },
-            "Awaria maszyny": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#93c5fd" },
+            "Awaria maszyny": { border: "#ef4444", bg: "rgba(239, 68, 68, 0.22)", text: "#fca5a5" },
             "Usterka maszyny": { border: "#f59e0b", bg: "rgba(245, 158, 11, 0.20)", text: "#fbbf24" },
             "Czyszczenie/Konserwacja": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
             "Brak przestojów": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
