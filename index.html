@@ -92,7 +92,6 @@
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
-            position: relative;
         }
 
         .controls-wrapper {
@@ -131,19 +130,6 @@
             margin: 0;
             font-weight: 700;
             font-size: 26px;
-        }
-
-        .header-clock {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(24px, 1.8vw, 40px);
-            font-weight: 800;
-            color: #38bdf8;
-            letter-spacing: 1px;
-            white-space: nowrap;
-            font-variant-numeric: tabular-nums;
-            line-height: 1;
         }
         h3 { 
             color: #38bdf8; 
@@ -972,18 +958,6 @@
             }
         }
 
-
-        @media (max-width: 1100px) {
-            .header-clock {
-                position: static;
-                transform: none;
-                order: 3;
-                width: 100%;
-                text-align: center;
-                font-size: clamp(20px, 4vw, 28px);
-                padding-top: 4px;
-            }
-        }
         /* KONIEC BLOKU RESPONSYWNOŚCI V2 */
 
     </style>
@@ -995,7 +969,6 @@
 <div class="container">
     <div class="header-container">
         <h2>Panel Wyników OEE - Lakiernia</h2>
-        <div id="headerClock" class="header-clock">00:00:00</div>
         <div class="controls-wrapper">
             <div style="display: flex; align-items: center; gap: 5px;">
                 <label for="themeChooser">Motyw:</label>
@@ -1311,21 +1284,8 @@
         await renderCommentsBox();
     }
 
-
-    function updateHeaderClock() {
-        const now = new Date();
-        const time =
-            String(now.getHours()).padStart(2, '0') + ':' +
-            String(now.getMinutes()).padStart(2, '0') + ':' +
-            String(now.getSeconds()).padStart(2, '0');
-
-        const clock = document.getElementById('headerClock');
-        if (clock) clock.textContent = time;
-    }
     window.onload = async function() {
-        initTheme();
-        updateHeaderClock();
-        setInterval(updateHeaderClock, 1000);
+        initTheme(); 
         await refreshDashboardView();
 
         const CZAS_ODSWIEZANIA_SEKUNDY = 300; 
@@ -1577,21 +1537,25 @@ function buildCalendar() {
     let firstWeekDay = firstDay.getDay();
     if (firstWeekDay === 0) firstWeekDay = 7;
 
-    const startOffset = firstWeekDay - 1;
+    const calendarStart = new Date(firstDay);
+    calendarStart.setDate(firstDay.getDate() - (firstWeekDay - 1));
 
-    const calendarStart = new Date(currentYear, currentMonth, 1);
-    calendarStart.setDate(calendarStart.getDate() - startOffset);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+
+    let lastWeekDay = lastDay.getDay();
+    if (lastWeekDay === 0) lastWeekDay = 7;
+
+    const calendarEnd = new Date(lastDay);
+    calendarEnd.setDate(lastDay.getDate() + (7 - lastWeekDay));
 
     const systemToday = new Date();
+    let monday = new Date(calendarStart);
 
-    for (let week = 0; week < 5; week++) {
-
-        const monday = new Date(calendarStart);
-        monday.setDate(calendarStart.getDate() + week * 7);
+    while (monday <= calendarEnd) {
 
         const weekCell = document.createElement('div');
         weekCell.className = 'calendar-week-number';
-		weekCell.innerText = "T" + getISOWeekNumber(monday);
+        weekCell.innerText = "T" + getISOWeekNumber(monday);
 
         grid.appendChild(weekCell);
 
@@ -1603,8 +1567,7 @@ function buildCalendar() {
             const day = date.getDate();
             const month = date.getMonth();
             const year = date.getFullYear();
-			const dateKey = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-
+            const dateKey = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 
             const cell = document.createElement('div');
             cell.className = 'calendar-cell';
@@ -1635,29 +1598,28 @@ function buildCalendar() {
             let html =
                 `<span class="calendar-day-num">${day}</span>`;
 
-            
-			if (gemaBazaDanych[dateKey]) {
+            if (gemaBazaDanych[dateKey]) {
 
-			const oeeNum =
-			parseFloat(gemaBazaDanych[dateKey].oee);
+                const oeeNum =
+                    parseFloat(gemaBazaDanych[dateKey].oee);
 
-			if (oeeNum >= OEE_CONFIG.greenMin) {
-			cell.classList.add('oee-good');
-			} else if (oeeNum >= OEE_CONFIG.yellowMin) {
-			cell.classList.add('oee-warn');
-			} else {
-			cell.classList.add('oee-bad');
-			}
+                if (oeeNum >= OEE_CONFIG.greenMin) {
+                    cell.classList.add('oee-good');
+                } else if (oeeNum >= OEE_CONFIG.yellowMin) {
+                    cell.classList.add('oee-warn');
+                } else {
+                    cell.classList.add('oee-bad');
+                }
 
-			html +=
-			`<span class="calendar-day-value">${oeeNum.toFixed(1)}%</span>`;
+                html +=
+                    `<span class="calendar-day-value">${oeeNum.toFixed(1)}%</span>`;
 
-			} else {
+            } else {
 
-			html +=
-			`<span class="calendar-day-value" style="opacity:0.25;">—</span>`;
+                html +=
+                    `<span class="calendar-day-value" style="opacity:0.25;">—</span>`;
 
-			}
+            }
 
             cell.innerHTML = html;
 
@@ -1673,9 +1635,10 @@ function buildCalendar() {
 
             grid.appendChild(cell);
         }
+
+        monday.setDate(monday.getDate() + 7);
     }
 }
-
 
     function calculateTimeDiff(startStr, endStr) {
         if (!startStr || !endStr) return "—";
