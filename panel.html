@@ -334,6 +334,9 @@
         tr:hover { background: var(--table-hover); }
         .btn-edit-row { background: #2563eb; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
         .btn-edit-row:hover { background: #1d4ed8; }
+        .btn-delete-row { background: #dc2626; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-delete-row:hover { background: #b91c1c; }
+        .table-action-buttons { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
         .badge { font-weight: bold; padding: 4px 10px; border-radius: 4px; display: inline-block; color: white; }
         
         .chart-css-container { background: var(--chart-bg); padding: 25px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 25px; }
@@ -1860,6 +1863,47 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    
+    async function deleteDay(dateKey) {
+        const dateObj = parseDateKey(dateKey);
+        const dayLabel = "dnia " + dateObj.getDate() + "." + (dateObj.getMonth() + 1) + "." + dateObj.getFullYear();
+
+        if (!gemaBazaDanych[dateKey]) {
+            alert("Brak zapisanego raportu dla " + dayLabel + ".");
+            return;
+        }
+
+        if (!confirm("Czy na pewno chcesz usunąć raport dla " + dayLabel + "?\n\nTej operacji nie można cofnąć.")) return;
+
+        try {
+            const { error } = await supabaseClient
+                .from('oee_reports')
+                .delete()
+                .eq('date', dateKey);
+
+            if (error) throw error;
+
+            delete gemaBazaDanych[dateKey];
+            localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
+
+            if (selectedDayGlobal === dateKey) {
+                isEditMode = false;
+                hasUnsavedChanges = false;
+                document.getElementById('editBanner').style.display = "none";
+                document.getElementById('btnSubmit').innerText = "ZAPISZ RAPORT W BAZIE CHMURY";
+                document.getElementById('btnSubmit').style.background = "#059669";
+            }
+
+            buildCalendar();
+            selectDay(dateKey);
+            renderTableAndChart();
+            alert("Usunięto raport dla " + dayLabel + ".");
+        } catch (err) {
+            console.error("Błąd usuwania raportu z Supabase:", err.message);
+            alert("BŁĄD USUWANIA W CHMURZE: " + err.message + "\nRaport nie został usunięty z serwera.");
+        }
+    }
+
     function restoreLatestCounters() {
         var previousRecord = findPreviousRecord(selectedDayGlobal);
 
@@ -1962,7 +2006,7 @@
 
                 var notesDisplay = rec.notes ? rec.notes : "—";
                 var row = tbody.insertRow();
-                row.innerHTML = `<td><strong>Dzień ${rec.day}</strong></td><td>${rec.meters} m</td><td>${rec.pieces} szt</td><td>${rec.bad} szt</td><td>${rec.av}%</td><td>${rec.perf}%</td><td>${rec.qual}%</td><td><span class="badge" style="background-color: ${flatColor};">${rec.oee}%</span></td><td style="text-align:left; font-size:13px; font-style:italic; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${notesDisplay}">${notesDisplay}</td><td><button class="btn-edit-row" onclick="editDay('${dateKey}')">Edytuj</button></td>`;
+                row.innerHTML = `<td><strong>Dzień ${rec.day}</strong></td><td>${rec.meters} m</td><td>${rec.pieces} szt</td><td>${rec.bad} szt</td><td>${rec.av}%</td><td>${rec.perf}%</td><td>${rec.qual}%</td><td><span class="badge" style="background-color: ${flatColor};">${rec.oee}%</span></td><td style="text-align:left; font-size:13px; font-style:italic; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${notesDisplay}">${notesDisplay}</td><td><div class="table-action-buttons"><button class="btn-edit-row" onclick="editDay('${dateKey}')">Edytuj</button><button class="btn-delete-row" onclick="deleteDay('${dateKey}')">Usuń</button></div></td>`;
             } else {
                 bar.style.height = '0%';
             }
