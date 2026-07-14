@@ -960,9 +960,15 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var currentDateObj = new Date();
-    // Domyślnie wybieramy poprzedni dzień, bo wpisywany jest raport za dzień zakończony.
-    // Przykład: 14.07 panel po uruchomieniu automatycznie ustawi 13.07.
+    // Domyślnie wybieramy poprzedni dzień roboczy, pomijając sobotę i niedzielę.
+    // Przykłady:
+    // - wtorek 14.07 -> poniedziałek 13.07
+    // - poniedziałek 13.07 -> piątek 10.07
+    // - niedziela/sobota -> piątek
     currentDateObj.setDate(currentDateObj.getDate() - 1);
+    while (currentDateObj.getDay() === 0 || currentDateObj.getDay() === 6) {
+        currentDateObj.setDate(currentDateObj.getDate() - 1);
+    }
     var currentYear = currentDateObj.getFullYear();
     var currentMonth = currentDateObj.getMonth();
     var selectedDayGlobal = formatDateKey(currentDateObj);
