@@ -960,6 +960,9 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var currentDateObj = new Date();
+    // Domyślnie wybieramy poprzedni dzień, bo wpisywany jest raport za dzień zakończony.
+    // Przykład: 14.07 panel po uruchomieniu automatycznie ustawi 13.07.
+    currentDateObj.setDate(currentDateObj.getDate() - 1);
     var currentYear = currentDateObj.getFullYear();
     var currentMonth = currentDateObj.getMonth();
     var selectedDayGlobal = formatDateKey(currentDateObj);
