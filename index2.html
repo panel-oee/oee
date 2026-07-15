@@ -1418,7 +1418,7 @@
     }
 
 
-    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
+    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
     function loadBreakScheduleFromLocalStorage(){try{const saved=localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes'),10)||5));if(saved){const p=JSON.parse(saved);if(Array.isArray(p)&&p.length){BREAK_SCHEDULE=p.map(normalizeBreakItem);return;}}}catch(e){console.warn('Błąd lokalnej konfiguracji przerw:',e.message);}BREAK_SCHEDULE=JSON.parse(JSON.stringify(DEFAULT_BREAK_SCHEDULE)).map(normalizeBreakItem);}
     async function loadBreakScheduleFromSupabase(){try{const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();if(error)throw error;if(data&&Array.isArray(data.schedule)){BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));setupBreakScheduleAutoRefresh();}}catch(e){console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);loadBreakScheduleFromLocalStorage();setupBreakScheduleAutoRefresh();}}
     function setupBreakScheduleAutoRefresh(){if(breakScheduleRefreshTimer)clearInterval(breakScheduleRefreshTimer);breakScheduleRefreshTimer=setInterval(loadBreakScheduleFromSupabase,Math.max(1,Math.min(60,BREAK_REFRESH_MINUTES))*60*1000);}
@@ -1520,10 +1520,38 @@
 
 
     function playTonePattern(pattern, seconds = BREAK_ALERT_DURATION_SECONDS){if(!pattern||pattern==='none')return;try{prepareBreakAudio();if(!breakAudioContext||breakAudioContext.state!=='running'){console.log("Audio nie zostało odblokowane przez przeglądarkę.");return;}const nowAudio=breakAudioContext.currentTime;const endTime=nowAudio+seconds;const master=breakAudioContext.createGain();master.gain.setValueAtTime(.0001,nowAudio);master.gain.exponentialRampToValueAtTime(.35,nowAudio+.03);master.gain.setValueAtTime(.35,Math.max(nowAudio+.05,endTime-.2));master.gain.exponentialRampToValueAtTime(.0001,endTime);master.connect(breakAudioContext.destination);function beep(start,dur,freq,type='sine'){if(start>=endTime)return;const o=breakAudioContext.createOscillator();const g=breakAudioContext.createGain();o.type=type;o.frequency.setValueAtTime(freq,start);g.gain.setValueAtTime(.0001,start);g.gain.exponentialRampToValueAtTime(.55,start+.02);g.gain.setValueAtTime(.55,Math.min(start+dur-.05,endTime));g.gain.exponentialRampToValueAtTime(.0001,Math.min(start+dur,endTime));o.connect(g);g.connect(master);o.start(start);o.stop(Math.min(start+dur+.02,endTime));}let t=nowAudio;if(pattern==='chime'){while(t<endTime){beep(t,.35,880,'sine');beep(t+.38,.45,1175,'sine');t+=1.35;}}else if(pattern==='double'){while(t<endTime){beep(t,.22,760,'square');beep(t+.32,.22,760,'square');t+=1.15;}}else if(pattern==='beep'){while(t<endTime){beep(t,.18,950,'sine');t+=.70;}}}catch(e){console.log("Nie udało się odtworzyć skonfigurowanego dźwięku:",e);}}
-    function playConfiguredBreakAlert(soundType, seconds = BREAK_ALERT_DURATION_SECONDS){if(soundType==='none')return;if(soundType==='chime'||soundType==='double'||soundType==='beep'){playTonePattern(soundType,seconds);return;}playBreakAlert(seconds);}
+    function playCustomBreakAudio(customSoundUrl, seconds = BREAK_ALERT_DURATION_SECONDS) {
+        if (!customSoundUrl) { console.log('Brak URL własnego dźwięku.'); return false; }
+        try {
+            let audio = document.getElementById('breakAlertCustomAudio');
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.id = 'breakAlertCustomAudio';
+                audio.preload = 'auto';
+                audio.setAttribute('playsinline', '');
+                document.body.appendChild(audio);
+            }
+            audio.pause();
+            audio.currentTime = 0;
+            audio.src = customSoundUrl;
+            audio.volume = 1.0;
+            const stopTimer = setTimeout(function() { try { audio.pause(); audio.currentTime = 0; } catch(e) {} }, seconds * 1000);
+            const p = audio.play();
+            if (p && typeof p.then === 'function') {
+                p.then(function(){ console.log('Odtworzono własny dźwięk:', customSoundUrl); })
+                 .catch(function(err){ clearTimeout(stopTimer); console.log('Własny dźwięk zablokowany:', err); });
+            }
+            return true;
+        } catch (err) {
+            console.log('Błąd odtwarzania własnego dźwięku:', err);
+            return false;
+        }
+    }
 
-    function testBreakAlertAudio() {
-        playBreakAlert(5);
+    function playConfiguredBreakAlert(soundType, seconds = BREAK_ALERT_DURATION_SECONDS, customSoundUrl = ''){if(soundType==='none')return;if(soundType==='custom'){playCustomBreakAudio(customSoundUrl,seconds);return;}if(soundType==='chime'||soundType==='double'||soundType==='beep'){playTonePattern(soundType,seconds);return;}playBreakAlert(seconds);}
+
+    function testBreakAlertAudio(soundType = 'siren', customUrl = '') {
+        playConfiguredBreakAlert(soundType, 5, customUrl);
     }
 
     function getBreakTimingInfo(now) {
@@ -1537,7 +1565,7 @@
             const alertStartSeconds = startSeconds - BREAK_ALERT_DURATION_SECONDS;
             const endSeconds = startSeconds + breakItem.durationMinutes * 60;
             if (currentSeconds >= alertStartSeconds && currentSeconds < endSeconds) {
-                return { start: breakItem.start, end: timeTextFromMinutes(startMinutes + breakItem.durationMinutes), durationMinutes: breakItem.durationMinutes, kind: breakItem.kind, shift: breakItem.shift, title: breakItem.title, subtitle: breakItem.subtitle, soundType: breakItem.soundType, startSeconds: startSeconds, endSeconds: endSeconds, currentSeconds: currentSeconds, remainingSeconds: endSeconds - currentSeconds, isAlertWindow: currentSeconds >= alertStartSeconds && currentSeconds < startSeconds, isBreakWindow: currentSeconds >= startSeconds && currentSeconds < endSeconds };
+                return { start: breakItem.start, end: timeTextFromMinutes(startMinutes + breakItem.durationMinutes), durationMinutes: breakItem.durationMinutes, kind: breakItem.kind, shift: breakItem.shift, title: breakItem.title, subtitle: breakItem.subtitle, soundType: breakItem.soundType, customSoundUrl: breakItem.customSoundUrl, customSoundName: breakItem.customSoundName, startSeconds: startSeconds, endSeconds: endSeconds, currentSeconds: currentSeconds, remainingSeconds: endSeconds - currentSeconds, isAlertWindow: currentSeconds >= alertStartSeconds && currentSeconds < startSeconds, isBreakWindow: currentSeconds >= startSeconds && currentSeconds < endSeconds };
             }
         }
         return null;
@@ -1566,7 +1594,7 @@
             if (lastBreakAlertKey !== alertKey) {
                 lastBreakAlertKey = alertKey;
                 const secondsToBreak = timing.startSeconds - timing.currentSeconds;
-                playConfiguredBreakAlert(timing.soundType || (timing.kind === '6S' ? 'chime' : 'siren'), Math.max(1, Math.min(BREAK_ALERT_DURATION_SECONDS, secondsToBreak)));
+                playConfiguredBreakAlert(timing.soundType || (timing.kind === '6S' ? 'chime' : 'siren'), Math.max(1, Math.min(BREAK_ALERT_DURATION_SECONDS, secondsToBreak)), timing.customSoundUrl || '');
             }
             return;
         }
