@@ -800,6 +800,152 @@
             white-space: nowrap;
         }
         .break-custom-sound-name.has-file { color: #2dd4bf; }
+
+        /* ==========================================================
+           POPRAWKA UKLADU: konfiguracja przerw + wlasne dzwieki
+           - pola nie nakladaja sie
+           - kolumna DZWIEK ma wiecej miejsca
+           - Podglad/Wgraj nie nachodza na Komunikat
+           ========================================================== */
+        .break-config-modal {
+            max-width: 1500px !important;
+            width: min(1500px, calc(100vw - 28px)) !important;
+            overflow-x: hidden !important;
+        }
+        .break-config-row {
+            grid-template-columns: 100px 92px 115px 105px 190px minmax(320px, 1fr) 90px !important;
+            align-items: start !important;
+            column-gap: 10px !important;
+            row-gap: 12px !important;
+            padding: 14px !important;
+            overflow: visible !important;
+        }
+        .break-config-row > .break-config-field {
+            align-self: start !important;
+            min-width: 0 !important;
+        }
+        .break-config-row > .break-config-field:nth-child(5) {
+            min-width: 0 !important;
+        }
+        .break-config-row > .break-config-field:nth-child(6) {
+            grid-column: 6 / span 2 !important;
+        }
+        .break-config-row > .break-config-field:nth-child(7) {
+            grid-column: 1 / span 4 !important;
+        }
+        .break-config-row > .break-config-field:nth-child(8) {
+            grid-column: 5 / span 2 !important;
+            min-width: 0 !important;
+        }
+        .break-config-row > .break-config-field:nth-child(9) {
+            grid-column: 7 !important;
+            min-width: 80px !important;
+        }
+        .break-config-field input,
+        .break-config-field select {
+            height: 44px !important;
+            min-height: 44px !important;
+            font-size: 14px !important;
+        }
+        .break-custom-sound-tools {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 6px !important;
+            margin-top: 6px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        .break-sound-preview-btn,
+        .break-custom-sound-btn {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 4px 6px !important;
+            font-size: 11px !important;
+            line-height: 1.05 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .break-custom-sound-name {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            margin-top: 0 !important;
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+        .break-days-grid {
+            width: 100% !important;
+            max-width: 100% !important;
+            grid-template-columns: repeat(7, minmax(31px, 36px)) !important;
+        }
+        .break-config-row.break-new-row {
+            padding-top: 38px !important;
+            overflow: visible !important;
+            clip-path: none !important;
+        }
+        .break-config-row.break-new-row::before {
+            top: 9px !important;
+            right: 14px !important;
+            max-width: calc(100% - 28px) !important;
+        }
+        @media (max-width: 1320px) {
+            .break-config-row {
+                grid-template-columns: 96px 88px 110px 100px 180px minmax(260px, 1fr) 86px !important;
+            }
+        }
+        @media (max-width: 1120px) {
+            .break-config-row {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            }
+            .break-config-row > .break-config-field:nth-child(1),
+            .break-config-row > .break-config-field:nth-child(2),
+            .break-config-row > .break-config-field:nth-child(3),
+            .break-config-row > .break-config-field:nth-child(4),
+            .break-config-row > .break-config-field:nth-child(5),
+            .break-config-row > .break-config-field:nth-child(6),
+            .break-config-row > .break-config-field:nth-child(7),
+            .break-config-row > .break-config-field:nth-child(8),
+            .break-config-row > .break-config-field:nth-child(9) {
+                grid-column: auto !important;
+            }
+            .break-config-row > .break-config-field:nth-child(5) { grid-column: 1 / span 2 !important; }
+            .break-config-row > .break-config-field:nth-child(6) { grid-column: 3 / span 2 !important; }
+            .break-config-row > .break-config-field:nth-child(7) { grid-column: 1 / span 2 !important; }
+            .break-config-row > .break-config-field:nth-child(8) { grid-column: 3 / span 2 !important; }
+            .break-config-row > .break-config-field:nth-child(9) { grid-column: 1 / -1 !important; align-items: flex-start !important; }
+        }
+        @media (max-width: 820px) {
+            .break-config-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .break-config-row > .break-config-field:nth-child(5),
+            .break-config-row > .break-config-field:nth-child(6),
+            .break-config-row > .break-config-field:nth-child(7),
+            .break-config-row > .break-config-field:nth-child(8),
+            .break-config-row > .break-config-field:nth-child(9) {
+                grid-column: 1 / -1 !important;
+            }
+        }
+        @media (max-width: 560px) {
+            .break-config-row {
+                grid-template-columns: 1fr !important;
+            }
+            .break-config-row > .break-config-field {
+                grid-column: 1 / -1 !important;
+            }
+        }
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
