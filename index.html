@@ -407,6 +407,17 @@
             z-index: 1;
             pointer-events: none;
         }
+        .chart-line-guide.chart-critical-guide {
+            border-top: 4px dashed #ef4444;
+            opacity: 1;
+            z-index: 4;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
+        }
+        .chart-line-guide.chart-critical-guide .chart-line-label {
+            color: #ef4444;
+            font-weight: 900;
+        }
+
         .chart-line-label {
             position: absolute;
             left: -48px;
@@ -420,9 +431,9 @@
             position: absolute;
             left: 0;
             right: 0;
-            border-top: 3px solid #f43f5e; 
-            box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
-            z-index: 3;
+            border-top: 4px solid #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.45);
+            z-index: 5;
             pointer-events: none;
         }
 
@@ -1082,8 +1093,44 @@
         target: 70,                   
         greenMin: 70,                 
         yellowMin: 60,                
-        chartGuides: [50, 60, 75, 80]  
+        criticalGuide: 45,
+        targetColor: '#38bdf8',
+        criticalColor: '#ef4444',
+        chartGuides: [45, 50, 60, 75, 80]  
     };
+
+    let CRITICAL_OEE_GUIDE = 45;
+    function readStoredCriticalGuide(value, fallback = 45) {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            value = value.critical ?? value.criticalGuide ?? value.critical_guide ?? fallback;
+        }
+        const parsed = parseFloat(value);
+        return (!isNaN(parsed) && parsed >= 0 && parsed <= 100) ? parsed : fallback;
+    }
+    function normalizeChartGuides(guides, criticalGuide = CRITICAL_OEE_GUIDE) {
+        let normalized = Array.isArray(guides) ? guides : String(guides || '').split(',');
+        normalized = normalized
+            .map(v => parseFloat(v))
+            .filter(v => !isNaN(v) && v >= 0 && v <= 100);
+        const critical = readStoredCriticalGuide(criticalGuide, 45);
+        if (!normalized.some(v => Math.abs(v - critical) < 0.001)) {
+            normalized.push(critical);
+        }
+        return [...new Set(normalized)].sort((a, b) => a - b);
+    }
+    function normalizeHexColor(color, fallback) {
+        const value = String(color || '').trim();
+        return /^#[0-9A-Fa-f]{6}$/.test(value) ? value : fallback;
+    }
+    function hexToRgba(hex, alpha) {
+        const safeHex = normalizeHexColor(hex, '#000000');
+        const r = parseInt(safeHex.slice(1, 3), 16);
+        const g = parseInt(safeHex.slice(3, 5), 16);
+        const b = parseInt(safeHex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+
     // =========================================================================
 
     var gemaBazaDanych = {};
@@ -1191,7 +1238,10 @@
                     target: parseInt(data.target, 10),
                     greenMin: parseInt(data.green_min, 10),
                     yellowMin: parseInt(data.yellow_min, 10),
-                    chartGuides: data.chart_guides || [50, 60, 75, 80]
+                    criticalGuide: readStoredCriticalGuide(data.critical_guide, 45),
+                    targetColor: normalizeHexColor(data.target_color, '#38bdf8'),
+                    criticalColor: normalizeHexColor(data.critical_color, '#ef4444'),
+                    chartGuides: normalizeChartGuides(data.chart_guides || [45, 50, 60, 75, 80], readStoredCriticalGuide(data.critical_guide, 45))
                 };
                 console.log("Konfiguracja OEE załadowana z bazy:", OEE_CONFIG);
             }
@@ -1877,12 +1927,20 @@ function buildCalendar() {
         var chartGrid = document.getElementById('chartGrid');
         chartGrid.innerHTML = "";
 
-        const targetLines = OEE_CONFIG.chartGuides;
+        CRITICAL_OEE_GUIDE = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+        const targetLines = normalizeChartGuides(OEE_CONFIG.chartGuides, CRITICAL_OEE_GUIDE);
         targetLines.forEach(function(t) {
             var guide = document.createElement('div');
-            guide.className = 'chart-line-guide';
+            guide.className = 'chart-line-guide' + (Math.abs(Number(t) - Number(CRITICAL_OEE_GUIDE)) < 0.001 ? ' chart-critical-guide' : '');
             guide.style.bottom = t + '%';
             guide.innerHTML = `<span class="chart-line-label">${t}%</span>`;
+            if (Math.abs(Number(t) - Number(CRITICAL_OEE_GUIDE)) < 0.001) {
+                const criticalColor = normalizeHexColor(OEE_CONFIG.criticalColor, '#ef4444');
+                guide.style.borderTopColor = criticalColor;
+                guide.style.boxShadow = `0 0 10px ${hexToRgba(criticalColor, 0.45)}`;
+                const criticalLabel = guide.querySelector('.chart-line-label');
+                if (criticalLabel) criticalLabel.style.color = criticalColor;
+            }
             chartGrid.appendChild(guide);
         });
 
