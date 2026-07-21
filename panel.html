@@ -967,6 +967,44 @@
                 grid-column: 1 / -1 !important;
             }
         }
+
+        /* PAKIET DYREKTORSKI V2: alerty, trend, Pareto */
+        .director-insights-box{background:var(--bg-inputs-flex);border:1px solid var(--border-color);border-radius:10px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;}
+        .director-insight-card{background:var(--bg-container);border:1px solid var(--border-color);border-left:5px solid #38bdf8;border-radius:8px;padding:9px 10px;min-width:0;}
+        .director-insight-card.alert{border-left-color:#ef4444}.director-insight-card.warn{border-left-color:#f59e0b}.director-insight-card.good{border-left-color:#10b981}
+        .director-insight-label{color:var(--text-muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.35px;margin-bottom:4px}.director-insight-value{color:var(--text-main);font-size:16px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}.director-insight-sub{color:var(--text-muted);font-size:11px;font-weight:700;margin-top:3px;line-height:1.25}
+        .director-pareto-list{grid-column:1/-1;display:grid;gap:5px}.director-pareto-row{display:grid;grid-template-columns:minmax(130px,1fr) 70px 48px;gap:8px;align-items:center;font-size:12px;color:var(--text-main)}.director-pareto-bar{height:8px;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b);box-shadow:0 0 8px rgba(239,68,68,.25)}
+
+
+        /* PAKIET DYREKTORSKI V3: wkomponowany pasek w podsumowanie OEE */
+        .director-summary-strip{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:0;}
+        .director-mini-card{background:var(--bg-container);border:1px solid var(--border-color);border-top:4px solid #38bdf8;border-radius:8px;padding:10px 12px;text-align:center;min-width:0;}
+        .director-mini-card.good{border-top-color:#10b981}.director-mini-card.warn{border-top-color:#f59e0b}.director-mini-card.alert{border-top-color:#ef4444}
+        .director-mini-label{font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}.director-mini-value{font-size:18px;font-weight:900;color:var(--text-main);line-height:1.08;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.director-mini-sub{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.2;margin-top:4px;}
+        @media(max-width:900px){.director-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:520px){.director-summary-strip{grid-template-columns:1fr;}}
+
+
+        /* POPRAWKA TRYBU OPERATORA FINAL: wyraźna różnica względem trybu kierownika */
+        body.operator-mode .header-controls > button.btn-config-trigger { display: none !important; }
+        body.operator-mode .btn-box .btn-export { display: none !important; }
+        body.operator-mode .history-section { display: none !important; }
+        body.operator-mode .btn-delete-row, body.operator-mode .btn-edit-row { display: none !important; }
+        body.operator-mode .btn-box { grid-template-columns: 1fr !important; }
+        body.operator-mode #btnSubmit { width: 100% !important; min-width: 0 !important; }
+        body.operator-mode .calendar-header > button.btn-config-trigger { display: inline-flex !important; }
+        body.operator-mode .container::before {
+            content: "TRYB OPERATORA - uproszczony widok zapisu raportu";
+            display: block; background: rgba(16,185,129,.14); border: 1px solid #10b981; color: #34d399;
+            font-weight: 900; letter-spacing: .3px; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;
+            text-align: center; text-transform: uppercase; font-size: 12px;
+        }
+        body:not(.operator-mode) .container::before {
+            content: "TRYB KIEROWNIKA - pełna konfiguracja i historia";
+            display: block; background: rgba(59,130,246,.10); border: 1px solid #2563eb; color: #93c5fd;
+            font-weight: 900; letter-spacing: .3px; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;
+            text-align: center; text-transform: uppercase; font-size: 12px;
+        }
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -977,6 +1015,7 @@
     <div class="header-container">
         <h2>Miesięczny Panel OEE - Lakiernia</h2>
         <div class="header-controls">
+            <select id="operatorModeChooser" class="theme-select" onchange="setPanelMode(this.value)"><option value="manager">Tryb kierownika</option><option value="operator">Tryb operatora</option></select>
             <button class="btn-config-trigger" onclick="openConfigModal()">⚙️ Konfiguracja progów</button>
             <button class="btn-config-trigger" onclick="openBreakScheduleConfig()">⏱️ Konfiguracja przerw</button>
             <div class="theme-switcher">
@@ -1029,6 +1068,10 @@
                     <input type="number" id="cleaningMinutes" value="30">
                 </div>
                 <div class="form-group">
+                    <label>Serwis (minuty):</label>
+                    <input type="number" id="serviceMinutes" value="0">
+                </div>
+                <div class="form-group">
                     <label>Sztuki wadliwe (poprawki):</label>
                     <input type="number" id="badPieces" value="0">
                 </div>
@@ -1040,7 +1083,8 @@
                         <option value="Zmiana koloru">🎨 Zmiana koloru</option>
 						<option value="Przemalowanie">🖌️ Przemalowanie</option>
                         <option value="Awaria maszyny">⚙️ Awaria maszyny</option>
-						<option value="Usterka maszyny">🔧 Usterka maszyny</option>
+						<option value="Usterka maszyny">🔧 Usterka maszyny</option>                        <option value="Serwis">🛠️ Serwis</option>
+
                         <option value="Czyszczenie/Konserwacja">🧹 Czyszczenie/Konserwacja</option>
                         <option value="Brak proszku">📦 Brak proszku</option>
                         <option value="Inne">⚠️ Inne</option>
@@ -1129,9 +1173,16 @@
             <div class="stat-card-value" id="recordOee">—</div>
             <div class="stat-card-range" id="recordTextInfo">Najwyższy dobowy wynik</div>
         </div>
-    </div>
 
-    <div class="chart-css-container">
+                    <div class="director-summary-strip" id="directorSummaryStrip">
+                        <div class="director-mini-card" id="directorAlertCard"><div class="director-mini-label">Alert</div><div class="director-mini-value" id="directorAlertValue">—</div><div class="director-mini-sub" id="directorAlertInfo">Kontrola raportów</div></div>
+                        <div class="director-mini-card" id="directorTrendCard"><div class="director-mini-label">Trend m/m</div><div class="director-mini-value" id="directorTrendValue">—</div><div class="director-mini-sub" id="directorTrendInfo">Bieżący vs poprzedni</div></div>
+                        <div class="director-mini-card" id="directorNoFailureCard"><div class="director-mini-label">Bez awarii</div><div class="director-mini-value" id="directorNoFailureValue">—</div><div class="director-mini-sub" id="directorNoFailureInfo">Ostatnie wpisy</div></div>
+                        <div class="director-mini-card" id="directorTopLossCard"><div class="director-mini-label">Największa strata</div><div class="director-mini-value" id="directorTopLossValue">—</div><div class="director-mini-sub" id="directorTopLossInfo">Pareto miesiąca</div></div>
+                    </div>
+
+    </div>
+<div class="chart-css-container">
         <div class="chart-css-title">Wykres Wyników OEE [%] za bieżący miesiąc</div>
         <div class="chart-css-grid" id="chartGrid"></div>
     </div>
@@ -1513,6 +1564,34 @@
     }
 
     async function saveBreakScheduleConfig(){BREAK_SCHEDULE=BREAK_SCHEDULE.map(normalizeBreakItem).sort((a,b)=>String(a.shift||'1').localeCompare(String(b.shift||'1'))||minutesFromTimeText(a.start)-minutesFromTimeText(b.start));BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(document.getElementById('breakRefreshMinutes').value,10)||5));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));try{const{error}=await supabaseClient.from('break_schedule_config').upsert({id:1,schedule:BREAK_SCHEDULE,refresh_minutes:BREAK_REFRESH_MINUTES,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error;showBreakScheduleStatus('Zapisano konfigurację przerw w Supabase.');NEW_BREAK_ROW_INDEX=-1;renderBreakScheduleConfigRows();}catch(err){showBreakScheduleStatus('Zapisano lokalnie, ale nie udało się zapisać w Supabase: '+err.message,true);return;}buildBreakSchedulePreview();}
+
+    function directorExtractCategory(note){const text=String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+    function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
+    function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
+    function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
+    function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
+    function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
+    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
+    function renderDirectorInsights(){
+        const alertValue=document.getElementById('directorAlertValue');
+        if(!alertValue)return;
+        const recs=directorCurrentMonthRecords();
+        const avg=directorAvg(recs),prev=directorPrevAvg(),delta=(avg!==null&&prev!==null)?avg-prev:null;
+        const pareto=directorPareto(recs);
+        const noFail=directorDaysNoFailure(recs);
+        const crit=recs.filter(x=>parseFloat(x.rec.oee)<=readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
+        const missing=(function(){const d=new Date();d.setDate(d.getDate()-1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);if(d.getFullYear()!==currentYear||d.getMonth()!==currentMonth)return false;return !gemaBazaDanych[formatDateKey(d)];})();
+        function setCard(cardId,valueId,infoId,value,info,cls,color){const card=document.getElementById(cardId),val=document.getElementById(valueId),sub=document.getElementById(infoId);if(!card||!val||!sub)return;card.classList.remove('good','warn','alert');if(cls)card.classList.add(cls);val.innerText=value;sub.innerText=info;val.style.color=color||'var(--text-main)';}
+        const alertText=missing?'Brak raportu':(crit>0?crit+' dni kryt.':'OK');
+        setCard('directorAlertCard','directorAlertValue','directorAlertInfo',alertText,missing?'Za ostatni dzień roboczy':(crit>0?'Poniżej progu krytycznego':'Brak alertów krytycznych'),missing||crit>0?'alert':'good',missing||crit>0?'#ef4444':'#10b981');
+        const trendText=delta===null?'—':`${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)} pp`;
+        const trendCls=delta===null?'':(delta>=1?'good':(delta<=-1?'alert':'warn'));
+        setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
+        setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
+        setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',pareto.length?`${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x`:'W bieżącym miesiącu',pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
+    }
+
     async function loadOeeConfigFromSupabase() {
         try {
             const { data, error } = await supabaseClient
@@ -1626,6 +1705,9 @@
         selectedDayGlobal = getDateKeyForDay(1);
 
         await loadDataFromSupabase();
+        const savedPanelMode = localStorage.getItem('gema_panel_mode') || 'manager';
+        document.getElementById('operatorModeChooser').value = savedPanelMode;
+        setPanelMode(savedPanelMode);
         buildCalendar();
         selectDay(selectedDayGlobal);
         renderTableAndChart();
@@ -1662,6 +1744,7 @@
                         targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
                         breakdown: row.breakdown != null ? parseInt(row.breakdown, 10) : 0,
                         cleaning: row.cleaning != null ? parseInt(row.cleaning, 10) : 0,
+                        service: row.service != null ? parseInt(row.service, 10) : 0,
                         bad: row.bad != null ? parseInt(row.bad, 10) : 0,
                         mStart: row.m_start != null ? parseInt(row.m_start, 10) : null,
                         mEnd: row.m_end != null ? parseInt(row.m_end, 10) : null,
@@ -1681,8 +1764,17 @@
             }
         } catch (err) {
             console.error("Błąd połączenia z Supabase, używam bazy lokalnej:", err.message);
-            gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db_dates')) || {};
+    gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db_dates')) || {};
         }
+    }
+
+
+    function setPanelMode(mode) {
+        const isOperator = mode === 'operator';
+        document.body.classList.toggle('operator-mode', isOperator);
+        localStorage.setItem('gema_panel_mode', isOperator ? 'operator' : 'manager');
+        const chooser = document.getElementById('operatorModeChooser');
+        if (chooser) chooser.value = isOperator ? 'operator' : 'manager';
     }
 
     function markChanged() {
@@ -1723,12 +1815,14 @@
         await loadBreakScheduleFromSupabase(false);
         await loadOeeConfigFromSupabase();
         await loadDataFromSupabase();
+        const savedPanelModeOnLoad = localStorage.getItem('gema_panel_mode') || 'manager';
+        setPanelMode(savedPanelModeOnLoad);
 
         buildCalendar();
         setupTimeFormatter(document.getElementById('hStart'));
         setupTimeFormatter(document.getElementById('hEnd'));
 
-        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
+        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'serviceMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 markChanged();
@@ -1967,6 +2061,7 @@
             document.getElementById('targetSpeed').value = rec.targetSpeed;
             document.getElementById('breakdownMinutes').value = rec.breakdown;
             document.getElementById('cleaningMinutes').value = rec.cleaning;
+            document.getElementById('serviceMinutes').value = rec.service || 0;
             document.getElementById('badPieces').value = rec.bad;
             document.getElementById('mStart').value = rec.mStart;
             document.getElementById('mEnd').value = rec.mEnd;
@@ -2001,6 +2096,7 @@
         } else {
             document.getElementById('breakdownMinutes').value = 0;
             document.getElementById('cleaningMinutes').value = 30;
+            document.getElementById('serviceMinutes').value = 0;
             document.getElementById('badPieces').value = 0;
             document.getElementById('downtimeCategory').value = "Brak przestojów";
             document.getElementById('dayNotes').value = "";
@@ -2181,6 +2277,7 @@
         return (hours * 60) + minutes;
     }
 
+    async function directorAuditLog(action,dateKey,oldData,newData,reason){try{await supabaseClient.from('oee_audit_log').insert({action:action,report_date:dateKey,old_data:oldData||null,new_data:newData||null,reason:reason||'',created_at:new Date().toISOString()});}catch(err){console.warn('Nie zapisano audytu zmian OEE:',err.message);}}
     async function saveDataLocally() {
         var dateKey = selectedDayGlobal;
         var selectedDate = parseDateKey(dateKey);
@@ -2189,6 +2286,7 @@
         var targetSpeed = parseFloat(document.getElementById('targetSpeed').value);
         var breakdownMinutes = parseFloat(document.getElementById('breakdownMinutes').value) || 0;
         var cleaningMinutes = parseFloat(document.getElementById('cleaningMinutes').value) || 0;
+        var serviceMinutes = parseFloat(document.getElementById('serviceMinutes').value) || 0;
         var badPieces = parseFloat(document.getElementById('badPieces').value) || 0;
 
         var category = document.getElementById('downtimeCategory').value;
@@ -2197,7 +2295,31 @@
         if (category !== "Brak przestojów") {
             dayNotes = `[${category}] ${noteText}`;
         }
+        // DYREKTORSKA KONTROLA DANYCH: wymagamy rzetelnego opisu strat.
+        if ((category !== "Brak przestojów" || parseFloat(document.getElementById('breakdownMinutes').value) > 0) && noteText.length < 3) { alert("Wpisz krótką notatkę dla przestoju/awarii."); return; }
+        if (parseFloat(document.getElementById('breakdownMinutes').value) > 0 && category === "Brak przestojów") { alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę."); return; }
 
+        // WALIDACJA SERWISU I STRAT: dane muszą być logiczne przed zapisem.
+        if (breakdownMinutes < 0 || cleaningMinutes < 0 || serviceMinutes < 0 || badPieces < 0) {
+            alert("Minuty awarii, czyszczenia, serwisu oraz liczba poprawek nie mogą być ujemne.");
+            return;
+        }
+        if ((category !== "Brak przestojów" || breakdownMinutes > 0 || serviceMinutes > 0) && noteText.length < 3) {
+            alert("Wpisz krótką notatkę dla przestoju/awarii/serwisu. Minimum 3 znaki.");
+            return;
+        }
+        if (breakdownMinutes > 0 && category === "Brak przestojów") {
+            alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę.");
+            return;
+        }
+        if (serviceMinutes > 0 && category !== "Serwis") {
+            alert("Podano czas serwisu, więc główna przyczyna przestoju musi być ustawiona na Serwis.");
+            return;
+        }
+        if (category === "Serwis" && serviceMinutes <= 0) {
+            alert("Wybrano kategorię Serwis — wpisz czas serwisu w minutach.");
+            return;
+        }
         var valMStart = document.getElementById('mStart').value;
         var valMEnd = document.getElementById('mEnd').value;
         var valPcsStart = document.getElementById('pcsStart').value;
@@ -2221,7 +2343,7 @@
         if (diffWorkingMinutes <= 0) errorMessage += "• Licznik czasu KONIEC musi wskazywać większą wartość niż START.\n";
         if (isNaN(diffMeters) || diffMeters < 0) errorMessage += "• Licznik metrów KONIEC nie może być mniejszy niż START.\n";
         if (isNaN(diffPieces) || diffPieces < 0) errorMessage += "• Licznik sztuk KONIEC nie może być mniejszy niż START.\n";
-        if ((breakdownMinutes + cleaningMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii i czyszczenia nie może przekraczać całkowitego czasu załączenia linii.\n";
+        if ((breakdownMinutes + cleaningMinutes + serviceMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii, czyszczenia i serwisu nie może przekraczać całkowitego czasu załączenia linii.\n";
 
         var prev = findPreviousRecordWithKey(dateKey);
         if (prev) {
@@ -2260,19 +2382,23 @@
             return;
         }
 
-        var totalLoss = breakdownMinutes + cleaningMinutes;
+        var totalLoss = breakdownMinutes + cleaningMinutes + serviceMinutes;
         var basePlannedTime = diffWorkingMinutes;
         var availability = basePlannedTime > 0 ? Math.max(0, Math.min(1, (basePlannedTime - totalLoss) / basePlannedTime)) : 0;
         var pureWorkingTime = Math.max(1, diffWorkingMinutes - totalLoss);
         var performance = diffMeters > 0 ? Math.max(0, Math.min(1, diffMeters / (pureWorkingTime * targetSpeed))) : 0;
         var quality = diffPieces > 0 ? Math.max(0, Math.min(1, (diffPieces - badPieces) / diffPieces)) : 1;
         var oee = availability * performance * quality;
+        var oeePercentForControl = oee * 100;
+        if ((oeePercentForControl < OEE_CONFIG.yellowMin || oeePercentForControl <= readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45)) && (category === "Brak przestojów" || noteText.length < 3)) { alert("OEE poniżej progu wymaga wskazania kategorii i krótkiej notatki przyczyny."); return; }
 
+        const oldAuditRecord = gemaBazaDanych[dateKey] ? JSON.parse(JSON.stringify(gemaBazaDanych[dateKey])) : null;
         const dbRow = {
             date: dateKey,
             target_speed: targetSpeed,
             breakdown: breakdownMinutes,
             cleaning: cleaningMinutes,
+            service: serviceMinutes,
             bad: badPieces,
             m_start: parseInt(valMStart, 10),
             m_end: parseInt(valMEnd, 10),
@@ -2302,6 +2428,7 @@
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,
                 cleaning: cleaningMinutes,
+                service: serviceMinutes,
                 bad: badPieces,
                 mStart: parseInt(valMStart, 10),
                 mEnd: parseInt(valMEnd, 10),
@@ -2319,6 +2446,7 @@
             };
 
             localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
+            await directorAuditLog(isEditMode ? 'edit' : 'create', dateKey, oldAuditRecord, gemaBazaDanych[dateKey], noteText);
             hasUnsavedChanges = false;
 
             if (isEditMode) {
@@ -2533,6 +2661,7 @@
         }
 
         calculateWeeklyAverageFromDay(selectedDayGlobal);
+        renderDirectorInsights();
     }
 
     function copyToExcelClipboard() {
