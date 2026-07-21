@@ -971,7 +971,24 @@
 
         /* KONIEC BLOKU RESPONSYWNOŚCI V2 */
 
-    </style>
+    
+        /* PAKIET DYREKTORSKI V2: alerty, trend, Pareto */
+        .director-insights-box{background:var(--bg-inputs-flex);border:1px solid var(--border-color);border-radius:10px;padding:12px;margin-bottom:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;}
+        .director-insight-card{background:var(--bg-container);border:1px solid var(--border-color);border-left:5px solid #38bdf8;border-radius:8px;padding:9px 10px;min-width:0;}
+        .director-insight-card.alert{border-left-color:#ef4444}.director-insight-card.warn{border-left-color:#f59e0b}.director-insight-card.good{border-left-color:#10b981}
+        .director-insight-label{color:var(--text-muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.35px;margin-bottom:4px}.director-insight-value{color:var(--text-main);font-size:16px;font-weight:900;line-height:1.18;overflow-wrap:anywhere}.director-insight-sub{color:var(--text-muted);font-size:11px;font-weight:700;margin-top:3px;line-height:1.25}
+        .director-pareto-list{grid-column:1/-1;display:grid;gap:5px}.director-pareto-row{display:grid;grid-template-columns:minmax(130px,1fr) 70px 48px;gap:8px;align-items:center;font-size:12px;color:var(--text-main)}.director-pareto-bar{height:8px;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b);box-shadow:0 0 8px rgba(239,68,68,.25)}
+        body.operator-mode .btn-config-trigger, body.operator-mode .history-section{display:none!important}body.operator-mode .header-controls .theme-switcher{margin-left:auto}
+
+
+        /* PAKIET DYREKTORSKI V3: wkomponowany pasek w podsumowanie OEE */
+        .director-summary-strip{grid-column:1 / -1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:0;}
+        .director-mini-card{background:var(--bg-container);border:1px solid var(--border-color);border-top:4px solid #38bdf8;border-radius:8px;padding:10px 12px;text-align:center;min-width:0;}
+        .director-mini-card.good{border-top-color:#10b981}.director-mini-card.warn{border-top-color:#f59e0b}.director-mini-card.alert{border-top-color:#ef4444}
+        .director-mini-label{font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}.director-mini-value{font-size:18px;font-weight:900;color:var(--text-main);line-height:1.08;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.director-mini-sub{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.2;margin-top:4px;}
+        @media(max-width:900px){.director-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:520px){.director-summary-strip{grid-template-columns:1fr;}}
+
+</style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1059,6 +1076,14 @@
                         <div class="stat-card-value" id="recordOee">—</div>
                         <div class="stat-card-range" id="recordTextInfo">Najwyższy dobowy wynik</div>
                     </div>
+
+                    <div class="director-summary-strip" id="directorSummaryStrip">
+                        <div class="director-mini-card" id="directorAlertCard"><div class="director-mini-label">Alert</div><div class="director-mini-value" id="directorAlertValue">—</div><div class="director-mini-sub" id="directorAlertInfo">Kontrola raportów</div></div>
+                        <div class="director-mini-card" id="directorTrendCard"><div class="director-mini-label">Trend m/m</div><div class="director-mini-value" id="directorTrendValue">—</div><div class="director-mini-sub" id="directorTrendInfo">Bieżący vs poprzedni</div></div>
+                        <div class="director-mini-card" id="directorNoFailureCard"><div class="director-mini-label">Bez awarii</div><div class="director-mini-value" id="directorNoFailureValue">—</div><div class="director-mini-sub" id="directorNoFailureInfo">Ostatnie wpisy</div></div>
+                        <div class="director-mini-card" id="directorTopLossCard"><div class="director-mini-label">Największa strata</div><div class="director-mini-value" id="directorTopLossValue">—</div><div class="director-mini-sub" id="directorTopLossInfo">Pareto miesiąca</div></div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -1075,7 +1100,7 @@
             <div class="panel-section right-bottom-section">
                 <div class="comments-box-container">
                     <div class="comments-box-title">Uwagi i zakłócenia pracy lakierni w wybranym miesiącu</div>
-                    <div class="comments-box-list" id="commentsBoxList"></div>
+<div class="comments-box-list" id="commentsBoxList"></div>
                 </div>
             </div>
 
@@ -1153,6 +1178,7 @@
         "Przemalowanie": "🖌️",
         "Awaria maszyny": "⚙️",
 		"Usterka maszyny": "🔧",
+        "Serwis": "🛠️",
         "Czyszczenie/Konserwacja": "🧹",
         "Brak proszku": "📦",
         "Inne": "⚠️"
@@ -1361,6 +1387,7 @@
             "Brak proszku": { border: "#9333ea", bg: "#f3e8ff", text: "#7e22ce" },
             "Awaria maszyny": { border: "#dc2626", bg: "#fee2e2", text: "#991b1b" },
             "Usterka maszyny": { border: "#d97706", bg: "#fef3c7", text: "#92400e" },
+            "Serwis": { border: "#0ea5e9", bg: "#e0f2fe", text: "#075985" },
             "Czyszczenie/Konserwacja": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
             "Brak przestojów": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
             "Inne": { border: "#475569", bg: "#e2e8f0", text: "#334155" }
@@ -1372,6 +1399,7 @@
             "Brak proszku": { border: "#a855f7", bg: "rgba(168, 85, 247, 0.22)", text: "#d946ef" },
             "Awaria maszyny": { border: "#ef4444", bg: "rgba(239, 68, 68, 0.22)", text: "#fca5a5" },
             "Usterka maszyny": { border: "#f59e0b", bg: "rgba(245, 158, 11, 0.20)", text: "#fbbf24" },
+            "Serwis": { border: "#38bdf8", bg: "rgba(14, 165, 233, 0.20)", text: "#7dd3fc" },
             "Czyszczenie/Konserwacja": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
             "Brak przestojów": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
             "Inne": { border: "#64748b", bg: "rgba(100, 116, 139, 0.26)", text: "#cbd5e1" }
@@ -1384,7 +1412,36 @@
         );
     }
 
+
+    function directorExtractCategory(note){const text=String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+    function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
+    function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
+    function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
+    function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
+    function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
+    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}if(sv>0){const c='Serwis';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=sv;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
+    function renderDirectorInsights(){
+        const alertValue=document.getElementById('directorAlertValue');
+        if(!alertValue)return;
+        const recs=directorCurrentMonthRecords();
+        const avg=directorAvg(recs),prev=directorPrevAvg(),delta=(avg!==null&&prev!==null)?avg-prev:null;
+        const pareto=directorPareto(recs);
+        const noFail=directorDaysNoFailure(recs);
+        const crit=recs.filter(x=>parseFloat(x.rec.oee)<=readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
+        const missing=(function(){const d=new Date();d.setDate(d.getDate()-1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);if(d.getFullYear()!==currentYear||d.getMonth()!==currentMonth)return false;return !gemaBazaDanych[formatDateKey(d)];})();
+        function setCard(cardId,valueId,infoId,value,info,cls,color){const card=document.getElementById(cardId),val=document.getElementById(valueId),sub=document.getElementById(infoId);if(!card||!val||!sub)return;card.classList.remove('good','warn','alert');if(cls)card.classList.add(cls);val.innerText=value;sub.innerText=info;val.style.color=color||'var(--text-main)';}
+        const alertText=missing?'Brak raportu':(crit>0?crit+' dni kryt.':'OK');
+        setCard('directorAlertCard','directorAlertValue','directorAlertInfo',alertText,missing?'Za ostatni dzień roboczy':(crit>0?'Poniżej progu krytycznego':'Brak alertów krytycznych'),missing||crit>0?'alert':'good',missing||crit>0?'#ef4444':'#10b981');
+        const trendText=delta===null?'—':`${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)} pp`;
+        const trendCls=delta===null?'':(delta>=1?'good':(delta<=-1?'alert':'warn'));
+        setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
+        setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
+        setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',pareto.length?`${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x`:'W bieżącym miesiącu',pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
+    }
+
     async function renderCommentsBox() {
+        renderDirectorInsights();
         var listContainer = document.getElementById('commentsBoxList');
         var titleEl = document.querySelector('.comments-box-title');
 
