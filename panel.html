@@ -1006,8 +1006,44 @@
         }
 
 
-        /* MODUL 6S PANEL: historia odklikania */
-        .sixs-history-section{margin-top:25px;background:var(--bg-inputs-flex);border:1px solid var(--border-color);border-radius:10px;padding:16px;}.sixs-history-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.sixs-history-toolbar input,.sixs-history-toolbar select{max-width:190px}.sixs-status-done{color:#10b981;font-weight:900}.sixs-status-skipped{color:#f59e0b;font-weight:900}.sixs-status-problem{color:#ef4444;font-weight:900}
+        /* MODUL 6S PANEL MODAL: konfiguracja jak okno przerw */
+        .sixs-config-grid{display:grid;grid-template-columns:1.1fr 1.8fr;gap:14px;margin-top:14px}.sixs-mini-form{background:rgba(15,23,42,.25);border:1px solid var(--border-color);border-radius:10px;padding:12px}.sixs-mini-form input,.sixs-mini-form select{width:100%;margin:4px 0 8px}.sixs-history-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.sixs-history-toolbar input,.sixs-history-toolbar select{max-width:220px}.sixs-status-done{color:#10b981;font-weight:900}.sixs-status-skipped{color:#f59e0b;font-weight:900}.sixs-status-problem{color:#ef4444;font-weight:900}@media(max-width:900px){.sixs-config-grid{grid-template-columns:1fr}}
+
+
+        /* 6S FINAL z wgranego panel.html: przewijanie w dol + usuwanie */
+        .sixs-config-modal, #sixsConfigModal .break-config-modal {
+            max-width: 1180px !important;
+            width: min(1180px, calc(100vw - 32px)) !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+        #sixsConfigModal .gema-modal-body { overflow-x: hidden !important; }
+        #sixsConfigModal .sixs-config-grid {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
+        #sixsConfigModal .sixs-mini-form {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            overflow-x: hidden !important;
+        }
+        #sixsConfigModal .table-responsive {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+        }
+        #sixsConfigModal table { min-width: 880px !important; }
+        .sixs-action-wrap { display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:wrap; }
+        .sixs-delete-btn { padding:7px 10px !important; font-size:12px !important; border-radius:7px !important; background:#dc2626 !important; color:#fff !important; }
+        .sixs-delete-btn:hover { background:#b91c1c !important; }
+        .sixs-warn-note { color:var(--text-muted); font-size:12px; line-height:1.35; margin:8px 0; }
 
 </style>
     
@@ -1022,6 +1058,7 @@
             <select id="operatorModeChooser" class="theme-select" onchange="setPanelMode(this.value)"><option value="manager">Tryb kierownika</option><option value="operator">Tryb operatora</option></select>
             <button class="btn-config-trigger" onclick="openConfigModal()">⚙️ Konfiguracja progów</button>
             <button class="btn-config-trigger" onclick="openBreakScheduleConfig()">⏱️ Konfiguracja przerw</button>
+            <button class="btn-config-trigger" onclick="window.openSixsConfigModal()">🧹 Konfiguracja 6S</button>
             <div class="theme-switcher">
                 <label for="themeChooser">Motyw:</label>
                 <select id="themeChooser" class="theme-select" onchange="changeTheme(this.value)">
@@ -1072,6 +1109,10 @@
                     <input type="number" id="cleaningMinutes" value="30">
                 </div>
                 <div class="form-group">
+                    <label>Serwis (minuty):</label>
+                    <input type="number" id="serviceMinutes" value="0">
+                </div>
+                <div class="form-group">
                     <label>Sztuki wadliwe (poprawki):</label>
                     <input type="number" id="badPieces" value="0">
                 </div>
@@ -1083,7 +1124,8 @@
                         <option value="Zmiana koloru">🎨 Zmiana koloru</option>
 						<option value="Przemalowanie">🖌️ Przemalowanie</option>
                         <option value="Awaria maszyny">⚙️ Awaria maszyny</option>
-						<option value="Usterka maszyny">🔧 Usterka maszyny</option>
+						<option value="Usterka maszyny">🔧 Usterka maszyny</option>                        <option value="Serwis">🛠️ Serwis</option>
+
                         <option value="Czyszczenie/Konserwacja">🧹 Czyszczenie/Konserwacja</option>
                         <option value="Brak proszku">📦 Brak proszku</option>
                         <option value="Inne">⚠️ Inne</option>
@@ -1210,15 +1252,57 @@
     </div>
 </div>
 
-    <div class="sixs-history-section">
-        <h3>Historia zadań 6S</h3>
-        <div class="sixs-history-toolbar">
-            <input type="date" id="sixsHistoryDate">
-            <select id="sixsHistoryShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select>
-            <button class="btn-config-trigger" onclick="loadSixsHistory()">Odśwież historię 6S</button>
+
+<div id="sixsConfigModal" class="gema-modal-overlay">
+    <div class="gema-modal break-config-modal">
+        <div class="gema-modal-header">Konfiguracja zadań 6S</div>
+        <div class="gema-modal-body">
+            <div class="break-config-topbar">
+                <div class="break-config-help">Zadania 6S są przypisywane do wybranej przerwy typu 6S z harmonogramu przerw. Ten panel działa na tych samych tabelach Supabase co operator.html.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button class="break-config-small-btn" onclick="loadSixsConfigPanel()" style="background:#2563eb;color:white;">Odśwież z bazy</button>
+                </div>
+            </div>
+            <div class="break-refresh-box">
+                <div class="break-config-field" style="min-width:260px;">
+                    <label>Wybierz przerwę 6S</label>
+                    <select id="sixsConfigBreakSelect" onchange="loadSixsConfigPanel()"></select>
+                </div>
+                <div class="break-config-help" style="margin:0;">Lista pokazuje tylko pozycje z harmonogramu przerw, gdzie typ = 6S. Zadania i operatorzy są pobierani z bazy.</div>
+            </div>
+            <div class="sixs-config-grid">
+                <div class="sixs-mini-form">
+                    <h4>Operatorzy</h4>
+                    <input id="sixsNewOperatorName" placeholder="Imię i nazwisko operatora">
+                    <button class="break-config-small-btn" onclick="addSixsOperator()" style="background:#059669;color:white;">+ Dodaj operatora</button>
+                    <div class="table-responsive" style="margin-top:10px;"><table id="sixsOperatorsTable"><thead><tr><th>Operator</th><th>Status</th><th>Akcja</th></tr></thead><tbody></tbody></table></div>
+                </div>
+                <div class="sixs-mini-form">
+                    <h4>Zadania dla wybranej przerwy 6S</h4><div class="sixs-warn-note">Przycisk <b>Usuń</b> kasuje konfigurację. Historia odkliknięć jest zachowywana — przed usunięciem zdejmowane jest powiązanie ID.</div>
+                    <input id="sixsNewTaskName" placeholder="Nazwa zadania">
+                    <input id="sixsNewTaskDesc" placeholder="Opis / instrukcja opcjonalnie">
+                    <input id="sixsNewTaskSort" type="number" value="100" placeholder="Kolejność">
+                    <button class="break-config-small-btn" onclick="addSixsTaskForSelectedBreak()" style="background:#059669;color:white;">+ Dodaj zadanie</button>
+                    <div class="table-responsive" style="margin-top:10px;"><table id="sixsTasksTable"><thead><tr><th>Kolejność</th><th>Zadanie</th><th>Przerwa 6S</th><th>Status</th><th>Akcja</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+            <div class="sixs-history-section" style="margin-top:16px;">
+                <h3>Historia zadań 6S</h3>
+                <div class="sixs-history-toolbar">
+                    <input type="date" id="sixsHistoryDate">
+                    <select id="sixsHistoryShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select>
+                    <button class="break-config-small-btn" onclick="loadSixsHistory()" style="background:#2563eb;color:white;">Odśwież historię</button>
+                </div>
+                <div class="table-responsive"><table id="sixsHistoryTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas odkliknięcia</th></tr></thead><tbody></tbody></table></div>
+            </div>
+            <div id="sixsConfigStatus" class="break-config-status" style="display:block;">Konfiguracja 6S: —</div>
         </div>
-        <div class="table-responsive"><table id="sixsHistoryTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas odkliknięcia</th></tr></thead><tbody></tbody></table></div>
+        <div class="gema-modal-footer">
+            <button onclick="closeSixsConfigModal()" style="background:#475569;color:white;">Zamknij</button>
+        </div>
     </div>
+</div>
+
 <div id="configModal" class="gema-modal-overlay">
     <div class="gema-modal">
         <div class="gema-modal-header">Konfiguracja progów OEE</div>
@@ -1579,7 +1663,7 @@
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
     function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
-    function directorPareto(records){const map={};function add(cat,min){min=parseFloat(min)||0;if(!cat||cat==='Brak przestojów'||min<=0)return;map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=min;map[cat].count++;}records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;add(cat,bd);add('Czyszczenie/Konserwacja',cl);add('Serwis',sv);});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
     function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
@@ -1752,6 +1836,7 @@
                         targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
                         breakdown: row.breakdown != null ? parseInt(row.breakdown, 10) : 0,
                         cleaning: row.cleaning != null ? parseInt(row.cleaning, 10) : 0,
+                        service: row.service != null ? parseInt(row.service, 10) : 0,
                         bad: row.bad != null ? parseInt(row.bad, 10) : 0,
                         mStart: row.m_start != null ? parseInt(row.m_start, 10) : null,
                         mEnd: row.m_end != null ? parseInt(row.m_end, 10) : null,
@@ -1771,10 +1856,215 @@
             }
         } catch (err) {
             console.error("Błąd połączenia z Supabase, używam bazy lokalnej:", err.message);
+
     gemaBazaDanych = JSON.parse(localStorage.getItem('gema_oee_local_db_dates')) || {};
         }
     }
+    // 6S FINAL z wgranego panel.html: konfiguracja, usuwanie operatorow i zadan
+    function sixsMsg(message, isError=false) {
+        const el = document.getElementById('sixsConfigStatus');
+        if (!el) return;
+        el.style.display = 'block';
+        el.style.color = isError ? '#ef4444' : 'var(--text-muted)';
+        el.style.borderColor = isError ? '#ef4444' : 'var(--border-color)';
+        el.innerText = message || 'Konfiguracja 6S: —';
+    }
+    function sixsGetBreakOptions() {
+        const source = Array.isArray(BREAK_SCHEDULE) ? BREAK_SCHEDULE : [];
+        return source.filter(x => x && x.enabled !== false && x.kind === '6S')
+            .sort((a,b) => String(a.shift || 'all').localeCompare(String(b.shift || 'all')) || minutesFromTimeText(a.start) - minutesFromTimeText(b.start));
+    }
+    function sixsBreakKey(item) { return String(item.shift || 'all') + '|' + String(item.start || '00:00'); }
+    function sixsSelectedBreak() {
+        const sel = document.getElementById('sixsConfigBreakSelect');
+        const parts = (sel && sel.value ? sel.value : 'all|00:00').split('|');
+        return { shift: parts[0] || 'all', start: parts[1] || '00:00' };
+    }
+    function renderSixsBreakSelect() {
+        const sel = document.getElementById('sixsConfigBreakSelect');
+        if (!sel) return;
+        const prev = sel.value;
+        const options = sixsGetBreakOptions();
+        sel.innerHTML = options.length ? options.map(x => '<option value="' + sixsBreakKey(x) + '">Zmiana ' + escapeHtml(x.shift || 'all') + ' / ' + escapeHtml(x.start || '00:00') + ' / ' + (x.durationMinutes || 15) + ' min</option>').join('') : '<option value="all|00:00">Brak przerw 6S - dodaj w konfiguracji przerw</option>';
+        if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+    }
+    async function openSixsConfigModal() {
+        const modal = document.getElementById('sixsConfigModal');
+        if (!modal) { alert('Brakuje okna konfiguracji 6S w panel.html.'); return; }
+        modal.style.display = 'flex';
+        sixsMsg('Ładowanie konfiguracji 6S...');
+        try {
+            loadBreakScheduleFromLocalStorage();
+            await loadBreakScheduleFromSupabase(false);
+        } catch (err) {
+            console.warn('Nie pobrano harmonogramu przerw z bazy:', err.message);
+        }
+        renderSixsBreakSelect();
+        await loadSixsConfigPanel();
+        await loadSixsHistory();
+    }
+    function closeSixsConfigModal() {
+        const modal = document.getElementById('sixsConfigModal');
+        if (modal) modal.style.display = 'none';
+    }
+    async function loadSixsConfigPanel() {
+        renderSixsBreakSelect();
+        await loadSixsOperatorsPanel();
+        await loadSixsTasksPanel();
+    }
+    async function loadSixsOperatorsPanel() {
+        const tbody = document.querySelector('#sixsOperatorsTable tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="3">Ładowanie operatorów...</td></tr>';
+        const { data, error } = await supabaseClient.from('sixs_operators').select('*').order('operator_name');
+        if (error) {
+            tbody.innerHTML = '<tr><td colspan="3">Błąd: ' + escapeHtml(error.message) + '</td></tr>';
+            sixsMsg('Błąd pobierania operatorów: ' + error.message, true);
+            return;
+        }
+        tbody.innerHTML = (data || []).map(o => '<tr>' +
+            '<td style="text-align:left"><b>' + escapeHtml(o.operator_name || '') + '</b></td>' +
+            '<td>' + (o.active ? 'Aktywny' : 'Wyłączony') + '</td>' +
+            '<td><div class="sixs-action-wrap">' +
+            '<button class="break-config-small-btn" style="background:#475569;color:white;" onclick="toggleSixsOperator(' + o.id + ',' + (!o.active) + ')">' + (o.active ? 'Wyłącz' : 'Włącz') + '</button>' +
+            '<button class="sixs-delete-btn" onclick="deleteSixsOperator(' + o.id + ')">Usuń</button>' +
+            '</div></td></tr>').join('') || '<tr><td colspan="3">Brak operatorów.</td></tr>';
+        sixsMsg('Operatorzy i zadania 6S pobrane z bazy.');
+    }
+    async function addSixsOperator() {
+        const input = document.getElementById('sixsNewOperatorName');
+        const name = (input && input.value || '').trim();
+        if (name.length < 2) { sixsMsg('Wpisz imię i nazwisko operatora.', true); return; }
+        const { error } = await supabaseClient.from('sixs_operators').insert({ operator_name: name, active: true });
+        if (error) { sixsMsg('Błąd dodawania operatora: ' + error.message, true); return; }
+        input.value = '';
+        sixsMsg('Dodano operatora: ' + name + '.');
+        await loadSixsOperatorsPanel();
+    }
+    async function toggleSixsOperator(id, active) {
+        const { error } = await supabaseClient.from('sixs_operators').update({ active: active }).eq('id', id);
+        if (error) { sixsMsg('Błąd zmiany statusu operatora: ' + error.message, true); return; }
+        await loadSixsOperatorsPanel();
+    }
+    async function deleteSixsOperator(id) {
+        if (!confirm('Czy na pewno usunąć operatora?\n\nHistoria odkliknięć zostanie zachowana, ale bez powiązania z ID operatora.')) return;
+        try {
+            await supabaseClient.from('sixs_task_logs').update({ operator_id: null }).eq('operator_id', id);
+            const { error } = await supabaseClient.from('sixs_operators').delete().eq('id', id);
+            if (error) throw error;
+            sixsMsg('Usunięto operatora.');
+            await loadSixsOperatorsPanel();
+        } catch (err) {
+            sixsMsg('Błąd usuwania operatora: ' + err.message, true);
+        }
+    }
+    async function loadSixsTasksPanel() {
+        const tbody = document.querySelector('#sixsTasksTable tbody');
+        if (!tbody) return;
+        const selected = sixsSelectedBreak();
+        tbody.innerHTML = '<tr><td colspan="5">Ładowanie zadań...</td></tr>';
+        const { data, error } = await supabaseClient.from('sixs_tasks_config').select('*').order('sort_order');
+        if (error) {
+            tbody.innerHTML = '<tr><td colspan="5">Błąd: ' + escapeHtml(error.message) + '</td></tr>';
+            sixsMsg('Błąd pobierania zadań: ' + error.message, true);
+            return;
+        }
+        const rows = (data || []).filter(t => (t.shift === 'all' || String(t.shift) === String(selected.shift)) && ((t.sixs_start || 'all') === 'all' || String(t.sixs_start) === String(selected.start)));
+        tbody.innerHTML = rows.map(t => '<tr>' +
+            '<td>' + (t.sort_order || 100) + '</td>' +
+            '<td style="text-align:left"><b>' + escapeHtml(t.task_name || '') + '</b><br><small>' + escapeHtml(t.description || '') + '</small></td>' +
+            '<td>' + (t.shift === 'all' ? 'Wszystkie zmiany' : 'Zmiana ' + escapeHtml(t.shift || 'all')) + ' / ' + escapeHtml(t.sixs_start || 'all') + '</td>' +
+            '<td>' + (t.active ? 'Aktywne' : 'Wyłączone') + '</td>' +
+            '<td><div class="sixs-action-wrap">' +
+            '<button class="break-config-small-btn" style="background:#475569;color:white;" onclick="toggleSixsTask(' + t.id + ',' + (!t.active) + ')">' + (t.active ? 'Wyłącz' : 'Włącz') + '</button>' +
+            '<button class="sixs-delete-btn" onclick="deleteSixsTask(' + t.id + ')">Usuń</button>' +
+            '</div></td></tr>').join('') || '<tr><td colspan="5">Brak zadań dla wybranej przerwy 6S.</td></tr>';
+    }
+    async function addSixsTaskForSelectedBreak() {
+        const selected = sixsSelectedBreak();
+        const nameInput = document.getElementById('sixsNewTaskName');
+        const descInput = document.getElementById('sixsNewTaskDesc');
+        const sortInput = document.getElementById('sixsNewTaskSort');
+        const taskName = (nameInput && nameInput.value || '').trim();
+        if (taskName.length < 3) { sixsMsg('Wpisz nazwę zadania 6S.', true); return; }
+        const breakItem = sixsGetBreakOptions().find(x => String(x.shift || 'all') === String(selected.shift) && String(x.start || '') === String(selected.start));
+        const days = breakItem && Array.isArray(breakItem.days) ? breakItem.days : [1,2,3,4,5];
+        const row = {
+            task_name: taskName,
+            description: (descInput && descInput.value || '').trim(),
+            shift: selected.shift,
+            sixs_start: selected.start,
+            days: days,
+            sort_order: parseInt(sortInput && sortInput.value, 10) || 100,
+            active: true
+        };
+        const { error } = await supabaseClient.from('sixs_tasks_config').insert(row);
+        if (error) { sixsMsg('Błąd dodawania zadania: ' + error.message, true); return; }
+        nameInput.value = '';
+        if (descInput) descInput.value = '';
+        sixsMsg('Dodano zadanie dla zmiany ' + selected.shift + ' / start ' + selected.start + '.');
+        await loadSixsTasksPanel();
+    }
+    async function toggleSixsTask(id, active) {
+        const { error } = await supabaseClient.from('sixs_tasks_config').update({ active: active }).eq('id', id);
+        if (error) { sixsMsg('Błąd zmiany statusu zadania: ' + error.message, true); return; }
+        await loadSixsTasksPanel();
+    }
+    async function deleteSixsTask(id) {
+        if (!confirm('Czy na pewno usunąć zadanie 6S?\n\nHistoria odkliknięć zostanie zachowana, ale bez powiązania z ID zadania.')) return;
+        try {
+            await supabaseClient.from('sixs_task_logs').update({ task_id: null }).eq('task_id', id);
+            const { error } = await supabaseClient.from('sixs_tasks_config').delete().eq('id', id);
+            if (error) throw error;
+            sixsMsg('Usunięto zadanie 6S.');
+            await loadSixsTasksPanel();
+            await loadSixsHistory();
+        } catch (err) {
+            sixsMsg('Błąd usuwania zadania: ' + err.message, true);
+        }
+    }
+    async function loadSixsHistory() {
+        const tbody = document.querySelector('#sixsHistoryTable tbody');
+        if (!tbody) return;
+        const dateEl = document.getElementById('sixsHistoryDate');
+        if (dateEl && !dateEl.value) dateEl.value = formatDateKey(new Date());
+        const logDate = dateEl && dateEl.value ? dateEl.value : formatDateKey(new Date());
+        const shift = (document.getElementById('sixsHistoryShift') || {}).value || 'all';
+        tbody.innerHTML = '<tr><td colspan="8">Ładowanie historii...</td></tr>';
+        let query = supabaseClient.from('sixs_task_logs').select('*').eq('log_date', logDate).order('updated_at', { ascending: false });
+        if (shift !== 'all') query = query.eq('shift', shift);
+        const { data, error } = await query;
+        if (error) {
+            tbody.innerHTML = '<tr><td colspan="8">Błąd: ' + escapeHtml(error.message) + '</td></tr>';
+            return;
+        }
+        tbody.innerHTML = (data || []).map(l => '<tr>' +
+            '<td>' + escapeHtml(l.log_date || '') + '</td>' +
+            '<td>' + escapeHtml(l.shift || '') + '</td>' +
+            '<td>' + escapeHtml(l.sixs_start || '') + '</td>' +
+            '<td style="text-align:left">' + escapeHtml(l.task_name || '') + '</td>' +
+            '<td><span class="sixs-status-' + escapeHtml(l.status || '') + '">' + escapeHtml(l.status || '') + '</span></td>' +
+            '<td>' + escapeHtml(l.operator_name || '') + '</td>' +
+            '<td style="text-align:left">' + escapeHtml(l.comment || '') + '</td>' +
+            '<td>' + escapeHtml(l.updated_at || l.created_at || '') + '</td>' +
+            '</tr>').join('') || '<tr><td colspan="8">Brak odkliknięć dla wybranych filtrów.</td></tr>';
+    }
 
+
+
+
+
+    // 6S FIX: jawny eksport funkcji dla przyciskow onclick
+    window.openSixsConfigModal = openSixsConfigModal;
+    window.closeSixsConfigModal = closeSixsConfigModal;
+    window.loadSixsConfigPanel = loadSixsConfigPanel;
+    window.loadSixsHistory = loadSixsHistory;
+    window.addSixsOperator = addSixsOperator;
+    window.toggleSixsOperator = toggleSixsOperator;
+    window.deleteSixsOperator = deleteSixsOperator;
+    window.addSixsTaskForSelectedBreak = addSixsTaskForSelectedBreak;
+    window.toggleSixsTask = toggleSixsTask;
+    window.deleteSixsTask = deleteSixsTask;
 
     function setPanelMode(mode) {
         const isOperator = mode === 'operator';
@@ -1829,7 +2119,7 @@
         setupTimeFormatter(document.getElementById('hStart'));
         setupTimeFormatter(document.getElementById('hEnd'));
 
-        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
+        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'serviceMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 markChanged();
@@ -1846,7 +2136,6 @@
 
         selectDay(selectedDayGlobal);
         renderTableAndChart();
-        initSixsHistoryDefaults();
     };
 
     function calculateDifferences() {
@@ -2069,6 +2358,7 @@
             document.getElementById('targetSpeed').value = rec.targetSpeed;
             document.getElementById('breakdownMinutes').value = rec.breakdown;
             document.getElementById('cleaningMinutes').value = rec.cleaning;
+            document.getElementById('serviceMinutes').value = rec.service || 0;
             document.getElementById('badPieces').value = rec.bad;
             document.getElementById('mStart').value = rec.mStart;
             document.getElementById('mEnd').value = rec.mEnd;
@@ -2103,6 +2393,7 @@
         } else {
             document.getElementById('breakdownMinutes').value = 0;
             document.getElementById('cleaningMinutes').value = 30;
+            document.getElementById('serviceMinutes').value = 0;
             document.getElementById('badPieces').value = 0;
             document.getElementById('downtimeCategory').value = "Brak przestojów";
             document.getElementById('dayNotes').value = "";
@@ -2292,6 +2583,7 @@
         var targetSpeed = parseFloat(document.getElementById('targetSpeed').value);
         var breakdownMinutes = parseFloat(document.getElementById('breakdownMinutes').value) || 0;
         var cleaningMinutes = parseFloat(document.getElementById('cleaningMinutes').value) || 0;
+        var serviceMinutes = parseFloat(document.getElementById('serviceMinutes').value) || 0;
         var badPieces = parseFloat(document.getElementById('badPieces').value) || 0;
 
         var category = document.getElementById('downtimeCategory').value;
@@ -2304,6 +2596,27 @@
         if ((category !== "Brak przestojów" || parseFloat(document.getElementById('breakdownMinutes').value) > 0) && noteText.length < 3) { alert("Wpisz krótką notatkę dla przestoju/awarii."); return; }
         if (parseFloat(document.getElementById('breakdownMinutes').value) > 0 && category === "Brak przestojów") { alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę."); return; }
 
+        // WALIDACJA SERWISU I STRAT: dane muszą być logiczne przed zapisem.
+        if (breakdownMinutes < 0 || cleaningMinutes < 0 || serviceMinutes < 0 || badPieces < 0) {
+            alert("Minuty awarii, czyszczenia, serwisu oraz liczba poprawek nie mogą być ujemne.");
+            return;
+        }
+        if ((category !== "Brak przestojów" || breakdownMinutes > 0 || serviceMinutes > 0) && noteText.length < 3) {
+            alert("Wpisz krótką notatkę dla przestoju/awarii/serwisu. Minimum 3 znaki.");
+            return;
+        }
+        if (breakdownMinutes > 0 && category === "Brak przestojów") {
+            alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę.");
+            return;
+        }
+        if (serviceMinutes > 0 && category !== "Serwis") {
+            alert("Podano czas serwisu, więc główna przyczyna przestoju musi być ustawiona na Serwis.");
+            return;
+        }
+        if (category === "Serwis" && serviceMinutes <= 0) {
+            alert("Wybrano kategorię Serwis — wpisz czas serwisu w minutach.");
+            return;
+        }
         var valMStart = document.getElementById('mStart').value;
         var valMEnd = document.getElementById('mEnd').value;
         var valPcsStart = document.getElementById('pcsStart').value;
@@ -2327,7 +2640,7 @@
         if (diffWorkingMinutes <= 0) errorMessage += "• Licznik czasu KONIEC musi wskazywać większą wartość niż START.\n";
         if (isNaN(diffMeters) || diffMeters < 0) errorMessage += "• Licznik metrów KONIEC nie może być mniejszy niż START.\n";
         if (isNaN(diffPieces) || diffPieces < 0) errorMessage += "• Licznik sztuk KONIEC nie może być mniejszy niż START.\n";
-        if ((breakdownMinutes + cleaningMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii i czyszczenia nie może przekraczać całkowitego czasu załączenia linii.\n";
+        if ((breakdownMinutes + cleaningMinutes + serviceMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii, czyszczenia i serwisu nie może przekraczać całkowitego czasu załączenia linii.\n";
 
         var prev = findPreviousRecordWithKey(dateKey);
         if (prev) {
@@ -2366,7 +2679,7 @@
             return;
         }
 
-        var totalLoss = breakdownMinutes + cleaningMinutes;
+        var totalLoss = breakdownMinutes + cleaningMinutes + serviceMinutes;
         var basePlannedTime = diffWorkingMinutes;
         var availability = basePlannedTime > 0 ? Math.max(0, Math.min(1, (basePlannedTime - totalLoss) / basePlannedTime)) : 0;
         var pureWorkingTime = Math.max(1, diffWorkingMinutes - totalLoss);
@@ -2382,6 +2695,7 @@
             target_speed: targetSpeed,
             breakdown: breakdownMinutes,
             cleaning: cleaningMinutes,
+            service: serviceMinutes,
             bad: badPieces,
             m_start: parseInt(valMStart, 10),
             m_end: parseInt(valMEnd, 10),
@@ -2411,6 +2725,7 @@
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,
                 cleaning: cleaningMinutes,
+                service: serviceMinutes,
                 bad: badPieces,
                 mStart: parseInt(valMStart, 10),
                 mEnd: parseInt(valMEnd, 10),
