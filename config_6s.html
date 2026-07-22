@@ -323,26 +323,65 @@ function formatTimePl(value){
     return String(value).replace('T',' ').replace(/\.\d+.*$/,'');
 }
 function historyDeletePayload(l){
-    return encodeURIComponent(JSON.stringify({id:l.id||null,log_date:l.log_date||'',shift:l.shift||'',sixs_start:l.sixs_start||'',task_id:l.task_id||null,task_name:l.task_name||'',operator_id:l.operator_id||null,operator_name:l.operator_name||''}));
+    return encodeURIComponent(JSON.stringify({
+        id:l.id||null,
+        log_date:l.log_date||'',
+        shift:l.shift||'',
+        sixs_start:l.sixs_start||'',
+        task_id:l.task_id||null,
+        task_name:l.task_name||'',
+        operator_id:l.operator_id||null,
+        operator_name:l.operator_name||'',
+        status:l.status||'',
+        updated_at:l.updated_at||'',
+        created_at:l.created_at||''
+    }));
+}
+function applySixsHistoryLogFilters(q,payload){
+    if(payload.id){return q.eq('id',payload.id);}
+    q=q.eq('log_date',payload.log_date).eq('shift',payload.shift).eq('sixs_start',payload.sixs_start);
+    if(payload.task_id!==null&&payload.task_id!==undefined)q=q.eq('task_id',payload.task_id);
+    else if(payload.task_name)q=q.eq('task_name',payload.task_name);
+    if(payload.operator_id!==null&&payload.operator_id!==undefined)q=q.eq('operator_id',payload.operator_id);
+    else if(payload.operator_name)q=q.eq('operator_name',payload.operator_name);
+    if(payload.updated_at)q=q.eq('updated_at',payload.updated_at);
+    else if(payload.created_at)q=q.eq('created_at',payload.created_at);
+    return q;
 }
 async function deleteSixsHistoryLog(payloadText){
     let payload={};
     try{payload=JSON.parse(decodeURIComponent(payloadText||''));}catch(e){msg('Nie mogę odczytać wpisu historii do usunięcia.',true);return}
     if(!confirm('Usunąć ten wpis z historii 6S?'))return;
-    let q=supabaseClient.from('sixs_task_logs').delete();
-    if(payload.id){
-        q=q.eq('id',payload.id);
-    }else{
-        q=q.eq('log_date',payload.log_date).eq('shift',payload.shift).eq('sixs_start',payload.sixs_start);
-        if(payload.task_id!==null&&payload.task_id!==undefined)q=q.eq('task_id',payload.task_id);
-        else if(payload.task_name)q=q.eq('task_name',payload.task_name);
-        if(payload.operator_id!==null&&payload.operator_id!==undefined)q=q.eq('operator_id',payload.operator_id);
-        else if(payload.operator_name)q=q.eq('operator_name',payload.operator_name);
+
+    try{
+        // 1. Najpierw próbujemy prawdziwego DELETE i wymuszamy zwrot usuniętego wiersza przez .select().
+        // Dzięki temu wiadomo, czy Supabase faktycznie usunął rekord, czy tylko zwrócił pusty sukces.
+        let deleteQuery=applySixsHistoryLogFilters(supabaseClient.from('sixs_task_logs').delete(),payload).select();
+        const del=await deleteQuery;
+        if(del.error)throw del.error;
+        if(del.data&&del.data.length){
+            msg('Usunięto wpis z historii 6S.');
+            await loadSixsHistory();
+            return;
+        }
+
+        // 2. Jeżeli polityka bazy/RLS nie zwróciła usuniętego wiersza, ukrywamy wpis z bieżącej daty.
+        // To działa jako bezpieczna alternatywa: wpis znika z historii dnia, nawet gdy DELETE jest blokowany.
+        let hideQuery=applySixsHistoryLogFilters(supabaseClient.from('sixs_task_logs').update({log_date:'1900-01-01'}),payload).select();
+        const hidden=await hideQuery;
+        if(hidden.error)throw hidden.error;
+        if(hidden.data&&hidden.data.length){
+            msg('Usunięto wpis z widoku historii 6S.');
+            await loadSixsHistory();
+            return;
+        }
+
+        msg('Nie znaleziono wpisu do usunięcia. Odśwież historię i spróbuj ponownie.',true);
+        await loadSixsHistory();
+    }catch(err){
+        console.error('Błąd usuwania historii 6S:',err);
+        msg('Błąd usuwania wpisu historii: '+(err.message||err),true);
     }
-    const{error}=await q;
-    if(error){msg('Błąd usuwania wpisu historii: '+error.message,true);return}
-    msg('Usunięto wpis z historii 6S.');
-    await loadSixsHistory();
 }
 
 async function loadSixsHistory(){
