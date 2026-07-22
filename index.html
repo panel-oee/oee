@@ -1328,7 +1328,10 @@
                         m_start: row.m_start != null ? row.m_start : (row.mStart != null ? row.mStart : null),
                         m_end: row.m_end != null ? row.m_end : (row.mEnd != null ? row.mEnd : null),
                         pcs_start: row.pcs_start != null ? row.pcs_start : (row.pcsStart != null ? row.pcsStart : null),
-                        pcs_end: row.pcs_end != null ? row.pcs_end : (row.pcsEnd != null ? row.pcsEnd : null)
+                        pcs_end: row.pcs_end != null ? row.pcs_end : (row.pcsEnd != null ? row.pcsEnd : null),
+                        breakdown: row.breakdown != null ? parseFloat(row.breakdown) : 0,
+                        cleaning: row.cleaning != null ? parseFloat(row.cleaning) : 0,
+                        service: row.service != null ? parseFloat(row.service) : 0
                     };
                 });
             }
@@ -1419,7 +1422,7 @@
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
     function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
-    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}if(sv>0){const c='Serwis';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=sv;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorPareto(records){const map={};function add(cat,min){min=parseFloat(min)||0;if(!cat||cat==='Brak przestojów'||min<=0)return;map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=min;map[cat].count++;}records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;add(cat,bd);add('Czyszczenie/Konserwacja',cl);add('Serwis',sv);});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
     function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');

@@ -1005,6 +1005,10 @@
             text-align: center; text-transform: uppercase; font-size: 12px;
         }
 
+
+        /* MODUL 6S PANEL: historia odklikania */
+        .sixs-history-section{margin-top:25px;background:var(--bg-inputs-flex);border:1px solid var(--border-color);border-radius:10px;padding:16px;}.sixs-history-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.sixs-history-toolbar input,.sixs-history-toolbar select{max-width:190px}.sixs-status-done{color:#10b981;font-weight:900}.sixs-status-skipped{color:#f59e0b;font-weight:900}.sixs-status-problem{color:#ef4444;font-weight:900}
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1068,10 +1072,6 @@
                     <input type="number" id="cleaningMinutes" value="30">
                 </div>
                 <div class="form-group">
-                    <label>Serwis (minuty):</label>
-                    <input type="number" id="serviceMinutes" value="0">
-                </div>
-                <div class="form-group">
                     <label>Sztuki wadliwe (poprawki):</label>
                     <input type="number" id="badPieces" value="0">
                 </div>
@@ -1083,8 +1083,7 @@
                         <option value="Zmiana koloru">🎨 Zmiana koloru</option>
 						<option value="Przemalowanie">🖌️ Przemalowanie</option>
                         <option value="Awaria maszyny">⚙️ Awaria maszyny</option>
-						<option value="Usterka maszyny">🔧 Usterka maszyny</option>                        <option value="Serwis">🛠️ Serwis</option>
-
+						<option value="Usterka maszyny">🔧 Usterka maszyny</option>
                         <option value="Czyszczenie/Konserwacja">🧹 Czyszczenie/Konserwacja</option>
                         <option value="Brak proszku">📦 Brak proszku</option>
                         <option value="Inne">⚠️ Inne</option>
@@ -1211,6 +1210,15 @@
     </div>
 </div>
 
+    <div class="sixs-history-section">
+        <h3>Historia zadań 6S</h3>
+        <div class="sixs-history-toolbar">
+            <input type="date" id="sixsHistoryDate">
+            <select id="sixsHistoryShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select>
+            <button class="btn-config-trigger" onclick="loadSixsHistory()">Odśwież historię 6S</button>
+        </div>
+        <div class="table-responsive"><table id="sixsHistoryTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas odkliknięcia</th></tr></thead><tbody></tbody></table></div>
+    </div>
 <div id="configModal" class="gema-modal-overlay">
     <div class="gema-modal">
         <div class="gema-modal-header">Konfiguracja progów OEE</div>
@@ -1571,7 +1579,7 @@
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
     function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
-    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorPareto(records){const map={};function add(cat,min){min=parseFloat(min)||0;if(!cat||cat==='Brak przestojów'||min<=0)return;map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=min;map[cat].count++;}records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;add(cat,bd);add('Czyszczenie/Konserwacja',cl);add('Serwis',sv);});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
     function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
@@ -1744,7 +1752,6 @@
                         targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
                         breakdown: row.breakdown != null ? parseInt(row.breakdown, 10) : 0,
                         cleaning: row.cleaning != null ? parseInt(row.cleaning, 10) : 0,
-                        service: row.service != null ? parseInt(row.service, 10) : 0,
                         bad: row.bad != null ? parseInt(row.bad, 10) : 0,
                         mStart: row.m_start != null ? parseInt(row.m_start, 10) : null,
                         mEnd: row.m_end != null ? parseInt(row.m_end, 10) : null,
@@ -1822,7 +1829,7 @@
         setupTimeFormatter(document.getElementById('hStart'));
         setupTimeFormatter(document.getElementById('hEnd'));
 
-        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'serviceMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
+        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 markChanged();
@@ -1839,6 +1846,7 @@
 
         selectDay(selectedDayGlobal);
         renderTableAndChart();
+        initSixsHistoryDefaults();
     };
 
     function calculateDifferences() {
@@ -2061,7 +2069,6 @@
             document.getElementById('targetSpeed').value = rec.targetSpeed;
             document.getElementById('breakdownMinutes').value = rec.breakdown;
             document.getElementById('cleaningMinutes').value = rec.cleaning;
-            document.getElementById('serviceMinutes').value = rec.service || 0;
             document.getElementById('badPieces').value = rec.bad;
             document.getElementById('mStart').value = rec.mStart;
             document.getElementById('mEnd').value = rec.mEnd;
@@ -2096,7 +2103,6 @@
         } else {
             document.getElementById('breakdownMinutes').value = 0;
             document.getElementById('cleaningMinutes').value = 30;
-            document.getElementById('serviceMinutes').value = 0;
             document.getElementById('badPieces').value = 0;
             document.getElementById('downtimeCategory').value = "Brak przestojów";
             document.getElementById('dayNotes').value = "";
@@ -2286,7 +2292,6 @@
         var targetSpeed = parseFloat(document.getElementById('targetSpeed').value);
         var breakdownMinutes = parseFloat(document.getElementById('breakdownMinutes').value) || 0;
         var cleaningMinutes = parseFloat(document.getElementById('cleaningMinutes').value) || 0;
-        var serviceMinutes = parseFloat(document.getElementById('serviceMinutes').value) || 0;
         var badPieces = parseFloat(document.getElementById('badPieces').value) || 0;
 
         var category = document.getElementById('downtimeCategory').value;
@@ -2299,27 +2304,6 @@
         if ((category !== "Brak przestojów" || parseFloat(document.getElementById('breakdownMinutes').value) > 0) && noteText.length < 3) { alert("Wpisz krótką notatkę dla przestoju/awarii."); return; }
         if (parseFloat(document.getElementById('breakdownMinutes').value) > 0 && category === "Brak przestojów") { alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę."); return; }
 
-        // WALIDACJA SERWISU I STRAT: dane muszą być logiczne przed zapisem.
-        if (breakdownMinutes < 0 || cleaningMinutes < 0 || serviceMinutes < 0 || badPieces < 0) {
-            alert("Minuty awarii, czyszczenia, serwisu oraz liczba poprawek nie mogą być ujemne.");
-            return;
-        }
-        if ((category !== "Brak przestojów" || breakdownMinutes > 0 || serviceMinutes > 0) && noteText.length < 3) {
-            alert("Wpisz krótką notatkę dla przestoju/awarii/serwisu. Minimum 3 znaki.");
-            return;
-        }
-        if (breakdownMinutes > 0 && category === "Brak przestojów") {
-            alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę.");
-            return;
-        }
-        if (serviceMinutes > 0 && category !== "Serwis") {
-            alert("Podano czas serwisu, więc główna przyczyna przestoju musi być ustawiona na Serwis.");
-            return;
-        }
-        if (category === "Serwis" && serviceMinutes <= 0) {
-            alert("Wybrano kategorię Serwis — wpisz czas serwisu w minutach.");
-            return;
-        }
         var valMStart = document.getElementById('mStart').value;
         var valMEnd = document.getElementById('mEnd').value;
         var valPcsStart = document.getElementById('pcsStart').value;
@@ -2343,7 +2327,7 @@
         if (diffWorkingMinutes <= 0) errorMessage += "• Licznik czasu KONIEC musi wskazywać większą wartość niż START.\n";
         if (isNaN(diffMeters) || diffMeters < 0) errorMessage += "• Licznik metrów KONIEC nie może być mniejszy niż START.\n";
         if (isNaN(diffPieces) || diffPieces < 0) errorMessage += "• Licznik sztuk KONIEC nie może być mniejszy niż START.\n";
-        if ((breakdownMinutes + cleaningMinutes + serviceMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii, czyszczenia i serwisu nie może przekraczać całkowitego czasu załączenia linii.\n";
+        if ((breakdownMinutes + cleaningMinutes) > diffWorkingMinutes) errorMessage += "• Suma czasu awarii i czyszczenia nie może przekraczać całkowitego czasu załączenia linii.\n";
 
         var prev = findPreviousRecordWithKey(dateKey);
         if (prev) {
@@ -2382,7 +2366,7 @@
             return;
         }
 
-        var totalLoss = breakdownMinutes + cleaningMinutes + serviceMinutes;
+        var totalLoss = breakdownMinutes + cleaningMinutes;
         var basePlannedTime = diffWorkingMinutes;
         var availability = basePlannedTime > 0 ? Math.max(0, Math.min(1, (basePlannedTime - totalLoss) / basePlannedTime)) : 0;
         var pureWorkingTime = Math.max(1, diffWorkingMinutes - totalLoss);
@@ -2398,7 +2382,6 @@
             target_speed: targetSpeed,
             breakdown: breakdownMinutes,
             cleaning: cleaningMinutes,
-            service: serviceMinutes,
             bad: badPieces,
             m_start: parseInt(valMStart, 10),
             m_end: parseInt(valMEnd, 10),
@@ -2428,7 +2411,6 @@
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,
                 cleaning: cleaningMinutes,
-                service: serviceMinutes,
                 bad: badPieces,
                 mStart: parseInt(valMStart, 10),
                 mEnd: parseInt(valMEnd, 10),
