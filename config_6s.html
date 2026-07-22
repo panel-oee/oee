@@ -27,6 +27,9 @@
 @media(max-width:980px){.config-grid{grid-template-columns:1fr}.task-card{grid-template-columns:44px minmax(0,1fr)}.task-card .card-actions{grid-column:1 / -1;justify-content:flex-start}.operator-card{grid-template-columns:1fr}.operator-card .card-actions{justify-content:flex-start}}
 @media(max-width:560px){.task-card{grid-template-columns:1fr}.sort-badge{width:max-content;padding:0 12px}.operator-card,.task-card{padding:10px}.card-actions{min-width:0}.card-actions button{flex:1 1 120px}}
 
+
+.task-day-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.day-chip-sm{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:30px;padding:0 8px;border-radius:8px;border:1px solid var(--border);background:#0b1220;color:var(--muted);font-weight:900;font-size:11px;cursor:pointer}.day-chip-sm.on{background:#0284c7;color:#fff;border-color:#0369a1}.day-chip-sm:hover{filter:brightness(1.08)}.days-preview{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.day-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;background:#0b1220;border:1px solid var(--border);color:var(--muted)}.day-badge.on{color:#e0f2fe;border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.10)}.quick-days{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.quick-days button{padding:7px 9px;font-size:11px}
+
 </style>
 
 <title>Konfiguracja 6S</title>
@@ -35,7 +38,7 @@
 <div class="box"><h2>Wybór przerwy 6S</h2><div class="grid"><div><label>Przerwa 6S z harmonogramu</label><select id="sixsConfigBreakSelect" onchange="loadSixsConfigPanel()"></select></div><div class="muted">Lista pokazuje pozycje z harmonogramu przerw, gdzie typ = 6S. Zadania są zapisywane dla konkretnej zmiany i godziny startu 6S.</div></div><div id="sixsConfigStatus" class="status">Konfiguracja 6S: —</div></div>
 <div class="config-grid">
 <div class="box"><h2>Operatorzy</h2><label>Nowy operator</label><input id="sixsNewOperatorName" placeholder="Imię i nazwisko operatora"><button class="green" onclick="addSixsOperator()" style="margin-top:8px">+ Dodaj operatora</button><div id="sixsOperatorsList" class="compact-list"></div></div>
-<div class="box"><h2>Zadania dla wybranej przerwy</h2><div class="form-stack"><label>Nazwa zadania</label><input id="sixsNewTaskName" placeholder="np. Posprzątać okolice kabiny"><label>Opis / instrukcja</label><input id="sixsNewTaskDesc" placeholder="Opcjonalnie"><label>Kolejność</label><input id="sixsNewTaskSort" type="number" value="100"><button class="green" onclick="addSixsTaskForSelectedBreak()" style="margin-top:8px">+ Dodaj zadanie</button></div><div id="sixsTasksList" class="compact-list"></div></div>
+<div class="box"><h2>Zadania dla wybranej przerwy</h2><div class="form-stack"><label>Nazwa zadania</label><input id="sixsNewTaskName" placeholder="np. Posprzątać okolice kabiny"><label>Opis / instrukcja</label><input id="sixsNewTaskDesc" placeholder="Opcjonalnie"><label>Kolejność</label><input id="sixsNewTaskSort" type="number" value="100"><label>Dni wykonywania zadania</label><div id="sixsNewTaskDays" class="task-day-row"></div><div class="quick-days"><button type="button" class="btn small" onclick="setNewTaskDays([1,2,3,4,5])">Pn-Pt</button><button type="button" class="btn small" onclick="setNewTaskDays([1,3,5])">Pn/Śr/Pt</button><button type="button" class="btn small" onclick="setNewTaskDays([2,4])">Wt/Cz</button></div><button class="green" onclick="addSixsTaskForSelectedBreak()" style="margin-top:8px">+ Dodaj zadanie</button></div><div id="sixsTasksList" class="compact-list"></div></div>
 </div>
 
 <div class="box">
@@ -72,7 +75,17 @@ let BREAK_SCHEDULE=[];
 let SIXS_OPERATORS_CACHE=[];
 let SIXS_TASKS_CACHE=[];
 let SIXS_ASSIGNMENTS_CACHE=[];
+let SIXS_NEW_TASK_DAYS=[1,2,3,4,5];
 function escapeHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function dayName(d){return ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][Number(d)]||'?'}
+function normalizeTaskDays(days){const arr=Array.isArray(days)?days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];return Array.from(new Set(arr.length?arr:[1,2,3,4,5])).sort((a,b)=>a-b)}
+function taskDaysText(days){const ds=normalizeTaskDays(days);const key=ds.join(',');if(key==='1,2,3,4,5')return 'Pn-Pt';if(key==='1,3,5')return 'Pn/Śr/Pt';if(key==='2,4')return 'Wt/Cz';return ds.map(dayName).join('/')} 
+function taskDayBadges(days){const ds=new Set(normalizeTaskDays(days));return '<div class="days-preview">'+[1,2,3,4,5,6,0].map(d=>'<span class="day-badge '+(ds.has(d)?'on':'')+'">'+dayName(d)+'</span>').join('')+'</div>'}
+function renderNewTaskDayChips(){const box=document.getElementById('sixsNewTaskDays');if(!box)return;const ds=new Set(SIXS_NEW_TASK_DAYS);box.innerHTML=[1,2,3,4,5,6,0].map(d=>'<button type="button" class="day-chip-sm '+(ds.has(d)?'on':'')+'" onclick="toggleNewTaskDay('+d+')">'+dayName(d)+'</button>').join('')}
+function setNewTaskDays(days){SIXS_NEW_TASK_DAYS=normalizeTaskDays(days);renderNewTaskDayChips()}
+function toggleNewTaskDay(d){const s=new Set(SIXS_NEW_TASK_DAYS);s.has(d)?s.delete(d):s.add(d);SIXS_NEW_TASK_DAYS=normalizeTaskDays(Array.from(s));renderNewTaskDayChips()}
+function taskDayToggleButtons(t){const ds=new Set(normalizeTaskDays(t.days));return '<div class="task-day-row">'+[1,2,3,4,5,6,0].map(d=>'<button type="button" class="day-chip-sm '+(ds.has(d)?'on':'')+'" onclick="toggleSixsTaskDay('+t.id+','+d+')">'+dayName(d)+'</button>').join('')+'</div>'}
+
 function formatDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function minutesFromTimeText(t){const p=String(t||'00:00').split(':').map(Number);return(p[0]||0)*60+(p[1]||0)}
 function normalizeBreakItem(item){const n=Object.assign({start:'09:30',durationMinutes:15,kind:'main',shift:'1',days:[1,2,3,4,5],enabled:true},item||{});n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];n.enabled=n.enabled!==false;return n}
@@ -82,7 +95,7 @@ function sixsGetBreakOptions(){return BREAK_SCHEDULE.filter(x=>x.enabled!==false
 function sixsBreakKey(x){return String(x.shift||'all')+'|'+String(x.start||'00:00')}
 function sixsSelectedBreak(){const p=(document.getElementById('sixsConfigBreakSelect').value||'all|00:00').split('|');return{shift:p[0]||'all',start:p[1]||'00:00'}}
 function renderSixsBreakSelect(){const sel=document.getElementById('sixsConfigBreakSelect'),prev=sel.value,opts=sixsGetBreakOptions();sel.innerHTML=opts.length?opts.map(x=>`<option value="${sixsBreakKey(x)}">Zmiana ${escapeHtml(x.shift||'all')} / ${escapeHtml(x.start||'00:00')} / ${x.durationMinutes||15} min</option>`).join(''):'<option value="all|00:00">Brak przerw 6S - dodaj w konfiguracji przerw</option>';if(prev&&Array.from(sel.options).some(o=>o.value===prev))sel.value=prev}
-async function loadSixsConfigPanel(){renderSixsBreakSelect();await loadSixsOperatorsPanel();await loadSixsTasksPanel();populateAssignmentOperators();await loadOperatorTaskAssignments();}
+async function loadSixsConfigPanel(){renderSixsBreakSelect();renderNewTaskDayChips();await loadSixsOperatorsPanel();await loadSixsTasksPanel();populateAssignmentOperators();await loadOperatorTaskAssignments();}
 async function loadSixsOperatorsPanel(){
     const list=document.getElementById('sixsOperatorsList');
     if(!list)return;
@@ -105,10 +118,20 @@ async function loadSixsTasksPanel(){
     if(error){list.innerHTML='<div class="status err">Błąd: '+escapeHtml(error.message)+'</div>';msg('Błąd zadań: '+error.message,true);return}
     const rows=(data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(s.shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(s.start)));
     SIXS_TASKS_CACHE=rows;
-    list.innerHTML=rows.map(t=>`<div class="task-card"><div class="sort-badge">${t.sort_order||100}</div><div><div class="card-title">${escapeHtml(t.task_name)}</div><div class="card-sub">${escapeHtml(t.description||'')}<br><span class="pill">${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift)} / ${escapeHtml(t.sixs_start||'all')}</span> <span class="pill ${t.active?'ok':'off'}">${t.active?'Aktywne':'Wyłączone'}</span></div></div><div class="card-actions"><button class="small btn" onclick="toggleSixsTask(${t.id},${!t.active})">${t.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsTask(${t.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak zadań dla wybranej przerwy.</div>';
+    list.innerHTML=rows.map(t=>`<div class="task-card"><div class="sort-badge">${t.sort_order||100}</div><div><div class="card-title">${escapeHtml(t.task_name)}</div><div class="card-sub">${escapeHtml(t.description||'')}<br><span class="pill">${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift)} / ${escapeHtml(t.sixs_start||'all')}</span> <span class="pill">Dni: ${escapeHtml(taskDaysText(t.days))}</span> <span class="pill ${t.active?'ok':'off'}">${t.active?'Aktywne':'Wyłączone'}</span></div>${taskDayToggleButtons(t)}</div><div class="card-actions"><button class="small btn" onclick="toggleSixsTask(${t.id},${!t.active})">${t.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsTask(${t.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak zadań dla wybranej przerwy.</div>';
     await loadOperatorTaskAssignments();
 }
-async function addSixsTaskForSelectedBreak(){const s=sixsSelectedBreak(),name=document.getElementById('sixsNewTaskName').value.trim();if(name.length<3){msg('Wpisz nazwę zadania.',true);return}const breakItem=sixsGetBreakOptions().find(x=>String(x.shift||'all')===String(s.shift)&&String(x.start||'')===String(s.start));const row={task_name:name,description:document.getElementById('sixsNewTaskDesc').value.trim(),shift:s.shift,sixs_start:s.start,days:breakItem&&Array.isArray(breakItem.days)?breakItem.days:[1,2,3,4,5],sort_order:parseInt(document.getElementById('sixsNewTaskSort').value,10)||100,active:true};const{error}=await supabaseClient.from('sixs_tasks_config').insert(row);if(error){msg('Błąd dodawania zadania: '+error.message,true);return}document.getElementById('sixsNewTaskName').value='';document.getElementById('sixsNewTaskDesc').value='';await loadSixsTasksPanel()}
+async function addSixsTaskForSelectedBreak(){
+    const s=sixsSelectedBreak(),name=document.getElementById('sixsNewTaskName').value.trim();
+    if(name.length<3){msg('Wpisz nazwę zadania.',true);return}
+    const days=normalizeTaskDays(SIXS_NEW_TASK_DAYS);
+    const row={task_name:name,description:document.getElementById('sixsNewTaskDesc').value.trim(),shift:s.shift,sixs_start:s.start,days:days,sort_order:parseInt(document.getElementById('sixsNewTaskSort').value,10)||100,active:true};
+    const{error}=await supabaseClient.from('sixs_tasks_config').insert(row);
+    if(error){msg('Błąd dodawania zadania: '+error.message,true);return}
+    document.getElementById('sixsNewTaskName').value='';document.getElementById('sixsNewTaskDesc').value='';
+    setNewTaskDays([1,2,3,4,5]);
+    await loadSixsTasksPanel();
+} 
 async function toggleSixsTask(id,active){const{error}=await supabaseClient.from('sixs_tasks_config').update({active}).eq('id',id);if(error){msg('Błąd statusu zadania: '+error.message,true);return}await loadSixsTasksPanel()}
 async function deleteSixsTask(id){if(!confirm('Usunąć zadanie 6S? Historia zostanie zachowana bez ID zadania.'))return;await supabaseClient.from('sixs_task_logs').update({task_id:null}).eq('task_id',id);const{error}=await supabaseClient.from('sixs_tasks_config').delete().eq('id',id);if(error){msg('Błąd usuwania zadania: '+error.message,true);return}await loadSixsTasksPanel();await loadSixsHistory()}
 
@@ -145,7 +168,7 @@ async function loadOperatorTaskAssignments(){
     }
     box.innerHTML=tasks.map(t=>{
         const checked=assigned.has(String(t.id));
-        return `<label class="task-assign-card ${checked?'checked':''}"><input type="checkbox" class="sixs-task-assignment-checkbox" value="${t.id}" ${checked?'checked':''} onchange="this.closest('.task-assign-card').classList.toggle('checked',this.checked)"><div><div class="task-assign-title">${escapeHtml(t.task_name||'')}</div><div class="task-assign-sub">${escapeHtml(t.description||'')}<br>${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift||'all')} / ${escapeHtml(t.sixs_start||'all')}</div></div></label>`;
+        return `<label class="task-assign-card ${checked?'checked':''}"><input type="checkbox" class="sixs-task-assignment-checkbox" value="${t.id}" ${checked?'checked':''} onchange="this.closest('.task-assign-card').classList.toggle('checked',this.checked)"><div><div class="task-assign-title">${escapeHtml(t.task_name||'')}</div><div class="task-assign-sub">${escapeHtml(t.description||'')}<br>${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift||'all')} / ${escapeHtml(t.sixs_start||'all')} / dni: ${escapeHtml(taskDaysText(t.days))}</div></div></label>`;
     }).join('');
 }
 function selectAllVisibleAssignments(value){
