@@ -1416,7 +1416,27 @@
     }
 
 
-    function directorExtractCategory(note){const text=String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+    function directorExtractCategory(note){const text=stripChangeoverMarker ? stripChangeoverMarker(String(note||'')) : String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+
+    function extractChangeoverCountFromNotes(note) {
+        const match = String(note || '').match(/(?:\[PRZEZBROJENIA:(\d+)\]|<!--\s*PRZEZBROJENIA:(\d+)\s*-->)/i);
+        if (!match) return null;
+        const value = parseInt(match[1] || match[2], 10);
+        return (!isNaN(value) && value >= 0) ? value : null;
+    }
+    function stripChangeoverMarker(note) {
+        return String(note || '').replace(/\s*\[PRZEZBROJENIA:\d+\]\s*/gi, ' ').replace(/\s*<!--\s*PRZEZBROJENIA:\d+\s*-->\s*/gi, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+    function getChangeoverCountFromRecord(rec) {
+        rec = rec || {};
+        const direct = rec.changeoverCount != null ? rec.changeoverCount : (rec.changeover_count != null ? rec.changeover_count : rec.changeovers);
+        const parsedDirect = parseInt(direct, 10);
+        if (!isNaN(parsedDirect) && parsedDirect >= 0) return parsedDirect;
+        const parsedFromNotes = extractChangeoverCountFromNotes(rec.notes || '');
+        if (parsedFromNotes !== null) return parsedFromNotes;
+        return (parseFloat(rec.cleaning || 0) > 0) ? 1 : 0;
+    }
+
     function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
     function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
@@ -1570,7 +1590,8 @@
             const d = comment.date;
             const fullDateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
 
-            let originalNote = comment.note;
+            let originalNote = stripChangeoverMarker(comment.note);
+            if (!originalNote) return;
             let iconHtml = '';
             let cleanNote = originalNote;
 

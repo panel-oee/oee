@@ -1661,62 +1661,12 @@
     }
 
 
-    // MODUL 6S TV: pobieranie tylko zadan przypisanych do operatorow dla aktualnej przerwy 6S
+    // MODUL 6S TV: pobieranie zadan i statusow z Supabase podczas Czasu 6S
     let SIXS_TV_CACHE = { key:'', tasks:[], logs:{}, lastFetch:0 };
     function sixsTvHide(){const box=document.getElementById('sixsTvBox');if(box)box.classList.remove('show');}
     function sixsTvStatusIcon(status){return status==='done'?'✅':(status==='skipped'?'⏭️':(status==='problem'?'⚠️':'⬜'));}
-    function sixsTvRender(){
-        const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');
-        if(!box||!list||!prog)return;
-        const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};
-        const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;
-        const marked=tasks.filter(t=>logs[t.id]).length;
-        prog.textContent=done+'/'+tasks.length+' wykonane';
-        if(!tasks.length){
-            list.innerHTML='<div class="sixs-tv-task">Brak przypisanych zadań 6S dla tej przerwy.</div>';
-            if(meta)meta.textContent='Nie ma aktywnych przypisań operatorów dla aktualnej przerwy 6S';
-            box.classList.add('show');
-            return;
-        }
-        list.innerHTML=tasks.map(t=>{
-            const l=logs[t.id]||{},st=l.status||'';
-            const taskName=String(t.task_name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            const assignedText=t.assigned_count&&t.assigned_count>1?'przypisane: '+t.assigned_count+' os.':'przypisane';
-            const statusText=l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':'problem'):assignedText+' / oczekuje';
-            return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+taskName+'<div class="sixs-tv-meta">'+statusText+'</div></span></div>';
-        }).join('');
-        if(meta)meta.textContent='Odkliknięto: '+marked+'/'+tasks.length+' • tylko zadania przypisane';
-        box.classList.add('show');
-    }
-    async function sixsTvUpdate(timing, now){
-        if(!timing||timing.kind!=='6S'){sixsTvHide();return;}
-        const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();
-        const key=logDate+'|'+shift+'|'+start;
-        const age=Date.now()-SIXS_TV_CACHE.lastFetch;
-        if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}
-        try{
-            const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');
-            if(tasksRes.error)throw tasksRes.error;
-            const sessionTasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(start))&&(!Array.isArray(t.days)||t.days.includes(dow)));
-            const taskIds=sessionTasks.map(t=>t.id).filter(Boolean);
-            let assignedIds=new Set(),assignedCount={};
-            if(taskIds.length){
-                const assignRes=await supabaseClient.from('sixs_operator_task_assignments').select('task_id,operator_id,active').eq('active',true).in('task_id',taskIds);
-                if(assignRes.error)throw assignRes.error;
-                (assignRes.data||[]).forEach(a=>{assignedIds.add(String(a.task_id));assignedCount[a.task_id]=(assignedCount[a.task_id]||0)+1;});
-            }
-            const tasks=sessionTasks.filter(t=>assignedIds.has(String(t.id))).map(t=>Object.assign({},t,{assigned_count:assignedCount[t.id]||1}));
-            const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);
-            if(logsRes.error)throw logsRes.error;
-            const logs={};
-            (logsRes.data||[]).forEach(l=>{ if(assignedIds.has(String(l.task_id))) logs[l.task_id]=l; });
-            SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};
-            sixsTvRender();
-        }catch(e){
-            const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),meta=document.getElementById('sixsTvMeta');
-            if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać przypisanych zadań 6S: '+String(e.message||e).replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';if(meta)meta.textContent='Sprawdź tabelę sixs_operator_task_assignments';box.classList.add('show');}
-        }
-    }
+    function sixsTvRender(){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');if(!box||!list||!prog)return;const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;const marked=tasks.filter(t=>logs[t.id]).length;prog.textContent=done+'/'+tasks.length+' wykonane';if(!tasks.length){list.innerHTML='<div class="sixs-tv-task">Brak skonfigurowanych zadań 6S dla tej zmiany.</div>';box.classList.add('show');return;}list.innerHTML=tasks.map(t=>{const l=logs[t.id]||{},st=l.status||'';return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+t.task_name+'<div class="sixs-tv-meta">'+(l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':'problem'):'oczekuje')+'</div></span></div>';}).join('');if(meta)meta.textContent='Odkliknięto: '+marked+'/'+tasks.length+' • operator_6s.html';box.classList.add('show');}
+    async function sixsTvUpdate(timing, now){if(!timing||timing.kind!=='6S'){sixsTvHide();return;}const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();const key=logDate+'|'+shift+'|'+start;const age=Date.now()-SIXS_TV_CACHE.lastFetch;if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}try{const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');if(tasksRes.error)throw tasksRes.error;const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);const tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||t.shift===shift)&&(!Array.isArray(t.days)||t.days.includes(dow)));const logs={};(logsRes.data||[]).forEach(l=>logs[l.task_id]=l);SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};sixsTvRender();}catch(e){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList');if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać zadań 6S: '+e.message+'</div>';box.classList.add('show');}}}
 
     function updateBreakOverlay() {
         const overlay = document.getElementById('breakOverlay');
@@ -1824,7 +1774,27 @@
     }
 
 
-    function directorExtractCategory(note){const text=String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+    function directorExtractCategory(note){const text=stripChangeoverMarker ? stripChangeoverMarker(String(note||'')) : String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+
+    function extractChangeoverCountFromNotes(note) {
+        const match = String(note || '').match(/(?:\[PRZEZBROJENIA:(\d+)\]|<!--\s*PRZEZBROJENIA:(\d+)\s*-->)/i);
+        if (!match) return null;
+        const value = parseInt(match[1] || match[2], 10);
+        return (!isNaN(value) && value >= 0) ? value : null;
+    }
+    function stripChangeoverMarker(note) {
+        return String(note || '').replace(/\s*\[PRZEZBROJENIA:\d+\]\s*/gi, ' ').replace(/\s*<!--\s*PRZEZBROJENIA:\d+\s*-->\s*/gi, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+    function getChangeoverCountFromRecord(rec) {
+        rec = rec || {};
+        const direct = rec.changeoverCount != null ? rec.changeoverCount : (rec.changeover_count != null ? rec.changeover_count : rec.changeovers);
+        const parsedDirect = parseInt(direct, 10);
+        if (!isNaN(parsedDirect) && parsedDirect >= 0) return parsedDirect;
+        const parsedFromNotes = extractChangeoverCountFromNotes(rec.notes || '');
+        if (parsedFromNotes !== null) return parsedFromNotes;
+        return (parseFloat(rec.cleaning || 0) > 0) ? 1 : 0;
+    }
+
     function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
     function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
@@ -1978,7 +1948,8 @@
             const d = comment.date;
             const fullDateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
 
-            let originalNote = comment.note;
+            let originalNote = stripChangeoverMarker(comment.note);
+            if (!originalNote) return;
             let iconHtml = '';
             let cleanNote = originalNote;
 

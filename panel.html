@@ -1109,6 +1109,10 @@
                     <input type="number" id="cleaningMinutes" value="30">
                 </div>
                 <div class="form-group">
+                    <label>Ilość przezbrojeń/dzień:</label>
+                    <input type="number" id="changeoverCount" min="0" step="1" value="1" title="Wpisz ile razy w tym dniu było przezbrojenie/zmiana koloru. Np. 3 zmiany koloru = 3.">
+                </div>
+                <div class="form-group">
                     <label>Serwis (minuty):</label>
                     <input type="number" id="serviceMinutes" value="0">
                 </div>
@@ -1657,13 +1661,33 @@
 
     async function saveBreakScheduleConfig(){BREAK_SCHEDULE=BREAK_SCHEDULE.map(normalizeBreakItem).sort((a,b)=>String(a.shift||'1').localeCompare(String(b.shift||'1'))||minutesFromTimeText(a.start)-minutesFromTimeText(b.start));BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(document.getElementById('breakRefreshMinutes').value,10)||5));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));try{const{error}=await supabaseClient.from('break_schedule_config').upsert({id:1,schedule:BREAK_SCHEDULE,refresh_minutes:BREAK_REFRESH_MINUTES,updated_at:new Date().toISOString()},{onConflict:'id'});if(error)throw error;showBreakScheduleStatus('Zapisano konfigurację przerw w Supabase.');NEW_BREAK_ROW_INDEX=-1;renderBreakScheduleConfigRows();}catch(err){showBreakScheduleStatus('Zapisano lokalnie, ale nie udało się zapisać w Supabase: '+err.message,true);return;}buildBreakSchedulePreview();}
 
-    function directorExtractCategory(note){const text=String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+    function directorExtractCategory(note){const text=stripChangeoverMarker ? stripChangeoverMarker(String(note||'')) : String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
+
+    function extractChangeoverCountFromNotes(note) {
+        const match = String(note || '').match(/(?:\[PRZEZBROJENIA:(\d+)\]|<!--\s*PRZEZBROJENIA:(\d+)\s*-->)/i);
+        if (!match) return null;
+        const value = parseInt(match[1] || match[2], 10);
+        return (!isNaN(value) && value >= 0) ? value : null;
+    }
+    function stripChangeoverMarker(note) {
+        return String(note || '').replace(/\s*\[PRZEZBROJENIA:\d+\]\s*/gi, ' ').replace(/\s*<!--\s*PRZEZBROJENIA:\d+\s*-->\s*/gi, ' ').replace(/\s{2,}/g, ' ').trim();
+    }
+    function getChangeoverCountFromRecord(rec) {
+        rec = rec || {};
+        const direct = rec.changeoverCount != null ? rec.changeoverCount : (rec.changeover_count != null ? rec.changeover_count : rec.changeovers);
+        const parsedDirect = parseInt(direct, 10);
+        if (!isNaN(parsedDirect) && parsedDirect >= 0) return parsedDirect;
+        const parsedFromNotes = extractChangeoverCountFromNotes(rec.notes || '');
+        if (parsedFromNotes !== null) return parsedFromNotes;
+        return (parseFloat(rec.cleaning || 0) > 0) ? 1 : 0;
+    }
+
     function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
     function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
     function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
-    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count++;}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorPareto(records){const map={};records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0;if(cat&&cat!=='Brak przestojów'&&bd>0){map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=bd;map[cat].count++;}if(cl>0){const c='Czyszczenie/Konserwacja';map[c]=map[c]||{minutes:0,count:0};map[c].minutes+=cl;map[c].count+=Math.max(1,getChangeoverCountFromRecord(r));}});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
     function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
@@ -1850,7 +1874,8 @@
                         perf: row.perf != null ? parseFloat(row.perf).toFixed(1) : "0.0",
                         qual: row.qual != null ? parseFloat(row.qual).toFixed(1) : "0.0",
                         oee: row.oee != null ? parseFloat(row.oee).toFixed(1) : "0.0",
-                        notes: row.notes || ""
+                        notes: row.notes || "",
+                        changeoverCount: getChangeoverCountFromRecord({ notes: row.notes || "", cleaning: row.cleaning })
                     };
                 });
             }
@@ -2105,7 +2130,7 @@
         setupTimeFormatter(document.getElementById('hStart'));
         setupTimeFormatter(document.getElementById('hEnd'));
 
-        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'serviceMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
+        const inputs = ['targetSpeed', 'breakdownMinutes', 'cleaningMinutes', 'changeoverCount', 'serviceMinutes', 'badPieces', 'dayNotes', 'mStart', 'mEnd', 'pcsStart', 'pcsEnd', 'downtimeCategory'];
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 markChanged();
@@ -2344,6 +2369,7 @@
             document.getElementById('targetSpeed').value = rec.targetSpeed;
             document.getElementById('breakdownMinutes').value = rec.breakdown;
             document.getElementById('cleaningMinutes').value = rec.cleaning;
+            document.getElementById('changeoverCount').value = getChangeoverCountFromRecord(rec);
             document.getElementById('serviceMinutes').value = rec.service || 0;
             document.getElementById('badPieces').value = rec.bad;
             document.getElementById('mStart').value = rec.mStart;
@@ -2353,7 +2379,7 @@
             document.getElementById('hStart').value = rec.hStart;
             document.getElementById('hEnd').value = rec.hEnd;
 
-            var fullNotes = rec.notes || "";
+            var fullNotes = stripChangeoverMarker(rec.notes || "");
             if (fullNotes.startsWith("[")) {
                 var bracketEnd = fullNotes.indexOf("]");
                 if (bracketEnd > -1) {
@@ -2379,6 +2405,7 @@
         } else {
             document.getElementById('breakdownMinutes').value = 0;
             document.getElementById('cleaningMinutes').value = 30;
+            document.getElementById('changeoverCount').value = 1;
             document.getElementById('serviceMinutes').value = 0;
             document.getElementById('badPieces').value = 0;
             document.getElementById('downtimeCategory').value = "Brak przestojów";
@@ -2569,22 +2596,27 @@
         var targetSpeed = parseFloat(document.getElementById('targetSpeed').value);
         var breakdownMinutes = parseFloat(document.getElementById('breakdownMinutes').value) || 0;
         var cleaningMinutes = parseFloat(document.getElementById('cleaningMinutes').value) || 0;
+        var changeoverCount = parseInt(document.getElementById('changeoverCount').value, 10);
+        if (isNaN(changeoverCount)) changeoverCount = cleaningMinutes > 0 ? 1 : 0;
         var serviceMinutes = parseFloat(document.getElementById('serviceMinutes').value) || 0;
         var badPieces = parseFloat(document.getElementById('badPieces').value) || 0;
 
         var category = document.getElementById('downtimeCategory').value;
-        var noteText = document.getElementById('dayNotes').value.trim();
+        var noteText = stripChangeoverMarker(document.getElementById('dayNotes').value).trim();
         var dayNotes = noteText;
         if (category !== "Brak przestojów") {
             dayNotes = `[${category}] ${noteText}`;
+        }
+        if (cleaningMinutes > 0 || changeoverCount > 0) {
+            dayNotes = `${dayNotes} <!--PRZEZBROJENIA:${Math.max(0, changeoverCount)}-->`.trim();
         }
         // DYREKTORSKA KONTROLA DANYCH: wymagamy rzetelnego opisu strat.
         if ((category !== "Brak przestojów" || parseFloat(document.getElementById('breakdownMinutes').value) > 0) && noteText.length < 3) { alert("Wpisz krótką notatkę dla przestoju/awarii."); return; }
         if (parseFloat(document.getElementById('breakdownMinutes').value) > 0 && category === "Brak przestojów") { alert("Podano minuty awarii/usterek, ale kategoria to Brak przestojów. Wybierz właściwą przyczynę."); return; }
 
         // WALIDACJA SERWISU I STRAT: dane muszą być logiczne przed zapisem.
-        if (breakdownMinutes < 0 || cleaningMinutes < 0 || serviceMinutes < 0 || badPieces < 0) {
-            alert("Minuty awarii, czyszczenia, serwisu oraz liczba poprawek nie mogą być ujemne.");
+        if (breakdownMinutes < 0 || cleaningMinutes < 0 || changeoverCount < 0 || serviceMinutes < 0 || badPieces < 0) {
+            alert("Minuty awarii, czyszczenia, serwisu, ilość przezbrojeń oraz liczba poprawek nie mogą być ujemne.");
             return;
         }
         if ((category !== "Brak przestojów" || breakdownMinutes > 0 || serviceMinutes > 0) && noteText.length < 3) {
@@ -2601,6 +2633,10 @@
         }
         if (category === "Serwis" && serviceMinutes <= 0) {
             alert("Wybrano kategorię Serwis — wpisz czas serwisu w minutach.");
+            return;
+        }
+        if (cleaningMinutes > 0 && changeoverCount < 1) {
+            alert("Podano czas czyszczenia kabiny — wpisz liczbę przezbrojeń minimum 1.");
             return;
         }
         var valMStart = document.getElementById('mStart').value;
@@ -2711,6 +2747,7 @@
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,
                 cleaning: cleaningMinutes,
+                changeoverCount: changeoverCount,
                 service: serviceMinutes,
                 bad: badPieces,
                 mStart: parseInt(valMStart, 10),
@@ -2725,7 +2762,8 @@
                 perf: parseFloat((performance * 100).toFixed(1)).toFixed(1),
                 qual: parseFloat((quality * 100).toFixed(1)).toFixed(1),
                 oee: parseFloat((oee * 100).toFixed(1)).toFixed(1),
-                notes: dayNotes
+                notes: dayNotes,
+                changeoverCount: changeoverCount
             };
 
             localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
@@ -2931,7 +2969,7 @@
                 if (rec.notes) tooltipText += ` (${rec.notes})`;
                 bar.innerHTML = `<div class="chart-css-tooltip">${tooltipText}</div>`;
 
-                var notesDisplay = rec.notes ? rec.notes : "—";
+                var notesDisplay = rec.notes ? stripChangeoverMarker(rec.notes) : "—";
                 var row = tbody.insertRow();
                 row.innerHTML = `<td><strong>Dzień ${rec.day}</strong></td><td>${rec.meters} m</td><td>${rec.pieces} szt</td><td>${rec.bad} szt</td><td>${rec.av}%</td><td>${rec.perf}%</td><td>${rec.qual}%</td><td><span class="badge" style="background-color: ${flatColor};">${rec.oee}%</span></td><td style="text-align:left; font-size:13px; font-style:italic; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${notesDisplay}">${notesDisplay}</td><td><div class="table-action-buttons"><button class="btn-edit-row" onclick="editDay('${dateKey}')">Edytuj</button><button class="btn-delete-row" onclick="deleteDay('${dateKey}')">Usuń</button></div></td>`;
             } else {
@@ -2970,7 +3008,7 @@
                 let perf = String(rec.perf).replace('.', ',');
                 let qual = String(rec.qual).replace('.', ',');
                 let oeeVal = String(rec.oee).replace('.', ',');
-                let notes = rec.notes ? rec.notes.replace(/\t|\n/g, " ") : "";
+                let notes = rec.notes ? stripChangeoverMarker(rec.notes).replace(/\t|\n/g, " ") : "";
                 csvContent += `Dzień ${rec.day}\t${rec.meters}\t${rec.pieces}\t${rec.bad}\t${av}\t${perf}\t${qual}\t${oeeVal}\t${notes}\n`;
                 rowsCount++;
             }
