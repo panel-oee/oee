@@ -1065,54 +1065,6 @@
         .director-mini-label{font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}.director-mini-value{font-size:18px;font-weight:900;color:var(--text-main);line-height:1.08;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.director-mini-sub{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.2;margin-top:4px;}
         @media(max-width:900px){.director-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:520px){.director-summary-strip{grid-template-columns:1fr;}}
 
-        /* POPRAWKA CZYTELNOSCI 4 DOLNYCH KAFELKOW DYREKTORSKICH */
-        .director-summary-strip{
-            grid-template-columns: 1fr 1fr 1fr 1.35fr !important;
-            gap: 8px !important;
-            align-items: stretch !important;
-        }
-        .director-mini-card{
-            min-height: 92px !important;
-            padding: 8px 7px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            overflow: hidden !important;
-        }
-        .director-mini-label{
-            font-size: clamp(9px, 0.55vw, 11px) !important;
-            line-height: 1.05 !important;
-            margin-bottom: 4px !important;
-        }
-        .director-mini-value{
-            font-size: clamp(17px, 1.05vw, 22px) !important;
-            line-height: 1.05 !important;
-            white-space: normal !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
-            max-width: 100% !important;
-        }
-        .director-mini-sub{
-            font-size: clamp(9px, 0.62vw, 12px) !important;
-            line-height: 1.12 !important;
-            margin-top: 5px !important;
-            overflow-wrap: anywhere !important;
-            max-width: 100% !important;
-        }
-        #directorTopLossCard .director-mini-value{
-            font-size: clamp(16px, 0.95vw, 21px) !important;
-        }
-        #directorTopLossCard .director-mini-sub{
-            font-size: clamp(9px, 0.58vw, 11px) !important;
-            line-height: 1.08 !important;
-        }
-        @media (max-width: 1300px){
-            .director-summary-strip{grid-template-columns: repeat(2, minmax(0, 1fr)) !important;}
-            .director-mini-card{min-height: 78px !important;}
-        }
-
-
 
         /* MODUL 6S TV: lista zadań i postęp podczas Czasu 6S */
         .sixs-tv-box{display:none;width:min(980px,92vw);margin-top:18px;background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.45);border-radius:18px;padding:16px 18px;box-shadow:0 18px 38px rgba(0,0,0,.25)}
@@ -1713,8 +1665,8 @@
     let SIXS_TV_CACHE = { key:'', tasks:[], logs:{}, lastFetch:0 };
     function sixsTvHide(){const box=document.getElementById('sixsTvBox');if(box)box.classList.remove('show');}
     function sixsTvStatusIcon(status){return status==='done'?'✅':(status==='skipped'?'⏭️':(status==='problem'?'⚠️':'⬜'));}
-    function sixsTvRender(){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');if(!box||!list||!prog)return;const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;const marked=tasks.filter(t=>logs[t.id]).length;prog.textContent=done+'/'+tasks.length+' wykonane';if(!tasks.length){list.innerHTML='<div class="sixs-tv-task">Brak skonfigurowanych zadań 6S dla tej zmiany.</div>';box.classList.add('show');return;}list.innerHTML=tasks.map(t=>{const l=logs[t.id]||{},st=l.status||'';return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+t.task_name+'<div class="sixs-tv-meta">'+(l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':'problem'):'oczekuje')+'</div></span></div>';}).join('');if(meta)meta.textContent='Odkliknięto: '+marked+'/'+tasks.length+' • operator_6s.html';box.classList.add('show');}
-    async function sixsTvUpdate(timing, now){if(!timing||timing.kind!=='6S'){sixsTvHide();return;}const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();const key=logDate+'|'+shift+'|'+start;const age=Date.now()-SIXS_TV_CACHE.lastFetch;if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}try{const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');if(tasksRes.error)throw tasksRes.error;const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);const tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||t.shift===shift)&&(!Array.isArray(t.days)||t.days.includes(dow)));const logs={};(logsRes.data||[]).forEach(l=>logs[l.task_id]=l);SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};sixsTvRender();}catch(e){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList');if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać zadań 6S: '+e.message+'</div>';box.classList.add('show');}}}
+    function sixsTvRender(){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');if(!box||!list||!prog)return;const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};if(!tasks.length){list.innerHTML='';prog.textContent='0/0 wykonane';if(meta)meta.textContent='Brak zadań przypisanych w tym momencie.';box.classList.remove('show');return;}const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;const marked=tasks.filter(t=>logs[t.id]&&logs[t.id].status).length;prog.textContent=done+'/'+tasks.length+' wykonane';list.innerHTML=tasks.map(t=>{const l=logs[t.id]||{},st=l.status||'';const operatorText=l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':st==='problem'?'problem':'oczekuje'):'przypisane';return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+t.task_name+'<div class="sixs-tv-meta">'+operatorText+'</div></span></div>';}).join('');if(meta)meta.textContent='Odkliknięto: '+marked+'/'+tasks.length+' • operator_6s.html';box.classList.add('show');}
+    async function sixsTvUpdate(timing, now){if(!timing||timing.kind!=='6S'){sixsTvHide();return;}const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();const key=logDate+'|'+shift+'|'+start;const age=Date.now()-SIXS_TV_CACHE.lastFetch;if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}try{const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);if(logsRes.error)throw logsRes.error;const assignedLogs=(logsRes.data||[]).filter(l=>l&&l.task_id!=null&&(l.operator_id!=null||String(l.operator_name||'').trim()!==''));if(!assignedLogs.length){SIXS_TV_CACHE={key,tasks:[],logs:{},lastFetch:Date.now()};sixsTvRender();return;}const taskIds=[...new Set(assignedLogs.map(l=>l.task_id).filter(v=>v!=null))];const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').in('id',taskIds).eq('active',true).order('sort_order');if(tasksRes.error)throw tasksRes.error;const logs={};assignedLogs.forEach(l=>logs[l.task_id]=l);const tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&(!Array.isArray(t.days)||t.days.includes(dow))&&logs[t.id]);SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};sixsTvRender();}catch(e){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList');if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać zadań 6S: '+e.message+'</div>';box.classList.add('show');}}}
 
     function updateBreakOverlay() {
         const overlay = document.getElementById('breakOverlay');
@@ -1900,7 +1852,7 @@
         setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
         setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
         const topLossInfo = pareto.length
-            ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min' : ''}`
+            ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min/przezbr.' : ''}`
             : 'W bieżącym miesiącu';
         setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',topLossInfo,pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
     }
