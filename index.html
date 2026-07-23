@@ -1536,10 +1536,40 @@
 
         let comments = [];
 
-        const notesStartDate = new Date(currentYear, currentMonth - 1, 1);
-        const { calendarEnd } = getMonthCalendarRange(currentYear, currentMonth);
-        const notesStart = formatDateKey(notesStartDate);
-        const notesEnd = formatDateKey(calendarEnd);
+        const notesStart = formatDateKey(new Date(currentYear, currentMonth, 1));
+        const notesEnd = formatDateKey(new Date(currentYear, currentMonth + 1, 0));
+        const visibleLossCategories = [
+            "Zmiana koloru",
+            "Przemalowanie",
+            "Awaria maszyny",
+            "Usterka maszyny",
+            "Serwis",
+            "Czyszczenie/Konserwacja",
+            "Brak proszku",
+            "Inne"
+        ];
+
+        function buildVisibleComment(dateKey, rawNote) {
+            const cleanedNote = stripChangeoverMarker(rawNote || '').trim();
+            if (!cleanedNote) return null;
+
+            let category = directorExtractCategory(cleanedNote);
+            if (!category || category === "Brak przestojów") return null;
+            if (!KATEGORIE_IKON[category]) category = "Inne";
+            if (!visibleLossCategories.includes(category)) return null;
+
+            let text = cleanedNote;
+            const match = cleanedNote.match(/\[(.*?)\]/);
+            if (match) text = cleanedNote.replace(match[0], '').trim();
+
+            return {
+                dateKey: dateKey,
+                date: parseDateKey(dateKey),
+                note: cleanedNote,
+                category: category,
+                text: text
+            };
+        }
 
         try {
             const { data, error } = await supabaseClient
@@ -1553,25 +1583,24 @@
 
             if (data) {
                 data.forEach(function(row) {
-                    const note = row.notes ? String(row.notes).trim() : '';
-                    if (note !== '') {
-                        comments.push({ dateKey: row.date, date: parseDateKey(row.date), note: note });
-                    }
+                    const prepared = buildVisibleComment(row.date, row.notes ? String(row.notes) : '');
+                    if (prepared) comments.push(prepared);
                 });
             }
         } catch (err) {
             console.error('Błąd pobierania uwag z Supabase, używam danych aktualnie w pamięci:', err.message);
 
             for (const dateKey in gemaBazaDanych) {
+                const parsedDate = parseDateKey(dateKey);
+                if (!parsedDate || parsedDate.getFullYear() !== currentYear || parsedDate.getMonth() !== currentMonth) continue;
+
                 const rec = gemaBazaDanych[dateKey];
-                const note = rec && rec.notes ? String(rec.notes).trim() : '';
-                if (note !== '') {
-                    comments.push({ dateKey: dateKey, date: parseDateKey(dateKey), note: note });
-                }
+                const prepared = buildVisibleComment(dateKey, rec && rec.notes ? String(rec.notes) : '');
+                if (prepared) comments.push(prepared);
             }
         }
 
-        // Najnowsze jako pierwsze — tak samo dla TOP 5 i Wszystkie.
+        // Najnowsze jako pierwsze — TOP 5 pokazuje 5 ostatnich skategoryzowanych zakłóceń tylko z wybranego miesiąca.
         comments.sort((a, b) => b.date - a.date);
 
         if (window.commentsMode === 'top5') {
@@ -1589,22 +1618,13 @@
 
             const d = comment.date;
             const fullDateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+            const category = comment.category || "Inne";
+            const catStyle = getCommentCategoryStyle(category);
+            const icon = KATEGORIE_IKON[category] || KATEGORIE_IKON["Inne"] || "⚠️";
+            const cleanNote = comment.text || '';
 
-            let originalNote = stripChangeoverMarker(comment.note);
-            if (!originalNote) return;
-            let iconHtml = '';
-            let cleanNote = originalNote;
-
-            let match = originalNote.match(/\[(.*?)\]/);
-            if (match) {
-                let category = match[1].trim();
-                if (KATEGORIE_IKON[category]) {
-                    const catStyle = getCommentCategoryStyle(category);
-                    item.style.borderLeftColor = catStyle.border;
-                    iconHtml = `<span class="comment-box-icon" title="${category}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${KATEGORIE_IKON[category]} ${category}</span>`;
-                    cleanNote = originalNote.replace(match[0], '').trim();
-                }
-            }
+            item.style.borderLeftColor = catStyle.border;
+            const iconHtml = `<span class="comment-box-icon" title="${category}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${icon} ${category}</span>`;
 
             item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${cleanNote}</span>`;
             listContainer.appendChild(item);
