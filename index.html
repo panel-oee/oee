@@ -988,6 +988,54 @@
         .director-mini-label{font-size:11px;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}.director-mini-value{font-size:18px;font-weight:900;color:var(--text-main);line-height:1.08;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.director-mini-sub{font-size:11px;font-weight:700;color:var(--text-muted);line-height:1.2;margin-top:4px;}
         @media(max-width:900px){.director-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:520px){.director-summary-strip{grid-template-columns:1fr;}}
 
+        /* POPRAWKA CZYTELNOSCI 4 DOLNYCH KAFELKOW DYREKTORSKICH */
+        .director-summary-strip{
+            grid-template-columns: 1fr 1fr 1fr 1.35fr !important;
+            gap: 8px !important;
+            align-items: stretch !important;
+        }
+        .director-mini-card{
+            min-height: 92px !important;
+            padding: 8px 7px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            overflow: hidden !important;
+        }
+        .director-mini-label{
+            font-size: clamp(9px, 0.55vw, 11px) !important;
+            line-height: 1.05 !important;
+            margin-bottom: 4px !important;
+        }
+        .director-mini-value{
+            font-size: clamp(17px, 1.05vw, 22px) !important;
+            line-height: 1.05 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            max-width: 100% !important;
+        }
+        .director-mini-sub{
+            font-size: clamp(9px, 0.62vw, 12px) !important;
+            line-height: 1.12 !important;
+            margin-top: 5px !important;
+            overflow-wrap: anywhere !important;
+            max-width: 100% !important;
+        }
+        #directorTopLossCard .director-mini-value{
+            font-size: clamp(16px, 0.95vw, 21px) !important;
+        }
+        #directorTopLossCard .director-mini-sub{
+            font-size: clamp(9px, 0.58vw, 11px) !important;
+            line-height: 1.08 !important;
+        }
+        @media (max-width: 1300px){
+            .director-summary-strip{grid-template-columns: repeat(2, minmax(0, 1fr)) !important;}
+            .director-mini-card{min-height: 78px !important;}
+        }
+
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1494,7 +1542,7 @@
         setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
         setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
         const topLossInfo = pareto.length
-            ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min/przezbr.' : ''}`
+            ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min' : ''}`
             : 'W bieżącym miesiącu';
         setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',topLossInfo,pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
     }
