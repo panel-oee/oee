@@ -1800,7 +1800,40 @@
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
     function directorPrevAvg(){const d=new Date(currentYear,currentMonth-1,1);const y=d.getFullYear(),m=d.getMonth();return directorAvg(Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===y&&x.date.getMonth()===m));}
-    function directorPareto(records){const map={};function add(cat,min){min=parseFloat(min)||0;if(!cat||cat==='Brak przestojów'||min<=0)return;map[cat]=map[cat]||{minutes:0,count:0};map[cat].minutes+=min;map[cat].count++;}records.forEach(x=>{const r=x.rec||{},cat=directorExtractCategory(r.notes||''),bd=parseFloat(r.breakdown||0)||0,cl=parseFloat(r.cleaning||0)||0,sv=parseFloat(r.service||0)||0;add(cat,bd);add('Czyszczenie/Konserwacja',cl);add('Serwis',sv);});return Object.keys(map).map(k=>({category:k,minutes:map[k].minutes,count:map[k].count})).sort((a,b)=>b.minutes-a.minutes).slice(0,5);}
+    function directorPareto(records){
+        const map={};
+        function ensure(cat){map[cat]=map[cat]||{minutes:0,count:0,changeoverMinutes:0,changeoverCount:0};return map[cat];}
+        function add(cat,min,count=1,isChangeover=false){
+            min=parseFloat(min)||0;
+            count=parseInt(count,10)||0;
+            if(!cat||cat==='Brak przestojów'||min<=0)return;
+            const row=ensure(cat);
+            row.minutes+=min;
+            row.count+=Math.max(1,count);
+            if(isChangeover){
+                row.changeoverMinutes+=min;
+                row.changeoverCount+=Math.max(1,count);
+            }
+        }
+        records.forEach(x=>{
+            const r=x.rec||{};
+            const cat=directorExtractCategory(r.notes||'');
+            const bd=parseFloat(r.breakdown||0)||0;
+            const cl=parseFloat(r.cleaning||0)||0;
+            const sv=parseFloat(r.service||0)||0;
+            add(cat,bd,1,false);
+            add('Zmiana koloru',cl,Math.max(1,getChangeoverCountFromRecord(r)),true);
+            add('Serwis',sv,1,false);
+        });
+        return Object.keys(map).map(k=>({
+            category:k,
+            minutes:map[k].minutes,
+            count:map[k].count,
+            changeoverMinutes:map[k].changeoverMinutes,
+            changeoverCount:map[k].changeoverCount,
+            avgChangeover:map[k].changeoverCount>0?Math.round(map[k].changeoverMinutes/map[k].changeoverCount):null
+        })).sort((a,b)=>b.minutes-a.minutes).slice(0,5);
+    }
     function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
@@ -1818,7 +1851,10 @@
         const trendCls=delta===null?'':(delta>=1?'good':(delta<=-1?'alert':'warn'));
         setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
         setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
-        setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',pareto.length?`${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x`:'W bieżącym miesiącu',pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
+        const topLossInfo = pareto.length
+            ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min/przezbr.' : ''}`
+            : 'W bieżącym miesiącu';
+        setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',topLossInfo,pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
     }
 
     async function renderCommentsBox() {
