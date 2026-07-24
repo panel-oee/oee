@@ -1700,6 +1700,150 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   body.v4-dashboard{zoom:1.18;}
 }
 
+/* ==========================================================
+   V13 — przywrócone przełączniki TOP 5 / WSZYSTKIE
+   ========================================================== */
+.v4-comments-panel{position:relative!important;}
+.v4-comments-panel .v4-panel-head{
+  position:relative!important;z-index:4!important;padding-right:220px!important;
+}
+.v4-comments-panel .comments-box-title{
+  position:static!important;margin:0 0 7px!important;height:36px!important;
+  min-height:36px!important;display:flex!important;align-items:center!important;
+  justify-content:flex-end!important;overflow:visible!important;z-index:10!important;
+}
+.v4-comments-panel .comments-box-title>span{display:none!important;}
+.v4-comments-panel #commentsModeControls{
+  display:flex!important;position:absolute!important;right:12px!important;top:9px!important;
+  z-index:30!important;gap:7px!important;align-items:center!important;visibility:visible!important;
+  opacity:1!important;pointer-events:auto!important;
+}
+.v4-comments-panel #commentsModeControls button{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:auto!important;min-width:82px!important;height:34px!important;padding:5px 14px!important;
+  border:1px solid var(--v4-border)!important;border-radius:7px!important;
+  font-size:12px!important;line-height:1!important;font-weight:850!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+.v4-comments-panel #commentsTop5Btn,
+.v4-comments-panel #commentsAllBtn{color:var(--v4-muted)!important;background:var(--v4-card)!important;}
+.v4-comments-panel #commentsTop5Btn.v13-active,
+.v4-comments-panel #commentsAllBtn.v13-active{
+  color:#0f172a!important;background:#f8fafc!important;border-color:#f8fafc!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.18)!important;
+}
+.v4-comments-panel .comments-box-list{margin-top:0!important;}
+
+@media(max-width:700px){
+  .v4-comments-panel .v4-panel-head{padding-right:0!important;margin-bottom:48px!important;}
+  .v4-comments-panel #commentsModeControls{
+    top:43px!important;left:12px!important;right:12px!important;width:auto!important;
+    display:grid!important;grid-template-columns:1fr 1fr!important;
+  }
+  .v4-comments-panel #commentsModeControls button{
+    width:100%!important;height:40px!important;font-size:13px!important;
+  }
+  .v4-comments-panel .comments-box-title{height:0!important;min-height:0!important;margin:0!important;}
+}
+@media(min-width:1500px){
+  .v4-comments-panel #commentsModeControls button{min-width:94px!important;height:36px!important;font-size:13px!important;}
+}
+
+/* ==========================================================
+   V14 — czytelność TV + przyciski bez obniżania komunikatów
+   ========================================================== */
+
+/* Przyciski są w nagłówku .v4-panel-head, obok tytułu. */
+.v4-comments-panel .v4-panel-head{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:14px!important;padding-right:0!important;height:38px!important;min-height:38px!important;
+  margin:0 0 6px!important;overflow:visible!important;
+}
+.v4-comments-panel .comments-box-title{
+  display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;
+}
+.v4-comments-panel #commentsModeControls{
+  position:static!important;inset:auto!important;display:flex!important;align-items:center!important;
+  gap:8px!important;margin-left:auto!important;width:auto!important;z-index:20!important;
+  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+.v4-comments-panel #commentsModeControls button{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  min-width:100px!important;height:38px!important;padding:6px 17px!important;
+  border:1px solid var(--v4-border)!important;border-radius:8px!important;
+  font-size:14px!important;line-height:1!important;font-weight:900!important;
+}
+.v4-comments-panel .right-bottom-section,
+.v4-comments-panel .comments-box-container{
+  height:246px!important;min-height:246px!important;overflow:hidden!important;
+}
+.v4-comments-panel .comments-box-list{
+  height:246px!important;min-height:246px!important;max-height:246px!important;margin:0!important;
+  grid-template-rows:repeat(5,minmax(42px,1fr))!important;gap:6px!important;
+}
+.v4-comments-panel .comment-box-item{padding:7px 12px!important;}
+
+/* TV / ekran produkcyjny: wyraźnie większe napisy z kilku metrów. */
+@media (min-width:1200px) {
+  body.v4-dashboard .header-container h2{font-size:clamp(23px,1.45vw,31px)!important;}
+  body.v4-dashboard .header-clock{font-size:clamp(29px,1.8vw,38px)!important;}
+  body.v4-dashboard .theme-select{font-size:clamp(13px,.85vw,17px)!important;height:40px!important;}
+  .v4-head-status{font-size:clamp(12px,.78vw,16px)!important;}
+  .v4-title{font-size:clamp(15px,.95vw,19px)!important;}
+
+  .v4-kpi .stat-card-title,.v4-kpi .director-mini-label{font-size:clamp(13px,.84vw,17px)!important;}
+  .v4-kpi .stat-card-value,.v4-kpi .director-mini-value{font-size:clamp(34px,2.15vw,45px)!important;}
+  .v4-kpi .stat-card-range,.v4-kpi .director-mini-sub{font-size:clamp(12px,.78vw,16px)!important;}
+
+  .v4-selected-date{font-size:clamp(23px,1.45vw,30px)!important;}
+  .v4-selected-oee small{font-size:clamp(12px,.78vw,16px)!important;}
+  .v4-selected-oee strong{font-size:clamp(38px,2.4vw,50px)!important;}
+  .v4-day-panel .gema-counter-title{font-size:clamp(10px,.68vw,14px)!important;}
+  .v4-day-panel .gema-counter-value{font-size:clamp(20px,1.3vw,27px)!important;}
+  .v4-day-panel .v4-loss .director-mini-label{font-size:clamp(12px,.78vw,16px)!important;}
+  .v4-day-panel .v4-loss .director-mini-value{font-size:clamp(21px,1.35vw,28px)!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{font-size:clamp(10px,.68vw,14px)!important;}
+
+  .v4-legend{font-size:clamp(11px,.72vw,15px)!important;gap:18px!important;}
+  .v6-bar-value{font-size:clamp(11px,.72vw,15px)!important;top:-21px!important;}
+  .v4-chart-panel .chart-css-label{font-size:clamp(11px,.72vw,15px)!important;}
+  .v4-chart-panel .chart-line-label{font-size:clamp(11px,.72vw,15px)!important;}
+  .v6-target-label,.v6-critical-label{font-size:clamp(10px,.66vw,14px)!important;min-width:54px!important;}
+
+  .v4-calendar-panel .v4-title,.v4-comments-panel .v4-title{font-size:clamp(16px,1vw,20px)!important;}
+  .v4-calendar-panel .calendar-header{font-size:clamp(16px,1vw,20px)!important;}
+  .v4-calendar-panel .calendar-day-name,.v4-calendar-panel .calendar-week-number{font-size:clamp(11px,.72vw,15px)!important;}
+  .v4-calendar-panel .calendar-day-num{font-size:clamp(15px,.95vw,19px)!important;}
+  .v4-calendar-panel .calendar-day-value{font-size:clamp(10px,.66vw,14px)!important;}
+
+  .v4-comments-panel .comment-box-item{font-size:clamp(13px,.84vw,17px)!important;}
+  .v4-comments-panel .comment-box-date{font-size:clamp(12px,.78vw,16px)!important;flex-basis:105px!important;}
+  .v4-comments-panel .comment-box-icon{font-size:clamp(10px,.66vw,14px)!important;}
+  .v4-comments-panel #commentsModeControls button{font-size:clamp(13px,.84vw,17px)!important;min-width:112px!important;height:40px!important;}
+}
+
+/* Na niższym TV nie zwiększamy wysokości sekcji, tylko utrzymujemy czytelność. */
+@media (min-width:1200px) and (max-height:900px){
+  .v4-comments-panel .v4-panel-head{height:34px!important;min-height:34px!important;}
+  .v4-comments-panel #commentsModeControls button{height:34px!important;}
+  .v4-comments-panel .right-bottom-section,.v4-comments-panel .comments-box-container{height:228px!important;min-height:228px!important;}
+  .v4-comments-panel .comments-box-list{height:228px!important;min-height:228px!important;max-height:228px!important;grid-template-rows:repeat(5,minmax(38px,1fr))!important;}
+}
+
+/* Smartfon: przyciski pod tytułem, ale nadal poza listą. */
+@media(max-width:700px){
+  .v4-comments-panel .v4-panel-head{
+    display:grid!important;grid-template-columns:1fr!important;height:auto!important;min-height:0!important;
+    gap:8px!important;margin-bottom:8px!important;
+  }
+  .v4-comments-panel #commentsModeControls{
+    display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important;margin:0!important;
+  }
+  .v4-comments-panel #commentsModeControls button{width:100%!important;height:42px!important;font-size:14px!important;}
+  .v4-comments-panel .right-bottom-section,.v4-comments-panel .comments-box-container{height:auto!important;min-height:285px!important;overflow:visible!important;}
+  .v4-comments-panel .comments-box-list{height:auto!important;min-height:235px!important;max-height:none!important;display:flex!important;}
+}
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3457,6 +3601,59 @@ function buildCalendar() {
   });
   window.addEventListener('focus',function(){paintBreakClock();scheduleBreakClock();});
   window.addEventListener('pageshow',function(){paintBreakClock();scheduleBreakClock();});
+})();
+</script>
+
+<script>
+(function(){
+  function repairCommentModeControls(){
+    const panel=document.querySelector('.v4-comments-panel');
+    const title=panel&&panel.querySelector('.comments-box-title');
+    const top=document.getElementById('commentsTop5Btn');
+    const all=document.getElementById('commentsAllBtn');
+    let controls=document.getElementById('commentsModeControls');
+    if(!panel||!title)return;
+    if(!controls&&top&&all){
+      controls=document.createElement('div');controls.id='commentsModeControls';
+      controls.append(top,all);title.appendChild(controls);
+    }
+    if(!controls)return;
+    if(controls.parentElement!==title)title.appendChild(controls);
+    controls.style.cssText='';
+    if(top){top.textContent='TOP 5';top.classList.toggle('v13-active',(window.commentsMode||'top5')==='top5');}
+    if(all){all.textContent='Wszystkie';all.classList.toggle('v13-active',window.commentsMode==='all');}
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    const timer=setInterval(repairCommentModeControls,150);
+    setTimeout(function(){repairCommentModeControls();clearInterval(timer)},5000);
+    document.addEventListener('click',function(e){
+      if(e.target.closest('#commentsTop5Btn,#commentsAllBtn'))setTimeout(repairCommentModeControls,40);
+    });
+  });
+})();
+</script>
+
+<script>
+(function(){
+  function placeCommentButtonsInHeader(){
+    const panel=document.querySelector('.v4-comments-panel');
+    const head=panel&&panel.querySelector('.v4-panel-head');
+    const controls=document.getElementById('commentsModeControls');
+    const top=document.getElementById('commentsTop5Btn');
+    const all=document.getElementById('commentsAllBtn');
+    if(!panel||!head||!controls)return;
+    if(controls.parentElement!==head)head.appendChild(controls);
+    controls.style.cssText='';
+    if(top)top.classList.toggle('v13-active',(window.commentsMode||'top5')==='top5');
+    if(all)all.classList.toggle('v13-active',window.commentsMode==='all');
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    const timer=setInterval(placeCommentButtonsInHeader,120);
+    setTimeout(function(){placeCommentButtonsInHeader();clearInterval(timer)},6000);
+    document.addEventListener('click',function(e){
+      if(e.target.closest('#commentsTop5Btn,#commentsAllBtn'))setTimeout(placeCommentButtonsInHeader,30);
+    });
+  });
 })();
 </script>
 
