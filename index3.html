@@ -1552,6 +1552,154 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   .v4-comments-panel .right-bottom-section,.v4-comments-panel .comments-box-container{height:auto!important;min-height:248px!important;}
 }
 
+/* ==========================================================
+   V12 — dwa dopracowane tryby: SMARTFON i TV / FULL HD
+   ========================================================== */
+
+/* ---------- SMARTFON / mały tablet ---------- */
+@media (max-width: 700px) {
+  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
+  body.v4-dashboard{padding:6px!important;font-size:15px!important;overflow-y:auto!important;}
+  body.v4-dashboard .container{overflow:visible!important;min-height:0!important;}
+
+  body.v4-dashboard .header-container{
+    height:auto!important;min-height:0!important;margin-bottom:8px!important;
+    padding:10px 12px!important;display:grid!important;
+    grid-template-columns:1fr auto!important;gap:8px 10px!important;
+    align-items:center!important;
+  }
+  body.v4-dashboard .header-container h2{
+    font-size:18px!important;line-height:1.15!important;grid-column:1/2!important;
+  }
+  body.v4-dashboard .header-clock{display:block!important;position:static!important;transform:none!important;
+    grid-column:2/3!important;grid-row:1!important;font-size:20px!important;text-align:right!important;width:auto!important;}
+  body.v4-dashboard .header-clock:before{display:none!important;}
+  body.v4-dashboard .controls-wrapper{grid-column:1/-1!important;width:100%!important;justify-content:flex-start!important;}
+  body.v4-dashboard .theme-select{width:100%!important;height:44px!important;font-size:15px!important;padding:0 12px!important;}
+  .v4-head-status{display:none!important;}
+
+  .v4-shell{display:flex!important;flex-direction:column!important;gap:8px!important;overflow:visible!important;}
+  .v4-kpis{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+  .v4-kpi{min-height:124px!important;padding:12px!important;}
+  .v4-kpi .stat-card-title,.v4-kpi .director-mini-label{font-size:11px!important;line-height:1.2!important;}
+  .v4-kpi .stat-card-value,.v4-kpi .director-mini-value{font-size:30px!important;line-height:1!important;}
+  .v4-kpi .stat-card-range,.v4-kpi .director-mini-sub{font-size:11px!important;white-space:normal!important;line-height:1.25!important;}
+
+  .v4-main{display:flex!important;flex-direction:column!important;gap:8px!important;}
+  .v4-day-panel{order:1!important;display:grid!important;height:auto!important;min-height:0!important;overflow:visible!important;}
+  .v4-chart-panel{order:2!important;height:auto!important;min-height:500px!important;overflow:hidden!important;}
+  .v4-bottom{display:flex!important;flex-direction:column!important;height:auto!important;min-height:0!important;gap:8px!important;}
+  .v4-calendar-panel{order:1!important;height:auto!important;min-height:375px!important;overflow:hidden!important;}
+  .v4-comments-panel{order:2!important;height:auto!important;min-height:340px!important;overflow:hidden!important;}
+
+  .v4-title{font-size:13px!important;line-height:1.2!important;}
+  .v4-panel{padding:12px!important;}
+  .v4-panel-head{height:auto!important;min-height:28px!important;}
+
+  /* Panel dnia nad wykresem — łatwiejszy odczyt na telefonie */
+  .v4-selected-date{font-size:20px!important;}
+  .v4-selected-oee strong{font-size:34px!important;}
+  .v4-day-panel .gema-counters-container{grid-template-columns:1fr!important;}
+  .v4-day-panel .gema-counter-card{min-height:58px!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;}
+  .v4-day-panel .gema-counter-title{width:auto!important;font-size:10px!important;margin:0!important;}
+  .v4-day-panel .gema-counter-value{width:auto!important;font-size:20px!important;text-align:right!important;}
+  .v4-day-panel .v4-loss{grid-template-columns:1fr!important;grid-template-areas:"label" "value" "meta"!important;min-height:94px!important;}
+  .v4-day-panel .v4-loss .director-mini-value{font-size:20px!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{text-align:left!important;max-width:none!important;font-size:11px!important;}
+
+  /* Wykres nie jest już ściskany do szerokości telefonu — przewijanie poziome */
+  .v4-chart-panel .v4-panel-head{display:block!important;margin-bottom:7px!important;}
+  .v4-chart-panel .v4-legend{margin-top:7px!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:5px!important;font-size:9px!important;}
+  .v4-chart-panel .right-top-section,
+  .v4-chart-panel .chart-css-container{height:430px!important;min-height:430px!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;scrollbar-width:thin;}
+  .v4-chart-panel .chart-css-grid{
+    width:900px!important;min-width:900px!important;height:350px!important;min-height:350px!important;
+    margin:35px 18px 32px 48px!important;padding-right:8px!important;
+  }
+  .v4-chart-panel .chart-css-bar-wrapper{min-width:23px!important;margin:0 2px!important;}
+  .v4-chart-panel .chart-css-bar{width:20px!important;max-width:20px!important;}
+  .v6-bar-value{font-size:9px!important;top:-16px!important;}
+  .v4-chart-panel .chart-css-label{font-size:10px!important;}
+  .v6-target-label,.v6-critical-label{font-size:9px!important;right:8px!important;}
+
+  /* Kalendarz: pełny miesiąc, większe pole dotykowe, bez przycięcia */
+  .v4-calendar-panel .panel-section,.v4-calendar-panel .calendar-box{height:auto!important;min-height:318px!important;overflow:visible!important;}
+  .v4-calendar-panel .calendar-nav-wrapper{margin:-33px 0 8px!important;height:32px!important;}
+  .v4-calendar-panel .calendar-grid{
+    width:100%!important;height:auto!important;grid-template-columns:34px repeat(7,minmax(0,1fr))!important;
+    grid-template-rows:20px repeat(5,50px)!important;gap:4px!important;
+  }
+  .v4-calendar-panel .calendar-cell{min-height:50px!important;padding:4px 1px!important;border-radius:6px!important;}
+  .v4-calendar-panel .calendar-day-num{font-size:13px!important;}
+  .v4-calendar-panel .calendar-day-value{font-size:8px!important;}
+  .v4-calendar-panel .calendar-week-number,.v4-calendar-panel .calendar-day-name{font-size:9px!important;}
+  .v4-calendar-panel .calendar-nav-btn{width:38px!important;height:32px!important;}
+  .v4-calendar-panel .calendar-header{font-size:14px!important;min-width:120px!important;}
+
+  /* Zakłócenia: naturalna wysokość, czytelne zawijanie */
+  .v4-comments-panel .right-bottom-section,.v4-comments-panel .comments-box-container{height:auto!important;min-height:285px!important;overflow:visible!important;}
+  .v4-comments-panel .comments-box-title{margin:-31px 0 7px 120px!important;height:32px!important;}
+  .v4-comments-panel .comments-box-list{height:auto!important;min-height:235px!important;max-height:none!important;display:flex!important;gap:6px!important;overflow:visible!important;}
+  .v4-comments-panel .comment-box-item{min-height:46px!important;height:auto!important;display:grid!important;grid-template-columns:76px 1fr!important;padding:7px 8px!important;}
+  .v4-comments-panel .comment-box-date{grid-column:1!important;font-size:10px!important;}
+  .v4-comments-panel .comment-box-icon{grid-column:2!important;justify-self:start!important;max-width:100%!important;}
+  .v4-comments-panel .comment-box-item>span:last-child{grid-column:1/-1!important;white-space:normal!important;font-size:11px!important;line-height:1.25!important;}
+  .break-overlay{padding:16px!important;gap:15px!important;}
+}
+
+/* Bardzo wąskie telefony */
+@media (max-width: 390px) {
+  .v4-kpis{grid-template-columns:1fr!important;}
+  .v4-kpi{min-height:104px!important;}
+  .v4-calendar-panel .calendar-grid{grid-template-columns:29px repeat(7,minmax(0,1fr))!important;gap:3px!important;}
+  .v4-calendar-panel .calendar-cell{min-width:0!important;}
+}
+
+/* ---------- TV / Full HD i wyżej ---------- */
+@media (min-width: 1500px) and (min-height: 720px) {
+  body.v4-dashboard{font-size:17px!important;padding:8px!important;}
+  body.v4-dashboard .header-container h2{font-size:25px!important;}
+  body.v4-dashboard .header-clock{font-size:31px!important;}
+  body.v4-dashboard .theme-select{font-size:14px!important;height:38px!important;}
+  .v4-head-status{font-size:13px!important;}
+  .v4-title{font-size:15px!important;letter-spacing:.75px!important;}
+
+  .v4-kpi .stat-card-title,.v4-kpi .director-mini-label{font-size:13px!important;}
+  .v4-kpi .stat-card-value,.v4-kpi .director-mini-value{font-size:34px!important;}
+  .v4-kpi .stat-card-range,.v4-kpi .director-mini-sub{font-size:13px!important;}
+
+  .v4-selected-date{font-size:23px!important;}
+  .v4-selected-oee small{font-size:12px!important;}
+  .v4-selected-oee strong{font-size:39px!important;}
+  .v4-day-panel .gema-counter-title{font-size:10px!important;}
+  .v4-day-panel .gema-counter-value{font-size:21px!important;}
+  .v4-day-panel .v4-loss .director-mini-label{font-size:12px!important;}
+  .v4-day-panel .v4-loss .director-mini-value{font-size:22px!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{font-size:11px!important;}
+
+  .v4-legend{font-size:12px!important;gap:16px!important;}
+  .v4-chart-panel .chart-css-label{font-size:12px!important;}
+  .v4-chart-panel .chart-line-label{font-size:12px!important;}
+  .v6-bar-value{font-size:12px!important;top:-19px!important;}
+  .v6-target-label,.v6-critical-label{font-size:11px!important;min-width:48px!important;}
+  body.v4-dashboard .chart-css-bar{max-width:36px!important;}
+
+  .v4-calendar-panel .v4-title,.v4-comments-panel .v4-title{font-size:16px!important;}
+  .v4-calendar-panel .calendar-header{font-size:17px!important;}
+  .v4-calendar-panel .calendar-day-name,.v4-calendar-panel .calendar-week-number{font-size:12px!important;}
+  .v4-calendar-panel .calendar-day-num{font-size:15px!important;}
+  .v4-calendar-panel .calendar-day-value{font-size:10px!important;}
+  .v4-comments-panel .comment-box-item{font-size:13px!important;}
+  .v4-comments-panel .comment-box-date{font-size:12px!important;}
+  .v4-comments-panel .comment-box-icon{font-size:11px!important;}
+  .v4-comments-panel #commentsModeControls button{font-size:13px!important;}
+}
+
+/* Duży telewizor 4K — interfejs nie może wyglądać jak miniatura */
+@media (min-width: 2500px) {
+  body.v4-dashboard{zoom:1.18;}
+}
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
