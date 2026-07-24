@@ -1844,6 +1844,143 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   .v4-comments-panel .comments-box-list{height:auto!important;min-height:235px!important;max-height:none!important;display:flex!important;}
 }
 
+/* ==========================================================
+   V15 — naprawa obcinania tekstu KPI na TV
+   ========================================================== */
+
+/* Karty KPI nie mogą ucinać drugiego wiersza opisu. */
+.v4-kpis{align-items:stretch!important;overflow:visible!important;}
+.v4-kpi{
+  overflow:hidden!important;
+  min-height:108px!important;
+  padding:11px 15px 12px!important;
+  justify-content:flex-start!important;
+}
+.v4-kpi .stat-card-title,
+.v4-kpi .director-mini-label{
+  flex:0 0 auto!important;
+  margin:0 0 4px!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+}
+.v4-kpi .stat-card-value,
+.v4-kpi .director-mini-value{
+  flex:0 0 auto!important;
+  margin:0 0 5px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.v4-kpi .stat-card-range,
+.v4-kpi .director-mini-sub{
+  display:block!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  min-height:28px!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* Standardowy TV Full HD: więcej wysokości dla KPI. */
+@media (min-width:1200px) and (min-height:901px){
+  .v4-shell{grid-template-rows:108px minmax(300px,1fr) 300px!important;}
+}
+
+/* TV z widocznym paskiem przeglądarki / wysokość około 800–900 px. */
+@media (min-width:1200px) and (max-height:900px){
+  body.v4-dashboard .header-container{
+    height:54px!important;min-height:54px!important;margin-bottom:7px!important;
+  }
+  .v4-shell{
+    grid-template-rows:96px minmax(245px,1fr) 280px!important;
+    gap:7px!important;
+  }
+  .v4-kpi{
+    min-height:96px!important;
+    padding:8px 13px 9px!important;
+  }
+  .v4-kpi .stat-card-title,
+  .v4-kpi .director-mini-label{
+    font-size:13px!important;margin-bottom:2px!important;
+  }
+  .v4-kpi .stat-card-value,
+  .v4-kpi .director-mini-value{
+    font-size:31px!important;margin-bottom:3px!important;
+  }
+  .v4-kpi .stat-card-range,
+  .v4-kpi .director-mini-sub{
+    font-size:12px!important;min-height:25px!important;line-height:1.08!important;
+  }
+  .v4-chart-panel .chart-css-grid{margin-top:4px!important;}
+}
+
+/* Bardzo niski ekran — nadal pokazujemy opis, ale w jednej zwartej linii. */
+@media (min-width:1200px) and (max-height:760px){
+  .v4-shell{grid-template-rows:82px minmax(220px,1fr) 250px!important;}
+  .v4-kpi{min-height:82px!important;padding:6px 11px!important;}
+  .v4-kpi .stat-card-title,.v4-kpi .director-mini-label{font-size:11px!important;}
+  .v4-kpi .stat-card-value,.v4-kpi .director-mini-value{font-size:27px!important;}
+  .v4-kpi .stat-card-range,.v4-kpi .director-mini-sub{
+    font-size:10px!important;min-height:12px!important;white-space:nowrap!important;
+  }
+}
+
+/* Smartfon zachowuje naturalną wysokość kart. */
+@media(max-width:700px){
+  .v4-kpi{min-height:124px!important;height:auto!important;padding:12px!important;}
+  .v4-kpi .stat-card-range,.v4-kpi .director-mini-sub{min-height:0!important;}
+}
+
+/* ==========================================================
+   V16 — opisy KPI w jednym wierszu, bez obcinania
+   ========================================================== */
+.v4-kpi .stat-card-range,
+.v4-kpi .director-mini-sub{
+  display:flex!important;
+  align-items:center!important;
+  min-height:18px!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:1.15!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+.v4-kpi .stat-card-range strong,
+.v4-kpi .director-mini-sub strong{
+  display:inline!important;
+  color:inherit!important;
+  font:inherit!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+}
+.v4-kpi{
+  justify-content:center!important;
+  overflow:hidden!important;
+}
+@media(min-width:1200px){
+  .v4-kpi .stat-card-range,
+  .v4-kpi .director-mini-sub{font-size:clamp(12px,.72vw,15px)!important;}
+}
+@media(min-width:1200px) and (max-height:900px){
+  .v4-kpi .stat-card-range,
+  .v4-kpi .director-mini-sub{
+    min-height:14px!important;
+    font-size:11px!important;
+    line-height:1!important;
+  }
+}
+@media(max-width:700px){
+  .v4-kpi .stat-card-range,
+  .v4-kpi .director-mini-sub{
+    display:block!important;
+    white-space:normal!important;
+    line-height:1.2!important;
+  }
+}
+
 </style>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3652,6 +3789,37 @@ function buildCalendar() {
     setTimeout(function(){placeCommentButtonsInHeader();clearInterval(timer)},6000);
     document.addEventListener('click',function(e){
       if(e.target.closest('#commentsTop5Btn,#commentsAllBtn'))setTimeout(placeCommentButtonsInHeader,30);
+    });
+  });
+})();
+</script>
+
+<script>
+(function(){
+  function formatRangeOneLine(){
+    const monthInfo=document.getElementById('monthTextInfo');
+    const weekInfo=document.getElementById('currentWeekTextInfo');
+    if(monthInfo){
+      const text=monthInfo.textContent.replace(/\s+/g,' ').trim();
+      const match=text.match(/Okres rozliczeniowy:\s*(.+)$/i);
+      monthInfo.innerHTML='<strong data-lexical-text="true">Okres rozliczeniowy: '+(match?match[1]:'—')+'</strong>';
+    }
+    if(weekInfo){
+      const text=weekInfo.textContent.replace(/\s+/g,' ').trim();
+      const match=text.match(/Zakres roboczy:\s*(.+)$/i);
+      weekInfo.innerHTML='<strong data-lexical-text="true">Zakres roboczy: '+(match?match[1]:'—')+'</strong>';
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    const timer=setInterval(formatRangeOneLine,150);
+    setTimeout(function(){formatRangeOneLine();clearInterval(timer)},6000);
+    const targets=['monthTextInfo','currentWeekTextInfo'];
+    targets.forEach(function(id){
+      const wait=setInterval(function(){
+        const node=document.getElementById(id);if(!node)return;
+        clearInterval(wait);
+        new MutationObserver(function(){setTimeout(formatRangeOneLine,0)}).observe(node,{childList:true,subtree:true,characterData:true});
+      },100);
     });
   });
 })();
