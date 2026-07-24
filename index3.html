@@ -1982,6 +1982,276 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   }
 }
 
+/* ==========================================================
+   V18 COMPACT — mniejszy wykres, więcej miejsca na pozostałe dane
+   ========================================================== */
+@media (min-width:1200px){
+  .v4-shell{
+    grid-template-rows:96px minmax(255px,.72fr) 330px!important;
+  }
+  .v4-main{
+    grid-template-columns:minmax(0,1fr) 430px!important;
+    min-height:255px!important;
+  }
+  .v4-chart-panel{
+    min-height:255px!important;
+    padding:10px 14px!important;
+  }
+  .v4-chart-panel .v4-panel-head{
+    min-height:22px!important;
+    height:22px!important;
+    margin-bottom:2px!important;
+  }
+  .v4-chart-panel .right-top-section,
+  .v4-chart-panel .chart-css-container{
+    min-height:0!important;
+    height:100%!important;
+  }
+  .v4-chart-panel .chart-css-grid{
+    min-height:0!important;
+    height:auto!important;
+    margin:6px 10px 24px 48px!important;
+  }
+  .v4-day-panel{
+    min-height:255px!important;
+    padding:10px 12px!important;
+  }
+  .v4-bottom,
+  .v4-calendar-panel,
+  .v4-comments-panel{
+    height:330px!important;
+    min-height:330px!important;
+  }
+  .v4-calendar-panel .panel-section,
+  .v4-calendar-panel .calendar-box,
+  .v4-comments-panel .right-bottom-section,
+  .v4-comments-panel .comments-box-container{
+    height:278px!important;
+    min-height:278px!important;
+  }
+  .v4-calendar-panel .calendar-grid{
+    height:241px!important;
+    grid-template-rows:20px repeat(5,minmax(38px,1fr))!important;
+  }
+  .v4-comments-panel .comments-box-list{
+    height:278px!important;
+    min-height:278px!important;
+    max-height:278px!important;
+    grid-template-rows:repeat(5,minmax(47px,1fr))!important;
+  }
+}
+@media (min-width:1200px) and (max-height:900px){
+  .v4-shell{grid-template-rows:88px minmax(225px,.68fr) 300px!important;}
+  .v4-main,.v4-chart-panel,.v4-day-panel{min-height:225px!important;}
+  .v4-bottom,.v4-calendar-panel,.v4-comments-panel{height:300px!important;min-height:300px!important;}
+  .v4-calendar-panel .panel-section,
+  .v4-calendar-panel .calendar-box,
+  .v4-comments-panel .right-bottom-section,
+  .v4-comments-panel .comments-box-container{height:248px!important;min-height:248px!important;}
+  .v4-calendar-panel .calendar-grid{height:211px!important;grid-template-rows:18px repeat(5,minmax(34px,1fr))!important;}
+  .v4-comments-panel .comments-box-list{height:248px!important;min-height:248px!important;max-height:248px!important;grid-template-rows:repeat(5,minmax(41px,1fr))!important;}
+}
+@media(max-width:700px){
+  .v4-chart-panel{min-height:380px!important;}
+  .v4-chart-panel .right-top-section,
+  .v4-chart-panel .chart-css-container{height:310px!important;min-height:310px!important;}
+  .v4-chart-panel .chart-css-grid{height:245px!important;min-height:245px!important;margin-top:24px!important;}
+}
+
+/* ==========================================================
+   V19 COMPACT BALANCED
+   - mniejszy wykres
+   - pełny panel Wybrany dzień
+   - bez nachodzenia paneli
+   - stałe odstępy między sekcjami
+   ========================================================== */
+
+/* Każdy główny rząd ma własne miejsce i bezpieczny odstęp. */
+.v4-shell{
+  gap:10px!important;
+  overflow:hidden!important;
+}
+.v4-kpis,.v4-main,.v4-bottom{min-width:0!important;}
+.v4-main,.v4-bottom{gap:10px!important;}
+.v4-panel{position:relative!important;min-width:0!important;}
+
+@media (min-width:1200px){
+  /* 104 KPI + 310 wykres/dzień + 306 dół; reszta trafia do środkowego rzędu. */
+  .v4-shell{
+    grid-template-rows:104px minmax(310px,1fr) 306px!important;
+  }
+  .v4-kpi{
+    min-height:104px!important;
+    height:104px!important;
+  }
+
+  .v4-main{
+    grid-template-columns:minmax(0,1fr) minmax(430px,455px)!important;
+    min-height:310px!important;
+    height:auto!important;
+    overflow:hidden!important;
+  }
+  .v4-chart-panel,
+  .v4-day-panel{
+    min-height:310px!important;
+    height:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+  }
+
+  /* Wykres pozostaje mniejszy, ale nie spłaszcza prawego panelu. */
+  .v4-chart-panel{padding:10px 14px!important;}
+  .v4-chart-panel .v4-panel-head{
+    height:25px!important;min-height:25px!important;margin:0 0 5px!important;
+  }
+  .v4-chart-panel .right-top-section,
+  .v4-chart-panel .chart-css-container{
+    min-height:0!important;height:calc(100% - 30px)!important;overflow:hidden!important;
+  }
+  .v4-chart-panel .chart-css-grid{
+    height:auto!important;min-height:0!important;
+    margin:8px 10px 25px 48px!important;
+  }
+
+  /* Wybrany dzień: zawartość ma kontrolowane rzędy i nie jest obcinana. */
+  .v4-day-panel{
+    display:grid!important;
+    grid-template-rows:25px 25px 58px 76px minmax(74px,1fr)!important;
+    align-content:stretch!important;
+    gap:7px!important;
+    padding:10px 12px!important;
+  }
+  .v4-day-panel .v4-panel-head{
+    height:25px!important;min-height:25px!important;margin:0!important;
+  }
+  .v4-day-panel .v4-selected-date{
+    min-height:25px!important;height:25px!important;margin:0!important;
+    line-height:25px!important;overflow:hidden!important;
+  }
+  .v4-day-panel .v4-selected-oee{
+    min-height:58px!important;height:58px!important;padding:7px 11px!important;
+  }
+  .v4-day-panel .gema-counters-section{
+    height:76px!important;min-height:76px!important;margin:0!important;overflow:hidden!important;
+  }
+  .v4-day-panel .gema-counters-container{
+    height:76px!important;min-height:76px!important;display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;
+  }
+  .v4-day-panel .gema-counter-card{
+    height:76px!important;min-height:76px!important;padding:7px 9px!important;
+  }
+  .v4-day-panel .v4-loss{
+    min-height:74px!important;height:auto!important;max-height:none!important;
+    margin:0!important;padding:9px 11px!important;overflow:hidden!important;
+  }
+  .v4-day-panel .v4-loss .director-mini-value{
+    font-size:clamp(17px,1.15vw,22px)!important;line-height:1.08!important;
+  }
+  .v4-day-panel .v4-loss .director-mini-sub{
+    display:block!important;max-height:none!important;overflow:visible!important;
+  }
+
+  /* Dolne panele z osobnym odstępem od górnego rzędu. */
+  .v4-bottom,
+  .v4-calendar-panel,
+  .v4-comments-panel{
+    height:306px!important;min-height:306px!important;max-height:306px!important;
+  }
+  .v4-calendar-panel .panel-section,
+  .v4-calendar-panel .calendar-box,
+  .v4-comments-panel .right-bottom-section,
+  .v4-comments-panel .comments-box-container{
+    height:254px!important;min-height:254px!important;
+  }
+  .v4-calendar-panel .calendar-grid{
+    height:217px!important;
+    grid-template-rows:19px repeat(5,minmax(35px,1fr))!important;
+  }
+  .v4-comments-panel .comments-box-list{
+    height:254px!important;min-height:254px!important;max-height:254px!important;
+    grid-template-rows:repeat(5,minmax(42px,1fr))!important;
+  }
+}
+
+/* TV/laptop z paskiem przeglądarki: ciaśniej, ale nadal bez kolizji. */
+@media (min-width:1200px) and (max-height:900px){
+  .v4-shell{
+    grid-template-rows:92px minmax(286px,1fr) 286px!important;
+    gap:8px!important;
+  }
+  .v4-kpi{height:92px!important;min-height:92px!important;}
+  .v4-main{min-height:286px!important;gap:8px!important;}
+  .v4-chart-panel,.v4-day-panel{min-height:286px!important;}
+  .v4-day-panel{
+    grid-template-rows:23px 23px 52px 68px minmax(66px,1fr)!important;
+    gap:6px!important;padding:8px 10px!important;
+  }
+  .v4-day-panel .v4-panel-head{height:23px!important;min-height:23px!important;}
+  .v4-day-panel .v4-selected-date{height:23px!important;min-height:23px!important;line-height:23px!important;}
+  .v4-day-panel .v4-selected-oee{height:52px!important;min-height:52px!important;}
+  .v4-day-panel .gema-counters-section,
+  .v4-day-panel .gema-counters-container{height:68px!important;min-height:68px!important;}
+  .v4-day-panel .gema-counter-card{height:68px!important;min-height:68px!important;}
+  .v4-day-panel .v4-loss{min-height:66px!important;}
+
+  .v4-bottom,.v4-calendar-panel,.v4-comments-panel{
+    height:286px!important;min-height:286px!important;max-height:286px!important;
+  }
+  .v4-calendar-panel .panel-section,
+  .v4-calendar-panel .calendar-box,
+  .v4-comments-panel .right-bottom-section,
+  .v4-comments-panel .comments-box-container{height:234px!important;min-height:234px!important;}
+  .v4-calendar-panel .calendar-grid{height:197px!important;grid-template-rows:18px repeat(5,minmax(32px,1fr))!important;}
+  .v4-comments-panel .comments-box-list{height:234px!important;min-height:234px!important;max-height:234px!important;grid-template-rows:repeat(5,minmax(39px,1fr))!important;}
+}
+
+/* Telefon pozostaje naturalnie przewijany. */
+@media(max-width:1199px){
+  .v4-shell,.v4-main,.v4-bottom{gap:10px!important;overflow:visible!important;}
+  .v4-chart-panel,.v4-day-panel,.v4-calendar-panel,.v4-comments-panel{
+    height:auto!important;max-height:none!important;
+  }
+}
+
+/* ==========================================================
+   V22 — Największa strata: dane renderowane bezpośrednio
+   ========================================================== */
+.v4-day-panel .v4-loss{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto 1fr!important;
+  grid-template-areas:"label icon" "name name" "details details"!important;
+  align-content:start!important;align-items:start!important;
+  column-gap:10px!important;row-gap:4px!important;
+  min-height:112px!important;padding:9px 12px!important;overflow:hidden!important;
+}
+.v4-day-panel .v4-loss:before{grid-area:icon!important;position:static!important;justify-self:end!important;align-self:start!important;}
+.v4-day-panel .v4-loss .director-mini-label{grid-area:label!important;margin:0!important;padding:0!important;align-self:center!important;}
+.v4-day-panel .v4-loss .director-mini-value{
+  grid-area:name!important;margin:1px 0 3px!important;max-width:100%!important;
+  font-size:clamp(19px,1.3vw,25px)!important;line-height:1.08!important;
+  white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+}
+.v4-day-panel .v4-loss .director-mini-sub{
+  grid-area:details!important;display:grid!important;grid-template-columns:1fr!important;
+  gap:2px!important;width:100%!important;max-width:none!important;margin:0!important;
+  text-align:left!important;white-space:normal!important;overflow:visible!important;
+  font-size:clamp(11px,.78vw,15px)!important;line-height:1.2!important;
+}
+.v4-day-panel .v4-loss .loss-detail{display:block!important;}
+.v4-day-panel .v4-loss .loss-detail-label{color:var(--v4-muted)!important;font-weight:800!important;}
+.v4-day-panel .v4-loss .loss-detail-value{color:var(--v4-text)!important;font-weight:900!important;}
+@media(min-width:1200px){.v4-day-panel{grid-template-rows:25px 25px 58px 76px minmax(112px,1fr)!important;}}
+@media(min-width:1200px) and (max-height:900px){
+  .v4-day-panel{grid-template-rows:23px 23px 50px 62px minmax(104px,1fr)!important;}
+  .v4-day-panel .gema-counters-section,.v4-day-panel .gema-counters-container,.v4-day-panel .gema-counter-card{height:62px!important;min-height:62px!important;}
+  .v4-day-panel .v4-loss{min-height:104px!important;padding:7px 10px!important;row-gap:2px!important;}
+  .v4-day-panel .v4-loss .director-mini-value{font-size:18px!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{font-size:10px!important;line-height:1.12!important;gap:1px!important;}
+}
+@media(max-width:700px){.v4-day-panel .v4-loss{min-height:132px!important;}.v4-day-panel .v4-loss .director-mini-sub{font-size:12px!important;gap:3px!important;}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -2757,6 +3027,24 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min/przezbr.' : ''}`
             : 'W bieżącym miesiącu';
         setCard('directorTopLossCard','directorTopLossValue','directorTopLossInfo',pareto.length?pareto[0].category:'Brak strat',topLossInfo,pareto.length?'warn':'good',pareto.length?'#f59e0b':'#10b981');
+        // V22: renderowanie szczegółów bezpośrednio z obiektu Pareto — bez późniejszego parsowania tekstu.
+        const topLossSub=document.getElementById('directorTopLossInfo');
+        if(topLossSub){
+            if(pareto.length){
+                const top=pareto[0];
+                const totalMinutes=Math.round(top.minutes);
+                const totalCount=parseInt(top.count,10)||0;
+                const averageMinutes=top.avgChangeover!==null
+                    ? top.avgChangeover
+                    : (totalCount>0?Math.round(totalMinutes/totalCount):0);
+                topLossSub.innerHTML=
+                    '<span class="loss-detail"><span class="loss-detail-label">Łączny czas:</span> <span class="loss-detail-value">'+totalMinutes+' min</span></span>'+
+                    '<span class="loss-detail"><span class="loss-detail-label">Ilość zmian:</span> <span class="loss-detail-value">'+totalCount+'x</span></span>'+
+                    '<span class="loss-detail"><span class="loss-detail-label">Średni czas:</span> <span class="loss-detail-value">'+averageMinutes+' min</span></span>';
+            }else{
+                topLossSub.innerHTML='<span class="loss-detail"><span class="loss-detail-label">Brak zarejestrowanych strat w bieżącym miesiącu</span></span>';
+            }
+        }
     }
 
     async function renderCommentsBox() {
