@@ -2252,6 +2252,187 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 }
 @media(max-width:700px){.v4-day-panel .v4-loss{min-height:132px!important;}.v4-day-panel .v4-loss .director-mini-sub{font-size:12px!important;gap:3px!important;}}
 
+/* ==========================================================
+   V23 — zwarty kafelek Największa strata
+   ========================================================== */
+.v4-day-panel .v4-loss{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:18px 27px auto!important;
+  grid-template-areas:"label icon" "name name" "details details"!important;
+  align-content:start!important;
+  justify-content:stretch!important;
+  align-items:start!important;
+  column-gap:8px!important;
+  row-gap:3px!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:8px 11px 9px!important;
+  overflow:hidden!important;
+}
+.v4-day-panel .v4-loss:before{
+  grid-area:icon!important;
+  position:static!important;
+  justify-self:end!important;
+  align-self:start!important;
+  width:18px!important;
+  height:18px!important;
+  font-size:12px!important;
+}
+.v4-day-panel .v4-loss .director-mini-label{
+  grid-area:label!important;
+  align-self:center!important;
+  margin:0!important;
+  padding:0!important;
+  line-height:18px!important;
+}
+.v4-day-panel .v4-loss .director-mini-value{
+  grid-area:name!important;
+  align-self:start!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:clamp(18px,1.22vw,23px)!important;
+  line-height:27px!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+.v4-day-panel .v4-loss .director-mini-sub{
+  grid-area:details!important;
+  align-self:start!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-auto-rows:16px!important;
+  align-content:start!important;
+  gap:0!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:1px 0 0!important;
+  padding:0!important;
+  line-height:16px!important;
+  text-align:left!important;
+  white-space:normal!important;
+  overflow:visible!important;
+}
+.v4-day-panel .v4-loss .loss-detail{
+  display:block!important;
+  height:16px!important;
+  min-height:16px!important;
+  line-height:16px!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+/* Panel dnia nie rozciąga już kafelka straty na całą wolną wysokość. */
+@media(min-width:1200px){
+  .v4-day-panel{
+    grid-template-rows:25px 25px 58px 76px auto!important;
+    align-content:start!important;
+  }
+  .v4-day-panel .v4-loss{min-height:108px!important;max-height:108px!important;}
+}
+@media(min-width:1200px) and (max-height:900px){
+  .v4-day-panel{
+    grid-template-rows:23px 23px 50px 62px auto!important;
+    align-content:start!important;
+  }
+  .v4-day-panel .v4-loss{
+    min-height:100px!important;max-height:100px!important;
+    padding:6px 9px 7px!important;row-gap:1px!important;
+  }
+  .v4-day-panel .v4-loss .director-mini-value{font-size:17px!important;line-height:23px!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{grid-auto-rows:15px!important;line-height:15px!important;margin-top:0!important;}
+  .v4-day-panel .v4-loss .loss-detail{height:15px!important;min-height:15px!important;line-height:15px!important;}
+}
+@media(max-width:1199px){
+  .v4-day-panel .v4-loss{min-height:112px!important;max-height:none!important;}
+}
+
+/* ==========================================================
+   V24 — Największa strata: więcej oddechu, bez dużej pustki
+   ========================================================== */
+.v4-day-panel .v4-loss{
+  grid-template-rows:20px 31px auto!important;
+  column-gap:9px!important;
+  row-gap:5px!important;
+  padding:10px 13px 11px!important;
+}
+.v4-day-panel .v4-loss:before{
+  width:20px!important;
+  height:20px!important;
+  font-size:13px!important;
+}
+.v4-day-panel .v4-loss .director-mini-label{
+  line-height:20px!important;
+}
+.v4-day-panel .v4-loss .director-mini-value{
+  font-size:clamp(20px,1.3vw,25px)!important;
+  line-height:31px!important;
+}
+.v4-day-panel .v4-loss .director-mini-sub{
+  grid-auto-rows:18px!important;
+  gap:1px!important;
+  margin-top:1px!important;
+  line-height:18px!important;
+  font-size:clamp(11px,.78vw,15px)!important;
+}
+.v4-day-panel .v4-loss .loss-detail{
+  height:18px!important;
+  min-height:18px!important;
+  line-height:18px!important;
+}
+
+@media(min-width:1200px){
+  .v4-day-panel{
+    grid-template-rows:25px 25px 58px 76px auto!important;
+    align-content:start!important;
+  }
+  .v4-day-panel .v4-loss{
+    min-height:126px!important;
+    max-height:126px!important;
+  }
+}
+
+@media(min-width:1200px) and (max-height:900px){
+  .v4-day-panel{
+    grid-template-rows:23px 23px 50px 60px auto!important;
+    align-content:start!important;
+  }
+  .v4-day-panel .gema-counters-section,
+  .v4-day-panel .gema-counters-container,
+  .v4-day-panel .gema-counter-card{
+    height:60px!important;
+    min-height:60px!important;
+  }
+  .v4-day-panel .v4-loss{
+    grid-template-rows:18px 27px auto!important;
+    min-height:116px!important;
+    max-height:116px!important;
+    padding:8px 11px 9px!important;
+    row-gap:3px!important;
+  }
+  .v4-day-panel .v4-loss .director-mini-value{
+    font-size:18px!important;
+    line-height:27px!important;
+  }
+  .v4-day-panel .v4-loss .director-mini-sub{
+    grid-auto-rows:17px!important;
+    line-height:17px!important;
+  }
+  .v4-day-panel .v4-loss .loss-detail{
+    height:17px!important;
+    min-height:17px!important;
+    line-height:17px!important;
+  }
+}
+
+@media(max-width:1199px){
+  .v4-day-panel .v4-loss{
+    min-height:126px!important;
+    max-height:none!important;
+  }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
