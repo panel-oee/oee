@@ -2475,7 +2475,130 @@ disableBreakAndSixsDisplay();
 @media (prefers-reduced-motion:no-preference){
   .break-overlay.show{animation:none!important;}
 }
-</style></head>
+</style>
+<style>
+/* V27 LIGHT CALENDAR HOTFIX COPILOT
+   Cel: usunąć resztki ciemnego stylu w kalendarzu po przełączeniu na tryb jasny
+   oraz poprawić czytelność kafelka OEE dnia. */
+.fullscreen-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 34px !important;
+  padding: 6px 12px !important;
+  font-size: 15px !important;
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border: 1px solid #2563eb !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+.fullscreen-btn:hover { background: #2563eb !important; }
+body.v4-dashboard .fullscreen-btn {
+  height: 40px !important;
+  font-size: clamp(13px,.85vw,17px) !important;
+  padding: 0 14px !important;
+}
+
+/* Jasny tryb: neutralne tło paneli V4, bez granatowych pól z dark mode. */
+[data-theme="light"] body.v4-dashboard,
+html[data-theme="light"] body.v4-dashboard {
+  --v4-page: #eef3f8;
+  --v4-panel: #ffffff;
+  --v4-card: #f8fafc;
+  --v4-card-2: #ffffff;
+  --v4-border: #cbd5e1;
+  --v4-text: #0f172a;
+  --v4-muted: #64748b;
+}
+
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel,
+[data-theme="light"] body.v4-dashboard .v4-day-panel,
+html[data-theme="light"] body.v4-dashboard .v4-day-panel {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Domyślne dni w jasnym kalendarzu. */
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Weekendy bez raportu: wcześniej zostawał granat z dark mode. */
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.weekend:not(.oee-good):not(.oee-warn):not(.oee-bad),
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.weekend:not(.oee-good):not(.oee-warn):not(.oee-bad) {
+  background: #e9eff6 !important;
+  color: #64748b !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Dni z wartościami OEE pozostają kolorowe i czytelne w jasnym trybie. */
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-good,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-good {
+  background: #10b981 !important;
+  border-color: #059669 !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-warn,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-warn {
+  background: #f59e0b !important;
+  border-color: #d97706 !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-bad,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.oee-bad {
+  background: #ef4444 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+/* Dni z poprzedniego/następnego miesiąca: jasne, ale wyraźnie przygaszone. */
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.other-month,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.other-month {
+  background: #e2e8f0 !important;
+  color: #64748b !important;
+  opacity: .92 !important;
+}
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.other-month .calendar-day-value,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.other-month .calendar-day-value {
+  color: #94a3b8 !important;
+}
+
+/* Aktywny dzień ma być zaznaczony obramowaniem, bez przyciemniania kafelka. */
+[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.active,
+html[data-theme="light"] body.v4-dashboard .v4-calendar-panel .calendar-cell.active {
+  outline: 3px solid #2563eb !important;
+  outline-offset: -3px !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, .25) !important;
+}
+
+/* Karta OEE dnia w jasnym trybie. */
+[data-theme="light"] body.v4-dashboard .v4-selected-oee,
+html[data-theme="light"] body.v4-dashboard .v4-selected-oee {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] body.v4-dashboard .v4-selected-oee small,
+html[data-theme="light"] body.v4-dashboard .v4-selected-oee small {
+  color: #64748b !important;
+}
+[data-theme="light"] body.v4-dashboard .v4-selected-oee strong,
+html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
+  color: #2563eb;
+}
+
+@media (max-width: 700px) {
+  .fullscreen-btn { width: 100% !important; height: 44px !important; font-size: 15px !important; }
+}
+</style>
+</head>
 <body>
 <div class="container">
 <div class="header-container">
@@ -2489,6 +2612,7 @@ disableBreakAndSixsDisplay();
 <option value="dark">Ciemny (Dark)</option>
 </select>
 </div>
+<button class="fullscreen-btn" id="fullscreenBtn" type="button" onclick="toggleFullscreen()">Pełny ekran</button>
 </div>
 </div>
 <div class="dashboard-grid">
@@ -4126,5 +4250,118 @@ function buildCalendar() {
     if(typeof updateBreakOverlay==='function') updateBreakOverlay();
   });
 })();
-</script></body>
+</script>
+<script>
+/* FULLSCREEN BUTTON JS COPILOT */
+(function () {
+  function getFullscreenElement() {
+    return document.fullscreenElement ||
+           document.webkitFullscreenElement ||
+           document.msFullscreenElement ||
+           null;
+  }
+
+  window.toggleFullscreen = async function toggleFullscreen() {
+    const target = document.documentElement;
+    const btn = document.getElementById('fullscreenBtn');
+    try {
+      if (!getFullscreenElement()) {
+        if (target.requestFullscreen) await target.requestFullscreen();
+        else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+        else if (target.msRequestFullscreen) target.msRequestFullscreen();
+        else { alert('Ta przeglądarka nie obsługuje trybu pełnoekranowego.'); return; }
+        if (btn) btn.textContent = 'Wyjdź z pełnego ekranu';
+      } else {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+        if (btn) btn.textContent = 'Pełny ekran';
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+      alert('Nie udało się uruchomić pełnego ekranu. Kliknij ponownie lub sprawdź ustawienia przeglądarki.');
+    }
+  };
+
+  function updateFullscreenButton() {
+    const btn = document.getElementById('fullscreenBtn');
+    if (!btn) return;
+    btn.textContent = getFullscreenElement() ? 'Wyjdź z pełnego ekranu' : 'Pełny ekran';
+  }
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+  document.addEventListener('msfullscreenchange', updateFullscreenButton);
+  document.addEventListener('DOMContentLoaded', updateFullscreenButton);
+})();
+</script>
+
+<script>
+/* V27 LIGHT MODE AND SELECTED OEE FIX COPILOT */
+(function () {
+  function parseDashboardDateKey(dateKey) {
+    if (!dateKey || typeof dateKey !== 'string') return null;
+    const parts = dateKey.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function formatDashboardDate(dateKey) {
+    const d = parseDashboardDateKey(dateKey);
+    if (!d) return dateKey || '—';
+    const months = Array.isArray(window.MONTH_NAMES) ? window.MONTH_NAMES :
+      ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+    return d.getDate() + ' ' + String(months[d.getMonth()] || '').toLowerCase() + ' ' + d.getFullYear();
+  }
+
+  function colorForOeeValue(value) {
+    const cfg = window.OEE_CONFIG || {};
+    const greenMin = Number(cfg.greenMin ?? cfg.target ?? 70);
+    const yellowMin = Number(cfg.yellowMin ?? 60);
+    if (Number.isNaN(value)) return 'var(--v4-muted)';
+    if (value >= greenMin) return 'var(--v4-good)';
+    if (value >= yellowMin) return 'var(--v4-warn)';
+    return 'var(--v4-bad)';
+  }
+
+  window.updateV4SelectedDayOee = function updateV4SelectedDayOee(dateKey) {
+    const dateEl = document.getElementById('v4SelectedDate');
+    const oeeEl = document.getElementById('v4SelectedOee');
+    if (dateEl) dateEl.textContent = formatDashboardDate(dateKey);
+    if (!oeeEl) return;
+
+    const db = window.gemaBazaDanych || {};
+    const row = db[dateKey];
+    const raw = row && row.oee !== undefined && row.oee !== null ? row.oee : null;
+    const value = raw === null ? NaN : parseFloat(String(raw).replace(',', '.'));
+
+    if (!Number.isNaN(value) && value > 0) {
+      oeeEl.textContent = value.toFixed(1) + '%';
+      oeeEl.style.color = colorForOeeValue(value);
+    } else {
+      oeeEl.textContent = '—';
+      oeeEl.style.color = 'var(--v4-muted)';
+    }
+  };
+
+  // Dopinamy się do istniejącej funkcji selectDay bez ruszania reszty logiki dashboardu.
+  function hookSelectDay() {
+    if (window.__v27SelectDayHooked || typeof window.selectDay !== 'function') return;
+    const originalSelectDay = window.selectDay;
+    window.selectDay = function patchedSelectDay(day) {
+      const result = originalSelectDay.apply(this, arguments);
+      try { window.updateV4SelectedDayOee(day); } catch (e) { console.warn('V27 OEE dnia:', e); }
+      return result;
+    };
+    window.__v27SelectDayHooked = true;
+    if (window.selectedDayGlobal) window.updateV4SelectedDayOee(window.selectedDayGlobal);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    hookSelectDay();
+    setTimeout(hookSelectDay, 250);
+    setTimeout(function () { if (window.selectedDayGlobal) window.updateV4SelectedDayOee(window.selectedDayGlobal); }, 800);
+  });
+})();
+</script>
+</body>
 </html>
