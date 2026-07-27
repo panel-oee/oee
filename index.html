@@ -2782,7 +2782,7 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
     var currentMonth = currentDateObj.getMonth();
     // Domyślnie pokazujemy ostatni zakończony dzień, bo raport za dzisiaj
     // często nie jest jeszcze zapisany po odświeżeniu panelu.
-    var selectedDayGlobal = formatDateKey(getDateOffset(currentDateObj, -1));
+    var selectedDayGlobal = formatDateKey(getPreviousBusinessDay(currentDateObj));
 
     const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -2809,8 +2809,26 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
         return result;
     }
 
+    // PREVIOUS BUSINESS DAY FIX COPILOT
+    // Domyślny wybrany dzień ma być ostatnim dniem roboczym przed dzisiaj.
+    // Przykład: poniedziałek 27.07.2026 -> piątek 24.07.2026.
+    function isBusinessDayForDashboard(date) {
+        const dayOfWeek = date.getDay(); // 0 = niedziela, 6 = sobota
+        return dayOfWeek !== 0 && dayOfWeek !== 6;
+    }
+
+    function getPreviousBusinessDay(baseDate) {
+        const result = new Date(baseDate);
+        result.setHours(12, 0, 0, 0);
+        do {
+            result.setDate(result.getDate() - 1);
+        } while (!isBusinessDayForDashboard(result));
+        return result;
+    }
+
+
     function getDefaultDashboardDay() {
-        return formatDateKey(getDateOffset(new Date(), -1));
+        return formatDateKey(getPreviousBusinessDay(new Date()));
     }
 
     function parseDateKey(dateKey) {
@@ -3231,10 +3249,19 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
 
     window.onload = async function() {
         initTheme();
+        selectedDayGlobal = getDefaultDashboardDay();
+        console.log('Domyślny wybrany dzień roboczy:', selectedDayGlobal);
+        currentYear = parseDateKey(selectedDayGlobal).getFullYear();
+        currentMonth = parseDateKey(selectedDayGlobal).getMonth();
         setupBreakScheduleAutoRefresh();
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
-        await refreshDashboardView();
+        try {
+            await refreshDashboardView();
+        } catch (err) {
+            console.error('Błąd startu dashboardu / odczytu bazy:', err);
+            try { buildCalendar(); renderChart(); } catch(e) { console.error('Nie udało się wyrenderować fallbacku:', e); }
+        }
 
         const CZAS_ODSWIEZANIA_SEKUNDY = 300; 
         setInterval(async function() {
