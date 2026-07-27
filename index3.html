@@ -2433,6 +2433,15 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   }
 }
 
+
+/* V25: wyłączone wyświetlanie przerw i zadań 6S — reszta bez zmian */
+#breakOverlay, #sixsTvBox { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+
+/* V26: ukrycie powtórzonego oznaczenia 45% po lewej stronie wykresu.
+   Prawa etykieta .v6-critical-label pozostaje widoczna. */
+.v4-chart-panel .chart-critical-guide > .chart-line-label {
+  display:none !important;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -2572,7 +2581,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         criticalGuide: 45,
         targetColor: '#38bdf8',
         criticalColor: '#ef4444',
-        chartGuides: [45, 50, 60, 75, 80]  
+        chartGuides: [50, 60, 70, 80]  
     };
 
     let CRITICAL_OEE_GUIDE = 45;
@@ -2583,16 +2592,24 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         const parsed = parseFloat(value);
         return (!isNaN(parsed) && parsed >= 0 && parsed <= 100) ? parsed : fallback;
     }
-    function normalizeChartGuides(guides, criticalGuide = CRITICAL_OEE_GUIDE) {
+    function normalizeChartGuides(guides, criticalGuide = null) {
+        // Linie pomocnicze przechowujemy osobno od linii krytycznej.
+        // Dzięki temu konfiguracja w panelu, Supabase i ekranach TV pokazuje te same wartości.
         let normalized = Array.isArray(guides) ? guides : String(guides || '').split(',');
         normalized = normalized
             .map(v => parseFloat(v))
             .filter(v => !isNaN(v) && v >= 0 && v <= 100);
-        const critical = readStoredCriticalGuide(criticalGuide, 45);
-        if (!normalized.some(v => Math.abs(v - critical) < 0.001)) {
-            normalized.push(critical);
+        if (criticalGuide !== null && criticalGuide !== undefined) {
+            const critical = readStoredCriticalGuide(criticalGuide, 45);
+            normalized = normalized.filter(v => Math.abs(v - critical) >= 0.001);
         }
         return [...new Set(normalized)].sort((a, b) => a - b);
+    }
+    function getChartGuideLines(guides, criticalGuide = CRITICAL_OEE_GUIDE) {
+        const critical = readStoredCriticalGuide(criticalGuide, 45);
+        const lines = normalizeChartGuides(guides, critical);
+        if (!lines.some(v => Math.abs(v - critical) < 0.001)) lines.push(critical);
+        return [...new Set(lines)].sort((a, b) => a - b);
     }
     function normalizeHexColor(color, fallback) {
         const value = String(color || '').trim();
@@ -2707,7 +2724,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
                     criticalGuide: readStoredCriticalGuide(data.critical_guide, 45),
                     targetColor: normalizeHexColor(data.target_color, '#38bdf8'),
                     criticalColor: normalizeHexColor(data.critical_color, '#ef4444'),
-                    chartGuides: normalizeChartGuides(data.chart_guides || [45, 50, 60, 75, 80], readStoredCriticalGuide(data.critical_guide, 45))
+                    chartGuides: normalizeChartGuides(data.chart_guides || [50, 60, 70, 80], readStoredCriticalGuide(data.critical_guide, 45))
                 };
                 console.log("Konfiguracja OEE załadowana z bazy:", OEE_CONFIG);
             }
@@ -2813,7 +2830,6 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
         const clock = document.getElementById('headerClock');
         if (clock) clock.textContent = time;
-        updateBreakOverlay();
     }
 
     // =========================================================================
@@ -3071,8 +3087,6 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
     window.onload = async function() {
         initTheme();
-        loadBreakScheduleFromLocalStorage();
-        await loadBreakScheduleFromSupabase();
         setupBreakScheduleAutoRefresh();
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
@@ -3791,7 +3805,7 @@ function buildCalendar() {
         chartGrid.innerHTML = "";
 
         CRITICAL_OEE_GUIDE = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
-        const targetLines = normalizeChartGuides(OEE_CONFIG.chartGuides, CRITICAL_OEE_GUIDE);
+        const targetLines = getChartGuideLines(OEE_CONFIG.chartGuides, CRITICAL_OEE_GUIDE);
         targetLines.forEach(function(t) {
             var guide = document.createElement('div');
             guide.className = 'chart-line-guide' + (Math.abs(Number(t) - Number(CRITICAL_OEE_GUIDE)) < 0.001 ? ' chart-critical-guide' : '');

@@ -1336,7 +1336,7 @@
                 <input type="color" id="cfgCriticalColor" value="#ef4444">
             </div>
             <div class="gema-modal-group">
-                <label>Linie pomocnicze (rozdzielone przecinkiem):</label>
+                <label>Linie pomocnicze bez linii krytycznej (rozdzielone przecinkiem):</label>
                 <input type="text" id="cfgGuides" placeholder="np. 50, 60, 70, 80">
             </div>
         </div>
@@ -1373,7 +1373,7 @@
         criticalGuide: 45,
         targetColor: '#38bdf8',
         criticalColor: '#ef4444',
-        chartGuides: [45, 50, 60, 75, 80]
+        chartGuides: [50, 60, 70, 80]
     };
 
     let CRITICAL_OEE_GUIDE = 45;
@@ -1384,16 +1384,25 @@
         const parsed = parseFloat(value);
         return (!isNaN(parsed) && parsed >= 0 && parsed <= 100) ? parsed : fallback;
     }
-    function normalizeChartGuides(guides, criticalGuide = CRITICAL_OEE_GUIDE) {
+    function normalizeChartGuides(guides, criticalGuide = null) {
+        // Spójność progów OEE:
+        // - chartGuides = tylko linie pomocnicze wpisane w oknie konfiguracji,
+        // - criticalGuide = osobna czerwona linia krytyczna.
         let normalized = Array.isArray(guides) ? guides : String(guides || '').split(',');
         normalized = normalized
             .map(v => parseFloat(v))
             .filter(v => !isNaN(v) && v >= 0 && v <= 100);
-        const critical = readStoredCriticalGuide(criticalGuide, 45);
-        if (!normalized.some(v => Math.abs(v - critical) < 0.001)) {
-            normalized.push(critical);
+        if (criticalGuide !== null && criticalGuide !== undefined) {
+            const critical = readStoredCriticalGuide(criticalGuide, 45);
+            normalized = normalized.filter(v => Math.abs(v - critical) >= 0.001);
         }
         return [...new Set(normalized)].sort((a, b) => a - b);
+    }
+    function getChartGuideLines(guides, criticalGuide = CRITICAL_OEE_GUIDE) {
+        const critical = readStoredCriticalGuide(criticalGuide, 45);
+        const lines = normalizeChartGuides(guides, critical);
+        if (!lines.some(v => Math.abs(v - critical) < 0.001)) lines.push(critical);
+        return [...new Set(lines)].sort((a, b) => a - b);
     }
     function normalizeHexColor(color, fallback) {
         const value = String(color || '').trim();
@@ -1495,7 +1504,7 @@
                 OEE_CONFIG.targetColor = normalizeHexColor(OEE_CONFIG.targetColor, '#38bdf8');
                 OEE_CONFIG.criticalColor = normalizeHexColor(OEE_CONFIG.criticalColor, '#ef4444');
                 OEE_CONFIG.criticalGuide = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
-                OEE_CONFIG.chartGuides = normalizeChartGuides(OEE_CONFIG.chartGuides || [45, 50, 60, 75, 80], OEE_CONFIG.criticalGuide);
+                OEE_CONFIG.chartGuides = normalizeChartGuides(OEE_CONFIG.chartGuides || [50, 60, 70, 80], OEE_CONFIG.criticalGuide);
                 CRITICAL_OEE_GUIDE = OEE_CONFIG.criticalGuide;
             } catch(e) {
                 console.error("Błąd parsowania lokalnej konfiguracji", e);
@@ -1762,7 +1771,7 @@
                     criticalGuide: readStoredCriticalGuide(data.critical_guide, 45),
                     targetColor: normalizeHexColor(data.target_color, '#38bdf8'),
                     criticalColor: normalizeHexColor(data.critical_color, '#ef4444'),
-                    chartGuides: normalizeChartGuides(Array.isArray(data.chart_guides) && data.chart_guides.length > 0 ? data.chart_guides : [45, 50, 60, 75, 80], readStoredCriticalGuide(data.critical_guide, 45))
+                    chartGuides: normalizeChartGuides(Array.isArray(data.chart_guides) && data.chart_guides.length > 0 ? data.chart_guides : [50, 60, 70, 80], readStoredCriticalGuide(data.critical_guide, 45))
                 };
                 localStorage.setItem('gema_oee_config', JSON.stringify(OEE_CONFIG));
             }
@@ -1779,7 +1788,7 @@
         document.getElementById('cfgCriticalGuide').value = currentCriticalGuide;
         document.getElementById('cfgTargetColor').value = normalizeHexColor(OEE_CONFIG.targetColor, '#38bdf8');
         document.getElementById('cfgCriticalColor').value = normalizeHexColor(OEE_CONFIG.criticalColor, '#ef4444');
-        document.getElementById('cfgGuides').value = normalizeChartGuides(OEE_CONFIG.chartGuides, currentCriticalGuide).filter(v => Math.abs(v - currentCriticalGuide) >= 0.001).join(', ');
+        document.getElementById('cfgGuides').value = normalizeChartGuides(OEE_CONFIG.chartGuides, currentCriticalGuide).join(', ');
         document.getElementById('configModal').style.display = 'flex';
     }
 
@@ -1793,6 +1802,14 @@
         let yellowMin = parseInt(document.getElementById('cfgYellowMin').value, 10) || 60;
         let criticalGuide = parseFloat(document.getElementById('cfgCriticalGuide').value);
         if (isNaN(criticalGuide) || criticalGuide < 0 || criticalGuide > 100) criticalGuide = 45;
+        if (yellowMin > greenMin) {
+            alert('Próg koloru żółtego nie może być wyższy niż próg koloru zielonego.');
+            return;
+        }
+        if (criticalGuide >= yellowMin) {
+            alert('Próg krytyczny powinien być niższy niż próg żółty.');
+            return;
+        }
         let targetColor = normalizeHexColor(document.getElementById('cfgTargetColor').value, '#38bdf8');
         let criticalColor = normalizeHexColor(document.getElementById('cfgCriticalColor').value, '#ef4444');
         let guidesStr = document.getElementById('cfgGuides').value;
@@ -1801,7 +1818,7 @@
             .map(x => parseInt(x.trim(), 10))
             .filter(x => !isNaN(x) && x >= 0 && x <= 100);
 
-        if (chartGuides.length === 0) chartGuides = [50, 60, 75, 80];
+        if (chartGuides.length === 0) chartGuides = [50, 60, 70, 80];
         chartGuides = normalizeChartGuides(chartGuides, criticalGuide);
 
         OEE_CONFIG = { target, greenMin, yellowMin, criticalGuide, targetColor, criticalColor, chartGuides };
@@ -2956,7 +2973,7 @@
         chartGrid.innerHTML = "";
 
         CRITICAL_OEE_GUIDE = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
-        normalizeChartGuides(OEE_CONFIG.chartGuides, CRITICAL_OEE_GUIDE).forEach(function(t) {
+        getChartGuideLines(OEE_CONFIG.chartGuides, CRITICAL_OEE_GUIDE).forEach(function(t) {
             var guide = document.createElement('div');
             guide.className = 'chart-line-guide' + (Math.abs(Number(t) - Number(CRITICAL_OEE_GUIDE)) < 0.001 ? ' chart-critical-guide' : '');
             guide.style.bottom = t + '%';
