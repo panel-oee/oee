@@ -13,27 +13,6 @@
 
         /* ZMIENNE Z KOLORAMI DLA OBU TRYBÓW */
         :root {
-            --bg-body: #f8fafc;
-            --bg-container: #ffffff;
-            --bg-inputs-flex: #f8fafc;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --text-heading: #1e293b;
-            --border-color: #cbd5e1;
-            --calendar-cell-bg: #ffffff;
-            --calendar-cell-text: #334155;
-            --calendar-weekend-bg: #f8fafc;
-            --calendar-weekend-text: #94a3b8;
-            --chart-bg: #f8fafc;
-            --chart-bar-empty: #e2e8f0;
-            --today-border: #10b981;
-            --comment-item-bg: #ffffff;
-            --comment-item-hover-bg: #f8fafc;
-            --comment-item-border: #cbd5e1;
-            --comment-date-color: #2563eb;
-        }
-
-        [data-theme="dark"] {
             --bg-body: #0f172a;
             --bg-container: #1e293b;
             --bg-inputs-flex: #0f172a;
@@ -107,26 +86,6 @@
             color: var(--text-muted);
             cursor: pointer;
         }
-        .theme-select, .fullscreen-btn {
-            padding: 6px 12px;
-            font-size: 15px;
-            background: var(--bg-body);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .fullscreen-btn {
-            background: #3b82f6;
-            color: #ffffff;
-            border-color: #2563eb;
-        }
-        .fullscreen-btn:hover {
-            background: #2563eb;
-        }
-
         h2 { 
             color: var(--text-heading); 
             margin: 0;
@@ -604,8 +563,6 @@
             margin-bottom: clamp(5px, 0.42vw, 8px) !important;
         }
 
-        .theme-select,
-        .fullscreen-btn,
         .calendar-nav-btn {
             font-size: clamp(12px, 0.78vw, 15px) !important;
         }
@@ -939,8 +896,6 @@
                 justify-content: space-between;
             }
 
-            .theme-select,
-            .fullscreen-btn,
             .calendar-nav-btn {
                 font-size: 12px !important;
                 padding: 5px 8px !important;
@@ -1081,10 +1036,6 @@
   --v4-border:#2b3b54;--v4-text:#f8fafc;--v4-muted:#9fb0c7;
   --v4-accent:#38bdf8;--v4-good:#22c55e;--v4-warn:#f59e0b;--v4-bad:#ef4444;
 }
-[data-theme="light"]{
-  --v4-page:#eef3f8;--v4-panel:#ffffff;--v4-card:#f8fafc;--v4-card-2:#ffffff;
-  --v4-border:#d6e0eb;--v4-text:#102033;--v4-muted:#607086;
-}
 body.v4-dashboard{background:var(--v4-page)!important;padding:8px!important;color:var(--v4-text)!important;}
 body.v4-dashboard .container{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important;}
 body.v4-dashboard .header-container{height:58px;min-height:58px;padding:0 14px!important;margin:0 0 10px!important;background:var(--v4-panel);border:1px solid var(--v4-border)!important;border-radius:12px;box-shadow:none;}
@@ -1092,8 +1043,6 @@ body.v4-dashboard .header-container h2{font-size:20px!important;font-weight:850;
 body.v4-dashboard .header-clock{font-size:25px!important;color:var(--v4-text);font-weight:800;letter-spacing:.8px;}
 body.v4-dashboard .header-clock:before{content:'CZAS  ';font-size:10px;color:var(--v4-muted);letter-spacing:.8px;vertical-align:middle;}
 body.v4-dashboard .controls-wrapper label{display:none}
-body.v4-dashboard .theme-select{width:44px;height:36px;font-size:0!important;padding:0!important;background:var(--v4-card);border-color:var(--v4-border);background-image:none;}
-body.v4-dashboard .theme-select:focus{width:auto;font-size:12px!important;padding:0 8px!important;}
 .v4-head-status{display:flex;align-items:center;gap:14px;margin-left:auto;margin-right:12px;font-size:11px;color:var(--v4-muted);font-weight:750;white-space:nowrap}
 .v4-online{display:inline-flex;align-items:center;gap:6px}.v4-online:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--v4-good);box-shadow:0 0 9px rgba(34,197,94,.6)}
 .v4-shell{display:grid;grid-template-rows:auto minmax(0,1fr) minmax(190px,.42fr);gap:10px;flex:1;min-height:0;}
@@ -1119,7 +1068,7 @@ body.v4-dashboard .chart-line-guide{opacity:.22;border-top-width:1px}.chart-line
 body.v4-dashboard .gema-counters-section{margin:0!important}body.v4-dashboard .gema-counters-section h3{display:none}.v4-day-panel .gema-counters-container{display:grid;grid-template-columns:1fr;gap:7px}.v4-day-panel .gema-counter-card{min-height:48px!important;padding:8px 11px!important;border:1px solid var(--v4-border)!important;background:var(--v4-card)!important;border-radius:9px;display:grid!important;grid-template-columns:1fr auto;align-items:center;text-align:left}.v4-day-panel .gema-counter-title{margin:0!important;font-size:10px!important;text-align:left}.v4-day-panel .gema-counter-value{font-size:20px!important;text-align:right;color:var(--v4-text)}
 .v4-loss{margin-top:auto;background:var(--v4-card);border:1px solid var(--v4-border);border-left:5px solid var(--v4-warn);border-radius:10px;padding:10px 12px}.v4-loss .director-mini-label{font-size:10px;color:var(--v4-muted);font-weight:900;text-transform:uppercase}.v4-loss .director-mini-value{font-size:18px;font-weight:900;margin:3px 0;color:var(--v4-warn);white-space:normal}.v4-loss .director-mini-sub{font-size:11px;color:var(--v4-muted)}
 .v4-mini-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v4-mini-row .director-mini-card,.v4-mini-row .stat-card-single{min-height:55px!important;padding:7px 9px!important;background:var(--v4-card)!important;border:1px solid var(--v4-border)!important;border-top:0!important;border-radius:9px!important}.v4-mini-row .director-mini-label,.v4-mini-row .stat-card-title{font-size:9px!important}.v4-mini-row .director-mini-value,.v4-mini-row .stat-card-value{font-size:18px!important}.v4-mini-row .director-mini-sub,.v4-mini-row .stat-card-range{display:none}
-.v4-calendar-panel{display:flex;flex-direction:column}.v4-calendar-panel .panel-section{flex:1;min-height:0}.v4-calendar-panel h3{display:none}.v4-calendar-panel .calendar-box{border:0!important;background:transparent!important;padding:0!important;min-height:0}.v4-calendar-panel .calendar-nav-wrapper{margin:-32px 0 6px!important;justify-content:flex-end;gap:7px}.v4-calendar-panel .calendar-header{font-size:13px!important;min-width:120px}.v4-calendar-panel .calendar-nav-btn{padding:2px 8px!important}.v4-calendar-panel .calendar-grid{grid-template-columns:28px repeat(7,minmax(0,1fr))!important;gap:3px!important}.v4-calendar-panel .calendar-day-name,.v4-calendar-panel .calendar-week-number{font-size:9px!important}.v4-calendar-panel .calendar-cell{min-height:27px!important;padding:2px!important;background:var(--v4-card)!important;border-color:var(--v4-border)!important;border-radius:5px;position:relative;overflow:hidden}.v4-calendar-panel .calendar-cell.oee-good,.v4-calendar-panel .calendar-cell.oee-warn,.v4-calendar-panel .calendar-cell.oee-bad{background:var(--v4-card)!important;color:var(--v4-text)!important}.v4-calendar-panel .calendar-cell.oee-good:after,.v4-calendar-panel .calendar-cell.oee-warn:after,.v4-calendar-panel .calendar-cell.oee-bad:after{content:'';position:absolute;left:2px;right:2px;bottom:1px;height:3px;border-radius:3px}.v4-calendar-panel .calendar-cell.oee-good:after{background:var(--v4-good)}.v4-calendar-panel .calendar-cell.oee-warn:after{background:var(--v4-warn)}.v4-calendar-panel .calendar-cell.oee-bad:after{background:var(--v4-bad)}.v4-calendar-panel .calendar-day-num{font-size:11px!important}.v4-calendar-panel .calendar-day-value{font-size:8px!important}.v4-calendar-panel .calendar-cell.today-current{animation:none!important;box-shadow:none!important;outline:0!important}.v4-calendar-panel .calendar-cell.today-current:before{content:'';position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:var(--v4-good);z-index:2}.v4-calendar-panel .calendar-cell.active{outline:2px solid var(--v4-accent)!important;outline-offset:-2px;box-shadow:none!important}.v4-calendar-panel .calendar-cell.active:not(.oee-good):not(.oee-warn):not(.oee-bad){background:var(--v4-card)!important;color:var(--v4-text)!important}
+.v4-calendar-panel{display:flex;flex-direction:column}.v4-calendar-panel .panel-section{flex:1;min-height:0}.v4-calendar-panel h3{display:none}.v4-calendar-panel .calendar-box{border:0!important;background:transparent!important;padding:0!important;min-height:0}.v4-calendar-panel .calendar-nav-wrapper{margin:-32px 0 6px!important;justify-content:flex-end;gap:7px}.v4-calendar-panel .calendar-header{font-size:13px!important;min-width:120px}.v4-calendar-panel .calendar-nav-btn {padding:2px 8px!important}.v4-calendar-panel .calendar-grid{grid-template-columns:28px repeat(7,minmax(0,1fr))!important;gap:3px!important}.v4-calendar-panel .calendar-day-name,.v4-calendar-panel .calendar-week-number{font-size:9px!important}.v4-calendar-panel .calendar-cell{min-height:27px!important;padding:2px!important;background:var(--v4-card)!important;border-color:var(--v4-border)!important;border-radius:5px;position:relative;overflow:hidden}.v4-calendar-panel .calendar-cell.oee-good,.v4-calendar-panel .calendar-cell.oee-warn,.v4-calendar-panel .calendar-cell.oee-bad{background:var(--v4-card)!important;color:var(--v4-text)!important}.v4-calendar-panel .calendar-cell.oee-good:after,.v4-calendar-panel .calendar-cell.oee-warn:after,.v4-calendar-panel .calendar-cell.oee-bad:after{content:'';position:absolute;left:2px;right:2px;bottom:1px;height:3px;border-radius:3px}.v4-calendar-panel .calendar-cell.oee-good:after{background:var(--v4-good)}.v4-calendar-panel .calendar-cell.oee-warn:after{background:var(--v4-warn)}.v4-calendar-panel .calendar-cell.oee-bad:after{background:var(--v4-bad)}.v4-calendar-panel .calendar-day-num{font-size:11px!important}.v4-calendar-panel .calendar-day-value{font-size:8px!important}.v4-calendar-panel .calendar-cell.today-current{animation:none!important;box-shadow:none!important;outline:0!important}.v4-calendar-panel .calendar-cell.today-current:before{content:'';position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:var(--v4-good);z-index:2}.v4-calendar-panel .calendar-cell.active{outline:2px solid var(--v4-accent)!important;outline-offset:-2px;box-shadow:none!important}.v4-calendar-panel .calendar-cell.active:not(.oee-good):not(.oee-warn):not(.oee-bad){background:var(--v4-card)!important;color:var(--v4-text)!important}
 .v4-comments-panel{display:flex;flex-direction:column}.v4-comments-panel .right-bottom-section{flex:1!important;min-height:0}.v4-comments-panel .comments-box-container{border:0!important;background:transparent!important;padding:0!important}.v4-comments-panel .comments-box-title{margin:-32px 0 7px 145px!important;min-height:26px}.v4-comments-panel .comments-box-title>span{display:none}.v4-comments-panel .comments-box-list{gap:5px!important;padding-right:3px}.v4-comments-panel .comment-box-item{padding:6px 10px!important;min-height:31px;font-size:11px!important;border-left-width:4px!important;background:var(--v4-card)!important;border-color:var(--v4-border);display:grid!important;grid-template-columns:82px minmax(110px,auto) 1fr;gap:7px!important;flex-wrap:nowrap!important}.v4-comments-panel .comment-box-icon{font-size:9px!important;padding:2px 7px!important;white-space:nowrap}.v4-comments-panel .comment-box-date{font-size:10px}
 .v4-hidden-source,.weekly-container,.director-summary-strip{display:contents}
 @media(min-width:1200px) and (max-height:760px){.v4-shell{grid-template-rows:auto minmax(0,1fr) minmax(165px,.36fr)}.v4-kpi{min-height:68px!important}.v4-kpi .stat-card-value,.v4-kpi .director-mini-value{font-size:25px!important}.v4-day-panel{gap:6px}.v4-day-panel .gema-counter-card{min-height:40px!important}.v4-selected-oee{padding:8px}.v4-selected-oee strong{font-size:28px}}
@@ -1136,10 +1085,6 @@ body.v4-dashboard .header-container{
 }
 body.v4-dashboard .header-container h2{font-size:22px!important;}
 body.v4-dashboard .header-clock{font-size:26px!important;}
-body.v4-dashboard .theme-select{
-  width:auto!important;height:34px!important;font-size:12px!important;padding:0 30px 0 10px!important;
-  color:var(--v4-text)!important;background:var(--v4-card)!important;
-}
 .v4-shell{
   grid-template-rows:94px minmax(0,1fr) 286px!important;
   gap:8px!important;min-height:0!important;overflow:hidden!important;
@@ -1430,7 +1375,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   font-size:15px!important;font-weight:900!important;min-width:145px!important;
   order:2!important;
 }
-.v4-calendar-panel .calendar-nav-btn{
+.v4-calendar-panel .calendar-nav-btn {
   width:42px!important;height:32px!important;padding:0!important;
   display:grid!important;place-items:center!important;font-size:15px!important;
 }
@@ -1576,7 +1521,6 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
     grid-column:2/3!important;grid-row:1!important;font-size:20px!important;text-align:right!important;width:auto!important;}
   body.v4-dashboard .header-clock:before{display:none!important;}
   body.v4-dashboard .controls-wrapper{grid-column:1/-1!important;width:100%!important;justify-content:flex-start!important;}
-  body.v4-dashboard .theme-select{width:100%!important;height:44px!important;font-size:15px!important;padding:0 12px!important;}
   .v4-head-status{display:none!important;}
 
   .v4-shell{display:flex!important;flex-direction:column!important;gap:8px!important;overflow:visible!important;}
@@ -1634,7 +1578,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   .v4-calendar-panel .calendar-day-num{font-size:13px!important;}
   .v4-calendar-panel .calendar-day-value{font-size:8px!important;}
   .v4-calendar-panel .calendar-week-number,.v4-calendar-panel .calendar-day-name{font-size:9px!important;}
-  .v4-calendar-panel .calendar-nav-btn{width:38px!important;height:32px!important;}
+  .v4-calendar-panel .calendar-nav-btn {width:38px!important;height:32px!important;}
   .v4-calendar-panel .calendar-header{font-size:14px!important;min-width:120px!important;}
 
   /* Zakłócenia: naturalna wysokość, czytelne zawijanie */
@@ -1661,7 +1605,6 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   body.v4-dashboard{font-size:17px!important;padding:8px!important;}
   body.v4-dashboard .header-container h2{font-size:25px!important;}
   body.v4-dashboard .header-clock{font-size:31px!important;}
-  body.v4-dashboard .theme-select{font-size:14px!important;height:38px!important;}
   .v4-head-status{font-size:13px!important;}
   .v4-title{font-size:15px!important;letter-spacing:.75px!important;}
 
@@ -1788,7 +1731,6 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 @media (min-width:1200px) {
   body.v4-dashboard .header-container h2{font-size:clamp(23px,1.45vw,31px)!important;}
   body.v4-dashboard .header-clock{font-size:clamp(29px,1.8vw,38px)!important;}
-  body.v4-dashboard .theme-select{font-size:clamp(13px,.85vw,17px)!important;height:40px!important;}
   .v4-head-status{font-size:clamp(12px,.78vw,16px)!important;}
   .v4-title{font-size:clamp(15px,.95vw,19px)!important;}
 
@@ -2442,6 +2384,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 .v4-chart-panel .chart-critical-guide > .chart-line-label {
   display:none !important;
 }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -2454,21 +2397,67 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 @media (prefers-reduced-motion:no-preference){
   .break-overlay.show{animation:none!important;}
 }
-</style></head>
+</style>
+
+<style>
+/* DARK ONLY CLEANUP COPILOT
+   Dashboard działa wyłącznie w trybie ciemnym. Ukryte są kontrolki wyboru stylu i pełnego ekranu. */
+:root {
+  --bg-body: #0f172a;
+  --bg-container: #1e293b;
+  --bg-inputs-flex: #0f172a;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-heading: #f8fafc;
+  --border-color: #334155;
+  --calendar-cell-bg: #1e293b;
+  --calendar-cell-text: #cbd5e1;
+  --calendar-weekend-bg: #1e293b;
+  --calendar-weekend-text: #475569;
+  --chart-bg: #0f172a;
+  --chart-bar-empty: #334155;
+  --today-border: #22c55e;
+  --comment-item-bg: rgba(30, 41, 59, 0.92);
+  --comment-item-hover-bg: rgba(51, 65, 85, 0.95);
+  --comment-item-border: #334155;
+  --comment-date-color: #3b82f6;
+  --v4-page:#08111f;
+  --v4-panel:#101b2d;
+  --v4-card:#172338;
+  --v4-card-2:#1b2a40;
+  --v4-border:#2b3b54;
+  --v4-text:#f8fafc;
+  --v4-muted:#9fb0c7;
+  --v4-accent:#38bdf8;
+  --v4-good:#22c55e;
+  --v4-warn:#f59e0b;
+  --v4-bad:#ef4444;
+}
+
+
+.controls-wrapper label {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.controls-wrapper {
+  display: none !important;
+}
+</style>
+<script>
+/* DARK ONLY CLEANUP COPILOT */
+(function(){
+  document.documentElement.setAttribute('data-theme', 'dark');
+  try { localStorage.setItem('gema_theme', 'dark'); } catch(e) {}
+})();
+</script>
+</head>
 <body>
 <div class="container">
 <div class="header-container">
 <h2>Panel Wyników OEE - Lakiernia</h2>
 <div class="header-clock" id="headerClock">00:00:00</div>
-<div class="controls-wrapper">
-<div style="display: flex; align-items: center; gap: 5px;">
-<label for="themeChooser">Motyw:</label>
-<select class="theme-select" id="themeChooser" onchange="changeTheme(this.value)">
-<option value="light">Jasny (Light)</option>
-<option value="dark">Ciemny (Dark)</option>
-</select>
-</div>
-</div>
+
 </div>
 <div class="dashboard-grid">
 <div class="dashboard-column">
@@ -2638,7 +2627,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
     var currentMonth = currentDateObj.getMonth();
     // Domyślnie pokazujemy ostatni zakończony dzień, bo raport za dzisiaj
     // często nie jest jeszcze zapisany po odświeżeniu panelu.
-    var selectedDayGlobal = formatDateKey(getDateOffset(currentDateObj, -1));
+    var selectedDayGlobal = formatDateKey(getPreviousBusinessDay(currentDateObj));
 
     const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -2665,8 +2654,26 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         return result;
     }
 
+    // PREVIOUS BUSINESS DAY FIX COPILOT
+    // Domyślny wybrany dzień ma być ostatnim dniem roboczym przed dzisiaj.
+    // Przykład: poniedziałek 27.07.2026 -> piątek 24.07.2026.
+    function isBusinessDayForDashboard(date) {
+        const dayOfWeek = date.getDay(); // 0 = niedziela, 6 = sobota
+        return dayOfWeek !== 0 && dayOfWeek !== 6;
+    }
+
+    function getPreviousBusinessDay(baseDate) {
+        const result = new Date(baseDate);
+        result.setHours(12, 0, 0, 0);
+        do {
+            result.setDate(result.getDate() - 1);
+        } while (!isBusinessDayForDashboard(result));
+        return result;
+    }
+
+
     function getDefaultDashboardDay() {
-        return formatDateKey(getDateOffset(new Date(), -1));
+        return formatDateKey(getPreviousBusinessDay(new Date()));
     }
 
     function parseDateKey(dateKey) {
@@ -2694,15 +2701,16 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
     }
 
     function initTheme() {
-        var savedTheme = localStorage.getItem('gema_theme') || 'dark'; 
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.getElementById('themeChooser').value = savedTheme;
+        document.documentElement.setAttribute('data-theme', 'dark');
+        try { localStorage.setItem('gema_theme', 'dark'); } catch(e) {}
     }
 
     function changeTheme(themeName) {
-        document.documentElement.setAttribute('data-theme', themeName);
-        localStorage.setItem('gema_theme', themeName);
-        calculateWeeklyAverageFromDay(selectedDayGlobal);
+        document.documentElement.setAttribute('data-theme', 'dark');
+        try { localStorage.setItem('gema_theme', 'dark'); } catch(e) {}
+        if (typeof calculateWeeklyAverageFromDay === 'function' && typeof selectedDayGlobal !== 'undefined') {
+            calculateWeeklyAverageFromDay(selectedDayGlobal);
+        }
     }
 
     // NOWA FUNKCJA POBIERAJĄCA PROGI Z BAZY DANYCH
@@ -3087,10 +3095,19 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
     window.onload = async function() {
         initTheme();
+        selectedDayGlobal = getDefaultDashboardDay();
+        console.log('Domyślny wybrany dzień roboczy:', selectedDayGlobal);
+        currentYear = parseDateKey(selectedDayGlobal).getFullYear();
+        currentMonth = parseDateKey(selectedDayGlobal).getMonth();
         setupBreakScheduleAutoRefresh();
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
-        await refreshDashboardView();
+        try {
+            await refreshDashboardView();
+        } catch (err) {
+            console.error('Błąd startu dashboardu / odczytu bazy:', err);
+            try { buildCalendar(); renderChart(); } catch(e) { console.error('Nie udało się wyrenderować fallbacku:', e); }
+        }
 
         const CZAS_ODSWIEZANIA_SEKUNDY = 300; 
         setInterval(async function() {
@@ -3106,38 +3123,18 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
     };
 
     function getCommentCategoryStyle(category) {
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-        const isLight = currentTheme === 'light';
-
-        const lightStyles = {
-            "Przemalowanie": { border: "#2563eb", bg: "#dbeafe", text: "#1e40af" },
-            "Zmiana koloru": { border: "#be185d", bg: "#fce7f3", text: "#9d174d" },
-            "Brak proszku": { border: "#9333ea", bg: "#f3e8ff", text: "#7e22ce" },
-            "Awaria maszyny": { border: "#dc2626", bg: "#fee2e2", text: "#991b1b" },
-            "Usterka maszyny": { border: "#d97706", bg: "#fef3c7", text: "#92400e" },
-            "Serwis": { border: "#0ea5e9", bg: "#e0f2fe", text: "#075985" },
-            "Czyszczenie/Konserwacja": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
-            "Brak przestojów": { border: "#059669", bg: "#d1fae5", text: "#065f46" },
-            "Inne": { border: "#475569", bg: "#e2e8f0", text: "#334155" }
-        };
-
         const darkStyles = {
-            "Przemalowanie": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#60a5fa" },
-            "Zmiana koloru": { border: "#ec4899", bg: "rgba(236, 72, 153, 0.18)", text: "#f472b6" },
-            "Brak proszku": { border: "#a855f7", bg: "rgba(168, 85, 247, 0.22)", text: "#d946ef" },
-            "Awaria maszyny": { border: "#ef4444", bg: "rgba(239, 68, 68, 0.22)", text: "#fca5a5" },
-            "Usterka maszyny": { border: "#f59e0b", bg: "rgba(245, 158, 11, 0.20)", text: "#fbbf24" },
-            "Serwis": { border: "#38bdf8", bg: "rgba(14, 165, 233, 0.20)", text: "#7dd3fc" },
-            "Czyszczenie/Konserwacja": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
-            "Brak przestojów": { border: "#10b981", bg: "rgba(16, 185, 129, 0.18)", text: "#34d399" },
-            "Inne": { border: "#64748b", bg: "rgba(100, 116, 139, 0.26)", text: "#cbd5e1" }
+            "Przemalowanie": { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#93c5fd" },
+            "Zmiana koloru": { border: "#ec4899", bg: "rgba(236, 72, 153, 0.18)", text: "#f9a8d4" },
+            "Brak proszku": { border: "#a855f7", bg: "rgba(168, 85, 247, 0.18)", text: "#d8b4fe" },
+            "Awaria maszyny": { border: "#ef4444", bg: "rgba(239, 68, 68, 0.18)", text: "#fca5a5" },
+            "Usterka maszyny": { border: "#f97316", bg: "rgba(249, 115, 22, 0.18)", text: "#fdba74" },
+            "Serwis": { border: "#38bdf8", bg: "rgba(56, 189, 248, 0.18)", text: "#7dd3fc" },
+            "Czyszczenie/Konserwacja": { border: "#22c55e", bg: "rgba(34, 197, 94, 0.16)", text: "#86efac" },
+            "Brak przestojów": { border: "#22c55e", bg: "rgba(34, 197, 94, 0.16)", text: "#86efac" },
+            "Inne": { border: "#64748b", bg: "rgba(100, 116, 139, 0.20)", text: "#cbd5e1" }
         };
-
-        const styles = isLight ? lightStyles : darkStyles;
-        return styles[category] || (isLight
-            ? { border: "#2563eb", bg: "#dbeafe", text: "#1d4ed8" }
-            : { border: "#3b82f6", bg: "rgba(59, 130, 246, 0.18)", text: "#93c5fd" }
-        );
+        return darkStyles[category] || darkStyles["Inne"];
     }
 
 
@@ -4106,5 +4103,74 @@ function buildCalendar() {
     if(typeof updateBreakOverlay==='function') updateBreakOverlay();
   });
 })();
-</script></body>
+</script>
+<script>
+/* V27 SELECTED OEE FIX COPILOT */
+(function () {
+  function parseDashboardDateKey(dateKey) {
+    if (!dateKey || typeof dateKey !== 'string') return null;
+    const parts = dateKey.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function formatDashboardDate(dateKey) {
+    const d = parseDashboardDateKey(dateKey);
+    if (!d) return dateKey || '—';
+    const months = Array.isArray(window.MONTH_NAMES) ? window.MONTH_NAMES :
+      ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+    return d.getDate() + ' ' + String(months[d.getMonth()] || '').toLowerCase() + ' ' + d.getFullYear();
+  }
+
+  function colorForOeeValue(value) {
+    const cfg = window.OEE_CONFIG || {};
+    const greenMin = Number(cfg.greenMin ?? cfg.target ?? 70);
+    const yellowMin = Number(cfg.yellowMin ?? 60);
+    if (Number.isNaN(value)) return 'var(--v4-muted)';
+    if (value >= greenMin) return 'var(--v4-good)';
+    if (value >= yellowMin) return 'var(--v4-warn)';
+    return 'var(--v4-bad)';
+  }
+
+  window.updateV4SelectedDayOee = function updateV4SelectedDayOee(dateKey) {
+    const dateEl = document.getElementById('v4SelectedDate');
+    const oeeEl = document.getElementById('v4SelectedOee');
+    if (dateEl) dateEl.textContent = formatDashboardDate(dateKey);
+    if (!oeeEl) return;
+
+    const db = window.gemaBazaDanych || {};
+    const row = db[dateKey];
+    const raw = row && row.oee !== undefined && row.oee !== null ? row.oee : null;
+    const value = raw === null ? NaN : parseFloat(String(raw).replace(',', '.'));
+
+    if (!Number.isNaN(value) && value > 0) {
+      oeeEl.textContent = value.toFixed(1) + '%';
+      oeeEl.style.color = colorForOeeValue(value);
+    } else {
+      oeeEl.textContent = '—';
+      oeeEl.style.color = 'var(--v4-muted)';
+    }
+  };
+
+  function hookSelectDay() {
+    if (window.__v27SelectDayHooked || typeof window.selectDay !== 'function') return;
+    const originalSelectDay = window.selectDay;
+    window.selectDay = function patchedSelectDay(day) {
+      const result = originalSelectDay.apply(this, arguments);
+      try { window.updateV4SelectedDayOee(day); } catch (e) { console.warn('V27 OEE dnia:', e); }
+      return result;
+    };
+    window.__v27SelectDayHooked = true;
+    if (window.selectedDayGlobal) window.updateV4SelectedDayOee(window.selectedDayGlobal);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    hookSelectDay();
+    setTimeout(hookSelectDay, 250);
+    setTimeout(hookSelectDay, 1000);
+    setTimeout(function () { if (window.selectedDayGlobal) window.updateV4SelectedDayOee(window.selectedDayGlobal); }, 1200);
+  });
+})();
+</script>
+</body>
 </html>
