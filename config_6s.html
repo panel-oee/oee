@@ -27,13 +27,6 @@
 @media(max-width:980px){.config-grid{grid-template-columns:1fr}.task-card{grid-template-columns:44px minmax(0,1fr)}.task-card .card-actions{grid-column:1 / -1;justify-content:flex-start}.operator-card{grid-template-columns:1fr}.operator-card .card-actions{justify-content:flex-start}}
 @media(max-width:560px){.task-card{grid-template-columns:1fr}.sort-badge{width:max-content;padding:0 12px}.operator-card,.task-card{padding:10px}.card-actions{min-width:0}.card-actions button{flex:1 1 120px}}
 
-
-.task-day-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.day-chip-sm{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:30px;padding:0 8px;border-radius:8px;border:1px solid var(--border);background:#0b1220;color:var(--muted);font-weight:900;font-size:11px;cursor:pointer}.day-chip-sm.on{background:#0284c7;color:#fff;border-color:#0369a1}.day-chip-sm:hover{filter:brightness(1.08)}.days-preview{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.day-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900;background:#0b1220;border:1px solid var(--border);color:var(--muted)}.day-badge.on{color:#e0f2fe;border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.10)}.quick-days{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.quick-days button{padding:7px 9px;font-size:11px}
-
-.edit-btn{background:var(--yellow);color:#111827}.editor-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hidden{display:none!important}
-
-.history-status{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:1000;border:1px solid var(--border);background:#0b1220;white-space:nowrap}.history-status.done{color:#34d399;border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.08)}.history-status.skipped{color:#fbbf24;border-color:rgba(245,158,11,.45);background:rgba(245,158,11,.08)}.history-status.problem{color:#f87171;border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.08)}.history-time,.history-date{font-weight:900;white-space:nowrap}.history-delete{background:var(--red);padding:7px 9px;font-size:12px}
-
 </style>
 
 <title>Konfiguracja 6S</title>
@@ -41,8 +34,8 @@
 <div class="box topbar"><div><h1>🧹 Konfiguracja 6S</h1><div class="muted">Osobna podstrona konfiguracji operatorów, zadań i historii 6S. Po zakończeniu pracy kliknij „Wróć do panelu”.</div></div><button class="btn" onclick="window.location.href='panel.html'">← Wróć do panelu</button></div>
 <div class="box"><h2>Wybór przerwy 6S</h2><div class="grid"><div><label>Przerwa 6S z harmonogramu</label><select id="sixsConfigBreakSelect" onchange="loadSixsConfigPanel()"></select></div><div class="muted">Lista pokazuje pozycje z harmonogramu przerw, gdzie typ = 6S. Zadania są zapisywane dla konkretnej zmiany i godziny startu 6S.</div></div><div id="sixsConfigStatus" class="status">Konfiguracja 6S: —</div></div>
 <div class="config-grid">
-<div class="box"><h2>Operatorzy</h2><label>Nowy operator</label><input id="sixsNewOperatorName" placeholder="Imię i nazwisko operatora"><div id="sixsOperatorAddActions"><button class="green" onclick="addSixsOperator()" style="margin-top:8px;width:100%">+ Dodaj operatora</button></div><div id="sixsOperatorEditActions" class="editor-actions hidden" style="margin-top:8px"><button class="save" onclick="saveSixsOperatorEdit()">Zapisz zmiany</button><button class="btn" onclick="cancelSixsOperatorEdit()">Anuluj</button></div><div id="sixsOperatorsList" class="compact-list"></div></div>
-<div class="box"><h2>Zadania dla wybranej przerwy</h2><div class="form-stack"><label>Nazwa zadania</label><input id="sixsNewTaskName" placeholder="np. Posprzątać okolice kabiny"><label>Opis / instrukcja</label><input id="sixsNewTaskDesc" placeholder="Opcjonalnie"><label>Kolejność</label><input id="sixsNewTaskSort" type="number" value="100"><label>Dni wykonywania zadania</label><div id="sixsNewTaskDays" class="task-day-row"></div><div class="quick-days"><button type="button" class="btn small" onclick="setNewTaskDays([1,2,3,4,5])">Pn-Pt</button><button type="button" class="btn small" onclick="setNewTaskDays([1,3,5])">Pn/Śr/Pt</button><button type="button" class="btn small" onclick="setNewTaskDays([2,4])">Wt/Cz</button></div><div id="sixsTaskAddActions"><button class="green" onclick="addSixsTaskForSelectedBreak()" style="margin-top:8px;width:100%">+ Dodaj zadanie</button></div><div id="sixsTaskEditActions" class="editor-actions hidden" style="margin-top:8px"><button class="save" onclick="saveSixsTaskEdit()">Zapisz zmiany</button><button class="btn" onclick="cancelSixsTaskEdit()">Anuluj</button></div></div><div id="sixsTasksList" class="compact-list"></div></div>
+<div class="box"><h2>Operatorzy</h2><label>Nowy operator</label><input id="sixsNewOperatorName" placeholder="Imię i nazwisko operatora"><button class="green" onclick="addSixsOperator()" style="margin-top:8px">+ Dodaj operatora</button><div id="sixsOperatorsList" class="compact-list"></div></div>
+<div class="box"><h2>Zadania dla wybranej przerwy</h2><div class="form-stack"><label>Nazwa zadania</label><input id="sixsNewTaskName" placeholder="np. Posprzątać okolice kabiny"><label>Opis / instrukcja</label><input id="sixsNewTaskDesc" placeholder="Opcjonalnie"><label>Kolejność</label><input id="sixsNewTaskSort" type="number" value="100"><button class="green" onclick="addSixsTaskForSelectedBreak()" style="margin-top:8px">+ Dodaj zadanie</button></div><div id="sixsTasksList" class="compact-list"></div></div>
 </div>
 
 <div class="box">
@@ -67,7 +60,7 @@
   <div id="sixsOperatorAssignmentList" class="task-assign-list"></div>
 </div>
 
-<div class="box"><h2>Historia zadań 6S</h2><div class="grid3"><div><label>Data</label><input type="date" id="sixsHistoryDate"></div><div><label>Zmiana</label><select id="sixsHistoryShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select></div><div style="align-self:end"><button class="save" onclick="loadSixsHistory()">Odśwież historię</button></div></div><div class="table-responsive"><table id="sixsHistoryTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas</th><th>Akcje</th></tr></thead><tbody></tbody></table></div></div>
+<div class="box"><h2>Historia zadań 6S</h2><div class="grid3"><div><label>Data</label><input type="date" id="sixsHistoryDate"></div><div><label>Zmiana</label><select id="sixsHistoryShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select></div><div style="align-self:end"><button class="save" onclick="loadSixsHistory()">Odśwież historię</button></div></div><div class="table-responsive"><table id="sixsHistoryTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas</th></tr></thead><tbody></tbody></table></div></div>
 </div>
 <script>
 const SUPABASE_URL='https://vyobsgknuxxlglkyhulb.supabase.co';
@@ -79,19 +72,7 @@ let BREAK_SCHEDULE=[];
 let SIXS_OPERATORS_CACHE=[];
 let SIXS_TASKS_CACHE=[];
 let SIXS_ASSIGNMENTS_CACHE=[];
-let SIXS_NEW_TASK_DAYS=[1,2,3,4,5];
-let SIXS_EDIT_OPERATOR_ID=null;
-let SIXS_EDIT_TASK_ID=null;
 function escapeHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function dayName(d){return ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][Number(d)]||'?'}
-function normalizeTaskDays(days){const arr=Array.isArray(days)?days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];return Array.from(new Set(arr.length?arr:[1,2,3,4,5])).sort((a,b)=>a-b)}
-function taskDaysText(days){const ds=normalizeTaskDays(days);const key=ds.join(',');if(key==='1,2,3,4,5')return 'Pn-Pt';if(key==='1,3,5')return 'Pn/Śr/Pt';if(key==='2,4')return 'Wt/Cz';return ds.map(dayName).join('/')} 
-function taskDayBadges(days){const ds=new Set(normalizeTaskDays(days));return '<div class="days-preview">'+[1,2,3,4,5,6,0].map(d=>'<span class="day-badge '+(ds.has(d)?'on':'')+'">'+dayName(d)+'</span>').join('')+'</div>'}
-function renderNewTaskDayChips(){const box=document.getElementById('sixsNewTaskDays');if(!box)return;const ds=new Set(SIXS_NEW_TASK_DAYS);box.innerHTML=[1,2,3,4,5,6,0].map(d=>'<button type="button" class="day-chip-sm '+(ds.has(d)?'on':'')+'" onclick="toggleNewTaskDay('+d+')">'+dayName(d)+'</button>').join('')}
-function setNewTaskDays(days){SIXS_NEW_TASK_DAYS=normalizeTaskDays(days);renderNewTaskDayChips()}
-function toggleNewTaskDay(d){const s=new Set(SIXS_NEW_TASK_DAYS);s.has(d)?s.delete(d):s.add(d);SIXS_NEW_TASK_DAYS=normalizeTaskDays(Array.from(s));renderNewTaskDayChips()}
-function taskDayToggleButtons(t){const ds=new Set(normalizeTaskDays(t.days));return '<div class="task-day-row">'+[1,2,3,4,5,6,0].map(d=>'<button type="button" class="day-chip-sm '+(ds.has(d)?'on':'')+'" onclick="toggleSixsTaskDay('+t.id+','+d+')">'+dayName(d)+'</button>').join('')+'</div>'}
-
 function formatDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function minutesFromTimeText(t){const p=String(t||'00:00').split(':').map(Number);return(p[0]||0)*60+(p[1]||0)}
 function normalizeBreakItem(item){const n=Object.assign({start:'09:30',durationMinutes:15,kind:'main',shift:'1',days:[1,2,3,4,5],enabled:true},item||{});n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];n.enabled=n.enabled!==false;return n}
@@ -101,7 +82,7 @@ function sixsGetBreakOptions(){return BREAK_SCHEDULE.filter(x=>x.enabled!==false
 function sixsBreakKey(x){return String(x.shift||'all')+'|'+String(x.start||'00:00')}
 function sixsSelectedBreak(){const p=(document.getElementById('sixsConfigBreakSelect').value||'all|00:00').split('|');return{shift:p[0]||'all',start:p[1]||'00:00'}}
 function renderSixsBreakSelect(){const sel=document.getElementById('sixsConfigBreakSelect'),prev=sel.value,opts=sixsGetBreakOptions();sel.innerHTML=opts.length?opts.map(x=>`<option value="${sixsBreakKey(x)}">Zmiana ${escapeHtml(x.shift||'all')} / ${escapeHtml(x.start||'00:00')} / ${x.durationMinutes||15} min</option>`).join(''):'<option value="all|00:00">Brak przerw 6S - dodaj w konfiguracji przerw</option>';if(prev&&Array.from(sel.options).some(o=>o.value===prev))sel.value=prev}
-async function loadSixsConfigPanel(){renderSixsBreakSelect();renderNewTaskDayChips();await loadSixsOperatorsPanel();await loadSixsTasksPanel();populateAssignmentOperators();await loadOperatorTaskAssignments();}
+async function loadSixsConfigPanel(){renderSixsBreakSelect();await loadSixsOperatorsPanel();await loadSixsTasksPanel();populateAssignmentOperators();await loadOperatorTaskAssignments();}
 async function loadSixsOperatorsPanel(){
     const list=document.getElementById('sixsOperatorsList');
     if(!list)return;
@@ -109,47 +90,11 @@ async function loadSixsOperatorsPanel(){
     const{data,error}=await supabaseClient.from('sixs_operators').select('*').order('operator_name');
     if(error){list.innerHTML='<div class="status err">Błąd: '+escapeHtml(error.message)+'</div>';msg('Błąd operatorów: '+error.message,true);return}
     SIXS_OPERATORS_CACHE=data||[];
-    list.innerHTML=SIXS_OPERATORS_CACHE.map(o=>`<div class="operator-card"><div><div class="card-title">${escapeHtml(o.operator_name)}</div><div class="card-sub"><span class="pill ${o.active?'ok':'off'}">${o.active?'Aktywny':'Wyłączony'}</span></div></div><div class="card-actions"><button class="small edit-btn" onclick="startEditSixsOperator(${o.id})">Edytuj</button><button class="small btn" onclick="toggleSixsOperator(${o.id},${!o.active})">${o.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsOperator(${o.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak operatorów.</div>';
+    list.innerHTML=SIXS_OPERATORS_CACHE.map(o=>`<div class="operator-card"><div><div class="card-title">${escapeHtml(o.operator_name)}</div><div class="card-sub"><span class="pill ${o.active?'ok':'off'}">${o.active?'Aktywny':'Wyłączony'}</span></div></div><div class="card-actions"><button class="small btn" onclick="toggleSixsOperator(${o.id},${!o.active})">${o.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsOperator(${o.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak operatorów.</div>';
     populateAssignmentOperators();
     msg('Pobrano konfigurację 6S.');
 }
-async function addSixsOperator(){if(SIXS_EDIT_OPERATOR_ID){msg('Jesteś w trybie edycji operatora - kliknij Zapisz zmiany albo Anuluj.',true);return}const input=document.getElementById('sixsNewOperatorName');const name=input.value.trim();if(name.length<2){msg('Wpisz operatora.',true);return}const{error}=await supabaseClient.from('sixs_operators').insert({operator_name:name,active:true});if(error){msg('Błąd dodawania operatora: '+error.message,true);return}input.value='';await loadSixsOperatorsPanel()}
-
-function setOperatorEditMode(on){
-    const add=document.getElementById('sixsOperatorAddActions'),edit=document.getElementById('sixsOperatorEditActions');
-    if(add)add.classList.toggle('hidden',!!on);
-    if(edit)edit.classList.toggle('hidden',!on);
-}
-function startEditSixsOperator(id){
-    const o=(SIXS_OPERATORS_CACHE||[]).find(x=>String(x.id)===String(id));
-    if(!o){msg('Nie znaleziono operatora do edycji.',true);return}
-    SIXS_EDIT_OPERATOR_ID=id;
-    const input=document.getElementById('sixsNewOperatorName');
-    if(input){input.value=o.operator_name||'';input.focus();input.scrollIntoView({behavior:'smooth',block:'center'});}
-    setOperatorEditMode(true);
-    msg('Tryb edycji operatora: popraw nazwę i kliknij Zapisz zmiany.');
-}
-function cancelSixsOperatorEdit(){
-    SIXS_EDIT_OPERATOR_ID=null;
-    const input=document.getElementById('sixsNewOperatorName');
-    if(input)input.value='';
-    setOperatorEditMode(false);
-    msg('Anulowano edycję operatora.');
-}
-async function saveSixsOperatorEdit(){
-    if(!SIXS_EDIT_OPERATOR_ID){msg('Najpierw kliknij Edytuj przy operatorze.',true);return}
-    const input=document.getElementById('sixsNewOperatorName');
-    const name=(input&&input.value||'').trim();
-    if(name.length<2){msg('Nazwa operatora jest za krótka.',true);return}
-    const{error}=await supabaseClient.from('sixs_operators').update({operator_name:name}).eq('id',SIXS_EDIT_OPERATOR_ID);
-    if(error){msg('Błąd edycji operatora: '+error.message,true);return}
-    SIXS_EDIT_OPERATOR_ID=null;
-    if(input)input.value='';
-    setOperatorEditMode(false);
-    await loadSixsOperatorsPanel();
-    msg('Zapisano zmiany operatora.');
-}
-
+async function addSixsOperator(){const input=document.getElementById('sixsNewOperatorName');const name=input.value.trim();if(name.length<2){msg('Wpisz operatora.',true);return}const{error}=await supabaseClient.from('sixs_operators').insert({operator_name:name,active:true});if(error){msg('Błąd dodawania operatora: '+error.message,true);return}input.value='';await loadSixsOperatorsPanel()}
 async function toggleSixsOperator(id,active){const{error}=await supabaseClient.from('sixs_operators').update({active}).eq('id',id);if(error){msg('Błąd statusu: '+error.message,true);return}await loadSixsOperatorsPanel()}
 async function deleteSixsOperator(id){if(!confirm('Usunąć operatora? Historia zostanie zachowana bez ID operatora.'))return;await supabaseClient.from('sixs_task_logs').update({operator_id:null}).eq('operator_id',id);const{error}=await supabaseClient.from('sixs_operators').delete().eq('id',id);if(error){msg('Błąd usuwania operatora: '+error.message,true);return}await loadSixsOperatorsPanel()}
 async function loadSixsTasksPanel(){
@@ -160,83 +105,11 @@ async function loadSixsTasksPanel(){
     if(error){list.innerHTML='<div class="status err">Błąd: '+escapeHtml(error.message)+'</div>';msg('Błąd zadań: '+error.message,true);return}
     const rows=(data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(s.shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(s.start)));
     SIXS_TASKS_CACHE=rows;
-    list.innerHTML=rows.map(t=>`<div class="task-card"><div class="sort-badge">${t.sort_order||100}</div><div><div class="card-title">${escapeHtml(t.task_name)}</div><div class="card-sub">${escapeHtml(t.description||'')}<br><span class="pill">${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift)} / ${escapeHtml(t.sixs_start||'all')}</span> <span class="pill">Dni: ${escapeHtml(taskDaysText(t.days))}</span> <span class="pill ${t.active?'ok':'off'}">${t.active?'Aktywne':'Wyłączone'}</span></div>${taskDayToggleButtons(t)}</div><div class="card-actions"><button class="small edit-btn" onclick="startEditSixsTask(${t.id})">Edytuj</button><button class="small btn" onclick="toggleSixsTask(${t.id},${!t.active})">${t.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsTask(${t.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak zadań dla wybranej przerwy.</div>';
+    list.innerHTML=rows.map(t=>`<div class="task-card"><div class="sort-badge">${t.sort_order||100}</div><div><div class="card-title">${escapeHtml(t.task_name)}</div><div class="card-sub">${escapeHtml(t.description||'')}<br><span class="pill">${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift)} / ${escapeHtml(t.sixs_start||'all')}</span> <span class="pill ${t.active?'ok':'off'}">${t.active?'Aktywne':'Wyłączone'}</span></div></div><div class="card-actions"><button class="small btn" onclick="toggleSixsTask(${t.id},${!t.active})">${t.active?'Wyłącz':'Włącz'}</button><button class="small red" onclick="deleteSixsTask(${t.id})">Usuń</button></div></div>`).join('')||'<div class="muted">Brak zadań dla wybranej przerwy.</div>';
     await loadOperatorTaskAssignments();
 }
-async function addSixsTaskForSelectedBreak(){
-    const s=sixsSelectedBreak(),name=document.getElementById('sixsNewTaskName').value.trim();
-    if(name.length<3){msg('Wpisz nazwę zadania.',true);return}
-    const days=normalizeTaskDays(SIXS_NEW_TASK_DAYS);
-    const row={task_name:name,description:document.getElementById('sixsNewTaskDesc').value.trim(),shift:s.shift,sixs_start:s.start,days:days,sort_order:parseInt(document.getElementById('sixsNewTaskSort').value,10)||100,active:true};
-    const{error}=await supabaseClient.from('sixs_tasks_config').insert(row);
-    if(error){msg('Błąd dodawania zadania: '+error.message,true);return}
-    document.getElementById('sixsNewTaskName').value='';document.getElementById('sixsNewTaskDesc').value='';
-    setNewTaskDays([1,2,3,4,5]);
-    await loadSixsTasksPanel();
-} 
+async function addSixsTaskForSelectedBreak(){const s=sixsSelectedBreak(),name=document.getElementById('sixsNewTaskName').value.trim();if(name.length<3){msg('Wpisz nazwę zadania.',true);return}const breakItem=sixsGetBreakOptions().find(x=>String(x.shift||'all')===String(s.shift)&&String(x.start||'')===String(s.start));const row={task_name:name,description:document.getElementById('sixsNewTaskDesc').value.trim(),shift:s.shift,sixs_start:s.start,days:breakItem&&Array.isArray(breakItem.days)?breakItem.days:[1,2,3,4,5],sort_order:parseInt(document.getElementById('sixsNewTaskSort').value,10)||100,active:true};const{error}=await supabaseClient.from('sixs_tasks_config').insert(row);if(error){msg('Błąd dodawania zadania: '+error.message,true);return}document.getElementById('sixsNewTaskName').value='';document.getElementById('sixsNewTaskDesc').value='';await loadSixsTasksPanel()}
 async function toggleSixsTask(id,active){const{error}=await supabaseClient.from('sixs_tasks_config').update({active}).eq('id',id);if(error){msg('Błąd statusu zadania: '+error.message,true);return}await loadSixsTasksPanel()}
-
-function setTaskEditMode(on){
-    const add=document.getElementById('sixsTaskAddActions'),edit=document.getElementById('sixsTaskEditActions');
-    if(add)add.classList.toggle('hidden',!!on);
-    if(edit)edit.classList.toggle('hidden',!on);
-}
-function startEditSixsTask(id){
-    const t=(SIXS_TASKS_CACHE||[]).find(x=>String(x.id)===String(id));
-    if(!t){msg('Nie znaleziono zadania do edycji.',true);return}
-    SIXS_EDIT_TASK_ID=id;
-    const name=document.getElementById('sixsNewTaskName'),desc=document.getElementById('sixsNewTaskDesc'),sort=document.getElementById('sixsNewTaskSort');
-    if(name)name.value=t.task_name||'';
-    if(desc)desc.value=t.description||'';
-    if(sort)sort.value=t.sort_order||100;
-    setNewTaskDays(normalizeTaskDays(t.days));
-    setTaskEditMode(true);
-    if(name){name.focus();name.scrollIntoView({behavior:'smooth',block:'center'});}
-    msg('Tryb edycji zadania: popraw dane, dni i kliknij Zapisz zmiany.');
-}
-function cancelSixsTaskEdit(){
-    SIXS_EDIT_TASK_ID=null;
-    const name=document.getElementById('sixsNewTaskName'),desc=document.getElementById('sixsNewTaskDesc'),sort=document.getElementById('sixsNewTaskSort');
-    if(name)name.value='';
-    if(desc)desc.value='';
-    if(sort)sort.value=100;
-    setNewTaskDays([1,2,3,4,5]);
-    setTaskEditMode(false);
-    msg('Anulowano edycję zadania.');
-}
-async function saveSixsTaskEdit(){
-    if(!SIXS_EDIT_TASK_ID){msg('Najpierw kliknij Edytuj przy zadaniu.',true);return}
-    const nameEl=document.getElementById('sixsNewTaskName'),descEl=document.getElementById('sixsNewTaskDesc'),sortEl=document.getElementById('sixsNewTaskSort');
-    const task_name=(nameEl&&nameEl.value||'').trim();
-    if(task_name.length<3){msg('Nazwa zadania jest za krótka.',true);return}
-    const description=(descEl&&descEl.value||'').trim();
-    const sort_order=parseInt(sortEl&&sortEl.value,10)||100;
-    const days=normalizeTaskDays(SIXS_NEW_TASK_DAYS);
-    const{error}=await supabaseClient.from('sixs_tasks_config').update({task_name,description,sort_order,days}).eq('id',SIXS_EDIT_TASK_ID);
-    if(error){msg('Błąd edycji zadania: '+error.message,true);return}
-    SIXS_EDIT_TASK_ID=null;
-    if(nameEl)nameEl.value='';
-    if(descEl)descEl.value='';
-    if(sortEl)sortEl.value=100;
-    setNewTaskDays([1,2,3,4,5]);
-    setTaskEditMode(false);
-    await loadSixsTasksPanel();
-    await loadOperatorTaskAssignments();
-    msg('Zapisano zmiany zadania.');
-}
-async function toggleSixsTaskDay(id,d){
-    const task=(SIXS_TASKS_CACHE||[]).find(t=>String(t.id)===String(id));
-    if(!task){msg('Nie znaleziono zadania do zmiany dni.',true);return}
-    const s=new Set(normalizeTaskDays(task.days));
-    s.has(d)?s.delete(d):s.add(d);
-    const days=normalizeTaskDays(Array.from(s));
-    const{error}=await supabaseClient.from('sixs_tasks_config').update({days}).eq('id',id);
-    if(error){msg('Błąd zmiany dni zadania: '+error.message,true);return}
-    msg('Zapisano dni zadania: '+taskDaysText(days));
-    await loadSixsTasksPanel();
-    await loadOperatorTaskAssignments();
-}
-
 async function deleteSixsTask(id){if(!confirm('Usunąć zadanie 6S? Historia zostanie zachowana bez ID zadania.'))return;await supabaseClient.from('sixs_task_logs').update({task_id:null}).eq('task_id',id);const{error}=await supabaseClient.from('sixs_tasks_config').delete().eq('id',id);if(error){msg('Błąd usuwania zadania: '+error.message,true);return}await loadSixsTasksPanel();await loadSixsHistory()}
 
 function populateAssignmentOperators(){
@@ -272,7 +145,7 @@ async function loadOperatorTaskAssignments(){
     }
     box.innerHTML=tasks.map(t=>{
         const checked=assigned.has(String(t.id));
-        return `<label class="task-assign-card ${checked?'checked':''}"><input type="checkbox" class="sixs-task-assignment-checkbox" value="${t.id}" ${checked?'checked':''} onchange="this.closest('.task-assign-card').classList.toggle('checked',this.checked)"><div><div class="task-assign-title">${escapeHtml(t.task_name||'')}</div><div class="task-assign-sub">${escapeHtml(t.description||'')}<br>${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift||'all')} / ${escapeHtml(t.sixs_start||'all')} / dni: ${escapeHtml(taskDaysText(t.days))}</div></div></label>`;
+        return `<label class="task-assign-card ${checked?'checked':''}"><input type="checkbox" class="sixs-task-assignment-checkbox" value="${t.id}" ${checked?'checked':''} onchange="this.closest('.task-assign-card').classList.toggle('checked',this.checked)"><div><div class="task-assign-title">${escapeHtml(t.task_name||'')}</div><div class="task-assign-sub">${escapeHtml(t.description||'')}<br>${t.shift==='all'?'Wszystkie zmiany':'Zmiana '+escapeHtml(t.shift||'all')} / ${escapeHtml(t.sixs_start||'all')}</div></div></label>`;
     }).join('');
 }
 function selectAllVisibleAssignments(value){
@@ -295,109 +168,6 @@ async function saveOperatorTaskAssignments(){
     }
 }
 
-
-function statusPl(status){
-    const s=String(status||'').toLowerCase();
-    if(s==='done')return 'Ukończone';
-    if(s==='skipped')return 'Pominięte';
-    if(s==='problem')return 'Problem';
-    if(s==='todo')return 'Do wykonania';
-    return status||'—';
-}
-function statusClass(status){
-    const s=String(status||'').toLowerCase();
-    return ['done','skipped','problem'].includes(s)?s:'';
-}
-function formatDatePl(value){
-    if(!value)return '—';
-    const parts=String(value).slice(0,10).split('-');
-    if(parts.length===3)return parts[2]+'.'+parts[1]+'.'+parts[0];
-    return String(value);
-}
-function formatTimePl(value){
-    if(!value)return '—';
-    const d=new Date(value);
-    if(!isNaN(d.getTime())){
-        return d.toLocaleString('pl-PL',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    }
-    return String(value).replace('T',' ').replace(/\.\d+.*$/,'');
-}
-function historyDeletePayload(l){
-    return encodeURIComponent(JSON.stringify({
-        id:l.id||null,
-        log_date:l.log_date||'',
-        shift:l.shift||'',
-        sixs_start:l.sixs_start||'',
-        task_id:l.task_id||null,
-        task_name:l.task_name||'',
-        operator_id:l.operator_id||null,
-        operator_name:l.operator_name||'',
-        status:l.status||'',
-        updated_at:l.updated_at||'',
-        created_at:l.created_at||''
-    }));
-}
-function applySixsHistoryLogFilters(q,payload){
-    if(payload.id){return q.eq('id',payload.id);}
-    q=q.eq('log_date',payload.log_date).eq('shift',payload.shift).eq('sixs_start',payload.sixs_start);
-    if(payload.task_id!==null&&payload.task_id!==undefined)q=q.eq('task_id',payload.task_id);
-    else if(payload.task_name)q=q.eq('task_name',payload.task_name);
-    if(payload.operator_id!==null&&payload.operator_id!==undefined)q=q.eq('operator_id',payload.operator_id);
-    else if(payload.operator_name)q=q.eq('operator_name',payload.operator_name);
-    if(payload.updated_at)q=q.eq('updated_at',payload.updated_at);
-    else if(payload.created_at)q=q.eq('created_at',payload.created_at);
-    return q;
-}
-async function deleteSixsHistoryLog(payloadText){
-    let payload={};
-    try{payload=JSON.parse(decodeURIComponent(payloadText||''));}catch(e){msg('Nie mogę odczytać wpisu historii do usunięcia.',true);return}
-    if(!confirm('Usunąć ten wpis z historii 6S?'))return;
-
-    try{
-        // 1. Najpierw próbujemy prawdziwego DELETE i wymuszamy zwrot usuniętego wiersza przez .select().
-        // Dzięki temu wiadomo, czy Supabase faktycznie usunął rekord, czy tylko zwrócił pusty sukces.
-        let deleteQuery=applySixsHistoryLogFilters(supabaseClient.from('sixs_task_logs').delete(),payload).select();
-        const del=await deleteQuery;
-        if(del.error)throw del.error;
-        if(del.data&&del.data.length){
-            msg('Usunięto wpis z historii 6S.');
-            await loadSixsHistory();
-            return;
-        }
-
-        // 2. Jeżeli polityka bazy/RLS nie zwróciła usuniętego wiersza, ukrywamy wpis z bieżącej daty.
-        // To działa jako bezpieczna alternatywa: wpis znika z historii dnia, nawet gdy DELETE jest blokowany.
-        let hideQuery=applySixsHistoryLogFilters(supabaseClient.from('sixs_task_logs').update({log_date:'1900-01-01'}),payload).select();
-        const hidden=await hideQuery;
-        if(hidden.error)throw hidden.error;
-        if(hidden.data&&hidden.data.length){
-            msg('Usunięto wpis z widoku historii 6S.');
-            await loadSixsHistory();
-            return;
-        }
-
-        msg('Nie znaleziono wpisu do usunięcia. Odśwież historię i spróbuj ponownie.',true);
-        await loadSixsHistory();
-    }catch(err){
-        console.error('Błąd usuwania historii 6S:',err);
-        msg('Błąd usuwania wpisu historii: '+(err.message||err),true);
-    }
-}
-
-async function loadSixsHistory(){
-    const tb=document.querySelector('#sixsHistoryTable tbody'),dateEl=document.getElementById('sixsHistoryDate');
-    if(!dateEl.value)dateEl.value=formatDateKey(new Date());
-    const shift=document.getElementById('sixsHistoryShift').value;
-    tb.innerHTML='<tr><td colspan="9">Ładowanie...</td></tr>';
-    let q=supabaseClient.from('sixs_task_logs').select('*').eq('log_date',dateEl.value).order('updated_at',{ascending:false});
-    if(shift!=='all')q=q.eq('shift',shift);
-    const{data,error}=await q;
-    if(error){tb.innerHTML='<tr><td colspan="9">Błąd: '+escapeHtml(error.message)+'</td></tr>';return}
-    tb.innerHTML=(data||[]).map(l=>{
-        const when=l.updated_at||l.created_at||'';
-        const payload=historyDeletePayload(l);
-        return `<tr><td class="history-date">${escapeHtml(formatDatePl(l.log_date))}</td><td>${escapeHtml(l.shift)}</td><td>${escapeHtml(l.sixs_start)}</td><td class="left">${escapeHtml(l.task_name)}</td><td><span class="history-status ${statusClass(l.status)}">${escapeHtml(statusPl(l.status))}</span></td><td>${escapeHtml(l.operator_name)}</td><td class="left">${escapeHtml(l.comment||'')}</td><td class="history-time">${escapeHtml(formatTimePl(when))}</td><td><button class="history-delete" onclick="deleteSixsHistoryLog('${payload}')">Usuń</button></td></tr>`;
-    }).join('')||'<tr><td colspan="9">Brak historii.</td></tr>';
-}
+async function loadSixsHistory(){const tb=document.querySelector('#sixsHistoryTable tbody'),dateEl=document.getElementById('sixsHistoryDate');if(!dateEl.value)dateEl.value=formatDateKey(new Date());const shift=document.getElementById('sixsHistoryShift').value;tb.innerHTML='<tr><td colspan="8">Ładowanie...</td></tr>';let q=supabaseClient.from('sixs_task_logs').select('*').eq('log_date',dateEl.value).order('updated_at',{ascending:false});if(shift!=='all')q=q.eq('shift',shift);const{data,error}=await q;if(error){tb.innerHTML='<tr><td colspan="8">Błąd: '+escapeHtml(error.message)+'</td></tr>';return}tb.innerHTML=(data||[]).map(l=>`<tr><td>${escapeHtml(l.log_date)}</td><td>${escapeHtml(l.shift)}</td><td>${escapeHtml(l.sixs_start)}</td><td class="left">${escapeHtml(l.task_name)}</td><td>${escapeHtml(l.status)}</td><td>${escapeHtml(l.operator_name)}</td><td class="left">${escapeHtml(l.comment||'')}</td><td>${escapeHtml(l.updated_at||l.created_at||'')}</td></tr>`).join('')||'<tr><td colspan="8">Brak historii.</td></tr>'}
 async function init(){await loadBreakSchedule();renderSixsBreakSelect();document.getElementById('sixsHistoryDate').value=formatDateKey(new Date());await loadSixsConfigPanel();await loadSixsHistory()}window.onload=init;
 </script></body></html>
