@@ -2381,6 +2381,33 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 .v4-chart-panel .chart-critical-guide > .chart-line-label {
   display:none !important;
 }
+
+
+/* V29 - poprawki TOP 5 / Wszystkie
+   - TOP 5 bez dodatkowej linii typu "Dostepnosc - ... • godziny"
+   - Wszystkie: lista elastyczna, z dolnym odstepem, zeby ostatni wpis nie byl ucinany przy scrollu
+*/
+.v4-comments-panel .comments-box-list[data-mode="all"]{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-rows:none!important;
+  gap:6px!important;
+  overflow-y:auto!important;
+  padding-bottom:18px!important;
+  scroll-padding-bottom:18px!important;
+}
+.v4-comments-panel .comments-box-list[data-mode="all"] .comment-box-item{
+  flex:0 0 auto!important;
+  min-height:38px!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+@media(max-width:700px){
+  .v4-comments-panel .comments-box-list[data-mode="all"]{
+    padding-bottom:22px!important;
+  }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 </script>
@@ -3561,6 +3588,7 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             btnTop.id = 'commentsTop5Btn';
             btnTop.type = 'button';
             btnTop.innerText = 'TOP 5';
+            btnTop.title = '5 najważniejszych zakłóceń z ostatnich 30 dni: czas przestoju + powtarzalność';
             btnTop.style.padding = '4px 12px';
             btnTop.style.borderRadius = '6px';
             btnTop.style.border = '1px solid var(--border-color)';
@@ -3574,6 +3602,7 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             btnAll.id = 'commentsAllBtn';
             btnAll.type = 'button';
             btnAll.innerText = 'Wszystkie';
+            btnAll.title = 'Wszystkie zakłócenia z ostatnich 30 dni';
             btnAll.style.padding = '4px 12px';
             btnAll.style.borderRadius = '6px';
             btnAll.style.border = '1px solid var(--border-color)';
@@ -3601,12 +3630,21 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             activeStyle(btnAll, window.commentsMode === 'all');
         }
 
+        listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
         listContainer.innerHTML = '';
 
         let comments = [];
 
-        const notesStart = formatDateKey(new Date(currentYear, currentMonth, 1));
-        const notesEnd = formatDateKey(new Date(currentYear, currentMonth + 1, 0));
+        // V28: Ostatnie zakłócenia pokazują zakres kroczący 30 dni wstecz,
+        // a nie wyłącznie bieżący miesiąc kalendarzowy.
+        const rollingEndDate = new Date();
+        rollingEndDate.setHours(23, 59, 59, 999);
+        const rollingStartDate = new Date(rollingEndDate);
+        rollingStartDate.setDate(rollingStartDate.getDate() - 30);
+        rollingStartDate.setHours(0, 0, 0, 0);
+        const notesStart = formatDateKey(rollingStartDate);
+        const notesEnd = formatDateKey(rollingEndDate);
+
         const visibleLossCategories = [
             "Zmiana koloru",
             "Przemalowanie",
@@ -3618,7 +3656,59 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             "Inne"
         ];
 
-        function buildVisibleComment(dateKey, rawNote) {
+        function escapeHtmlLocal(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function parseNumberLocal(value) {
+            const parsed = parseFloat(String(value == null ? '' : value).replace(',', '.'));
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function compactTextLocal(value, maxLen) {
+            const text = String(value || '').replace(/\s+/g, ' ').trim();
+            if (!maxLen || text.length <= maxLen) return text;
+            return text.slice(0, maxLen - 1).trim() + '…';
+        }
+
+        function normalizeIncidentKeyLocal(text) {
+            return String(text || '')
+                .toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\b\d{1,2}[.:]\d{2}\b/g, '')
+                .replace(/\b\d+\s*(min|m|h|godz)\b/g, '')
+                .replace(/\b\d+[a-z]?\b/g, '')
+                .replace(/[^a-z0-9ąćęłńóśźż\s]/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function categoryOeeAreaLocal(category) {
+            if (category === 'Brak proszku') return 'Dostępność – brak surowca';
+            if (category === 'Serwis') return 'Dostępność – serwis';
+            if (category === 'Awaria maszyny' || category === 'Usterka maszyny') return 'Dostępność – awaria techniczna';
+            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return 'Dostępność – przezbrojenie/czyszczenie';
+            return 'OEE – inne zakłócenie';
+        }
+
+        function calculateIncidentMinutesLocal(category, source) {
+            source = source || {};
+            const breakdown = parseNumberLocal(source.breakdown);
+            const cleaning = parseNumberLocal(source.cleaning);
+            const service = parseNumberLocal(source.service);
+
+            if (category === 'Serwis') return service || breakdown || cleaning || 0;
+            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return cleaning || breakdown || service || 0;
+            if (category === 'Awaria maszyny' || category === 'Usterka maszyny' || category === 'Brak proszku' || category === 'Inne') return breakdown || service || cleaning || 0;
+            return breakdown || service || cleaning || 0;
+        }
+
+        function buildVisibleComment(dateKey, rawNote, sourceRow) {
             const cleanedNote = stripChangeoverMarker(rawNote || '').trim();
             if (!cleanedNote) return null;
 
@@ -3630,20 +3720,34 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             let text = cleanedNote;
             const match = cleanedNote.match(/\[(.*?)\]/);
             if (match) text = cleanedNote.replace(match[0], '').trim();
+            text = text || category;
+
+            const parsedDate = parseDateKey(dateKey);
+            if (!parsedDate || parsedDate < rollingStartDate || parsedDate > rollingEndDate) return null;
+
+            const minutes = calculateIncidentMinutesLocal(category, sourceRow || {});
+            const startValue = (sourceRow && (sourceRow.h_start || sourceRow.hStart || sourceRow.start || sourceRow.start_time)) || '';
+            const endValue = (sourceRow && (sourceRow.h_end || sourceRow.hEnd || sourceRow.end || sourceRow.end_time)) || '';
 
             return {
                 dateKey: dateKey,
-                date: parseDateKey(dateKey),
+                date: parsedDate,
                 note: cleanedNote,
                 category: category,
-                text: text
+                text: text,
+                minutes: minutes,
+                count: 1,
+                start: startValue,
+                end: endValue,
+                status: cleanedNote,
+                oeeArea: categoryOeeAreaLocal(category)
             };
         }
 
         try {
             const { data, error } = await supabaseClient
                 .from('oee_reports')
-                .select('date, notes')
+                .select('date, notes, breakdown, cleaning, service, h_start, h_end')
                 .gte('date', notesStart)
                 .lte('date', notesEnd)
                 .order('date', { ascending: false });
@@ -3652,7 +3756,7 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
 
             if (data) {
                 data.forEach(function(row) {
-                    const prepared = buildVisibleComment(row.date, row.notes ? String(row.notes) : '');
+                    const prepared = buildVisibleComment(row.date, row.notes ? String(row.notes) : '', row);
                     if (prepared) comments.push(prepared);
                 });
             }
@@ -3661,27 +3765,74 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
 
             for (const dateKey in gemaBazaDanych) {
                 const parsedDate = parseDateKey(dateKey);
-                if (!parsedDate || parsedDate.getFullYear() !== currentYear || parsedDate.getMonth() !== currentMonth) continue;
+                if (!parsedDate || parsedDate < rollingStartDate || parsedDate > rollingEndDate) continue;
 
                 const rec = gemaBazaDanych[dateKey];
-                const prepared = buildVisibleComment(dateKey, rec && rec.notes ? String(rec.notes) : '');
+                const prepared = buildVisibleComment(dateKey, rec && rec.notes ? String(rec.notes) : '', rec || {});
                 if (prepared) comments.push(prepared);
             }
         }
 
-        // Najnowsze jako pierwsze — TOP 5 pokazuje 5 ostatnich skategoryzowanych zakłóceń tylko z wybranego miesiąca.
         comments.sort((a, b) => b.date - a.date);
 
         if (window.commentsMode === 'top5') {
-            comments = comments.slice(0, 5);
+            // V28: TOP 5 = najważniejsze zdarzenia, nie najnowsze 5 wpisów.
+            // Score łączy łączny czas przestoju i powtarzalność mikroprzestojów.
+            const grouped = {};
+            comments.forEach(function(comment) {
+                const key = comment.category + '|' + (normalizeIncidentKeyLocal(comment.text) || comment.category.toLowerCase());
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        dateKey: comment.dateKey,
+                        date: comment.date,
+                        category: comment.category,
+                        text: comment.text,
+                        note: comment.note,
+                        minutes: 0,
+                        count: 0,
+                        start: comment.start || '',
+                        end: comment.end || '',
+                        status: comment.status || comment.note || '',
+                        oeeArea: comment.oeeArea,
+                        examples: []
+                    };
+                }
+                const row = grouped[key];
+                row.minutes += parseNumberLocal(comment.minutes);
+                row.count += 1;
+                row.examples.push(comment);
+                if (comment.date > row.date) {
+                    row.dateKey = comment.dateKey;
+                    row.date = comment.date;
+                    row.text = comment.text;
+                    row.note = comment.note;
+                    row.start = comment.start || row.start;
+                    row.end = comment.end || row.end;
+                    row.status = comment.status || row.status;
+                }
+            });
+
+            comments = Object.keys(grouped).map(function(key) {
+                const row = grouped[key];
+                row.minutes = Math.round(row.minutes);
+                row.score = row.minutes + (row.count * 5);
+                row.isTopAggregate = true;
+                return row;
+            }).sort(function(a, b) {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.minutes !== a.minutes) return b.minutes - a.minutes;
+                if (b.count !== a.count) return b.count - a.count;
+                return b.date - a.date;
+            }).slice(0, 5);
         }
 
         if (comments.length === 0) {
-            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w wybranym okresie.</div>`;
+            listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
+            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w ostatnich 30 dniach.</div>`;
             return;
         }
 
-        comments.forEach(function(comment) {
+        comments.forEach(function(comment, index) {
             const item = document.createElement('div');
             item.className = 'comment-box-item';
 
@@ -3690,12 +3841,24 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
             const category = comment.category || "Inne";
             const catStyle = getCommentCategoryStyle(category);
             const icon = KATEGORIE_IKON[category] || KATEGORIE_IKON["Inne"] || "⚠️";
-            const cleanNote = comment.text || '';
+            const cleanNote = compactTextLocal(comment.text || '', window.commentsMode === 'top5' ? 58 : 120);
+            const minutes = Math.round(parseNumberLocal(comment.minutes));
+            const durationText = minutes > 0 ? `${minutes} min` : 'czas n/d';
+            const countText = comment.count > 1 ? ` / ${comment.count}x` : '';
+            const timeText = (comment.start || comment.end) ? ` • ${comment.start || '?'}–${comment.end || '?'}` : '';
+            const statusText = compactTextLocal(comment.status || comment.note || '', 80);
 
             item.style.borderLeftColor = catStyle.border;
-            const iconHtml = `<span class="comment-box-icon" title="${category}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${icon} ${category}</span>`;
+            const iconHtml = `<span class="comment-box-icon" title="${escapeHtmlLocal(category)}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${icon} ${escapeHtmlLocal(category)}</span>`;
 
-            item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${cleanNote}</span>`;
+            if (window.commentsMode === 'top5') {
+                const rank = index + 1;
+                item.title = `${rank}. ${comment.text} | ${durationText}${countText} | Status/działanie: ${statusText}`;
+                item.innerHTML = `<span class="comment-box-date">#${rank} ${fullDateStr}</span> – ${iconHtml} <span><strong>${escapeHtmlLocal(cleanNote)}</strong> — ${escapeHtmlLocal(durationText + countText)}</span>`;
+            } else {
+                item.title = `${fullDateStr}${timeText} | ${category} | ${durationText} | ${statusText}`;
+                item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${escapeHtmlLocal(cleanNote)}${minutes > 0 ? ' — ' + escapeHtmlLocal(durationText) : ''}</span>`;
+            }
             listContainer.appendChild(item);
         });
     }
