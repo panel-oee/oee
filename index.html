@@ -2514,6 +2514,160 @@ html[data-theme="light"] body.v4-dashboard .v4-selected-oee strong {
   .fullscreen-btn { width: 100% !important; height: 44px !important; font-size: 15px !important; }
 }
 </style>
+
+<style>
+/* RESPONSIVE COMMENTS FIT COPILOT V1
+   Naprawa obcinania panelu "Ostatnie zakłócenia" na TV/laptopach.
+   Panel dolny używa realnej dostępnej wysokości, a lista ma własny scroll zamiast wychodzić pod ekran. */
+@media (min-width: 1200px) {
+  html,
+  body {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  body.v4-dashboard {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  body.v4-dashboard .container {
+    height: calc(100vh - 16px) !important;
+    min-height: 0 !important;
+    max-height: calc(100vh - 16px) !important;
+    overflow: hidden !important;
+  }
+
+  body.v4-dashboard .header-container {
+    flex: 0 0 auto !important;
+  }
+
+  .v4-shell {
+    min-height: 0 !important;
+    height: auto !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    grid-template-rows: minmax(86px, 10vh) minmax(230px, 1fr) minmax(260px, 33vh) !important;
+  }
+
+  .v4-bottom,
+  .v4-calendar-panel,
+  .v4-comments-panel {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .v4-comments-panel {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .v4-comments-panel .v4-panel-head {
+    flex: 0 0 auto !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 0 6px !important;
+  }
+
+  .v4-comments-panel .right-bottom-section,
+  .v4-comments-panel .comments-box-container {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .v4-comments-panel .comments-box-list {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-bottom: 3px !important;
+    scrollbar-width: thin;
+  }
+
+  .v4-comments-panel .comment-box-item {
+    min-height: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (min-width: 1200px) and (max-height: 900px) {
+  .v4-shell {
+    grid-template-rows: minmax(78px, 9.5vh) minmax(220px, 1fr) minmax(250px, 34vh) !important;
+    gap: 7px !important;
+  }
+
+  .v4-comments-panel .v4-panel-head {
+    height: 32px !important;
+    min-height: 32px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .v4-comments-panel .comment-box-item {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    line-height: 1.08 !important;
+  }
+}
+</style>
+<script>
+/* RESPONSIVE COMMENTS FIT COPILOT V1 */
+(function () {
+  function fitCommentsPanel() {
+    const panel = document.querySelector('.v4-comments-panel');
+    if (!panel) return;
+
+    const head = panel.querySelector('.v4-panel-head');
+    const section = panel.querySelector('.right-bottom-section');
+    const container = panel.querySelector('.comments-box-container');
+    const list = panel.querySelector('.comments-box-list');
+    if (!section || !container || !list) return;
+
+    const panelHeight = panel.clientHeight || panel.getBoundingClientRect().height || 0;
+    const headHeight = head ? (head.getBoundingClientRect().height || head.offsetHeight || 0) : 0;
+    const gap = 10;
+    const available = Math.max(90, Math.floor(panelHeight - headHeight - gap));
+
+    section.style.height = available + 'px';
+    section.style.minHeight = '0';
+    section.style.overflow = 'hidden';
+
+    container.style.height = available + 'px';
+    container.style.minHeight = '0';
+    container.style.overflow = 'hidden';
+
+    list.style.height = available + 'px';
+    list.style.minHeight = '0';
+    list.style.maxHeight = available + 'px';
+    list.style.overflowY = 'auto';
+    list.style.overflowX = 'hidden';
+    list.style.paddingBottom = '4px';
+  }
+
+  function scheduleFit() {
+    window.clearTimeout(window.__commentsFitTimer);
+    window.__commentsFitTimer = window.setTimeout(fitCommentsPanel, 60);
+  }
+
+  window.addEventListener('load', scheduleFit);
+  window.addEventListener('resize', scheduleFit);
+  window.addEventListener('orientationchange', scheduleFit);
+  document.addEventListener('DOMContentLoaded', scheduleFit);
+  document.addEventListener('click', function (event) {
+    if (event.target.closest('.calendar-cell,#commentsTop5Btn,#commentsAllBtn,.calendar-nav-btn')) scheduleFit();
+  });
+  window.setInterval(fitCommentsPanel, 5000);
+})();
+</script>
 </head>
 <body>
 <div class="container">
