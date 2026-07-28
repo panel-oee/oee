@@ -2376,8 +2376,12 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 }
 
 
-/* V25: wyłączone wyświetlanie przerw i zadań 6S — reszta bez zmian */
-#breakOverlay, #sixsTvBox { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+/* FIX V29: przerwy i zadania 6S odblokowane.
+   Domyślnie ukryte, ale JavaScript pokazuje je klasą .show. */
+#breakOverlay { display:none; visibility:hidden; pointer-events:none; }
+#breakOverlay.show { display:flex; visibility:visible; pointer-events:auto; }
+#sixsTvBox { display:none; visibility:hidden; pointer-events:none; }
+#sixsTvBox.show { display:block; visibility:visible; pointer-events:auto; }
 
 /* V26: ukrycie powtórzonego oznaczenia 45% po lewej stronie wykresu.
    Prawa etykieta .v6-critical-label pozostaje widoczna. */
@@ -2916,8 +2920,43 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
     function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
     function loadBreakScheduleFromLocalStorage(){try{const saved=localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes'),10)||5));if(saved){const p=JSON.parse(saved);if(Array.isArray(p)&&p.length){BREAK_SCHEDULE=p.map(normalizeBreakItem);return;}}}catch(e){console.warn('Błąd lokalnej konfiguracji przerw:',e.message);}BREAK_SCHEDULE=JSON.parse(JSON.stringify(DEFAULT_BREAK_SCHEDULE)).map(normalizeBreakItem);}
-    async function loadBreakScheduleFromSupabase(){try{const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();if(error)throw error;if(data&&Array.isArray(data.schedule)){BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));setupBreakScheduleAutoRefresh();}}catch(e){console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);loadBreakScheduleFromLocalStorage();setupBreakScheduleAutoRefresh();}}
+    async function loadBreakScheduleFromSupabase(){
+        try{
+            const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();
+            if(error)throw error;
+            if(data&&Array.isArray(data.schedule)){
+                BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
+                BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
+                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
+                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
+                setupBreakScheduleAutoRefresh();
+                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+                console.log('Pobrano harmonogram przerw z Supabase:', BREAK_SCHEDULE.length, 'poz.');
+            }else{
+                loadBreakScheduleFromLocalStorage();
+                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+            }
+        }catch(e){
+            console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);
+            loadBreakScheduleFromLocalStorage();
+            setupBreakScheduleAutoRefresh();
+            if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+        }
+    }
     function setupBreakScheduleAutoRefresh(){if(breakScheduleRefreshTimer)clearInterval(breakScheduleRefreshTimer);breakScheduleRefreshTimer=setInterval(loadBreakScheduleFromSupabase,Math.max(1,Math.min(60,BREAK_REFRESH_MINUTES))*60*1000);}
+    let breakScheduleRealtimeChannel=null;
+    function setupBreakScheduleRealtime(){
+        try{
+            if(breakScheduleRealtimeChannel||!supabaseClient||typeof supabaseClient.channel!=='function')return;
+            breakScheduleRealtimeChannel=supabaseClient
+                .channel('break_schedule_config_watch')
+                .on('postgres_changes',{event:'*',schema:'public',table:'break_schedule_config',filter:'id=eq.1'},function(){
+                    console.log('Zmiana harmonogramu przerw w Supabase - odświeżam index2.');
+                    loadBreakScheduleFromSupabase();
+                })
+                .subscribe();
+        }catch(e){console.warn('Realtime Supabase dla przerw niedostępny:',e.message);}
+    }
 
     function prepareBreakAudio() {
         // TV-compatible preparation: use normal HTML <audio> first.
@@ -3072,8 +3111,85 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
     let SIXS_TV_CACHE = { key:'', tasks:[], logs:{}, lastFetch:0 };
     function sixsTvHide(){const box=document.getElementById('sixsTvBox');if(box)box.classList.remove('show');}
     function sixsTvStatusIcon(status){return status==='done'?'✅':(status==='skipped'?'⏭️':(status==='problem'?'⚠️':'⬜'));}
-    function sixsTvRender(){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');if(!box||!list||!prog)return;const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};if(!tasks.length){list.innerHTML='';prog.textContent='0/0 wykonane';if(meta)meta.textContent='Brak zadań przypisanych w tym momencie.';box.classList.remove('show');return;}const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;const marked=tasks.filter(t=>logs[t.id]&&logs[t.id].status).length;prog.textContent=done+'/'+tasks.length+' wykonane';list.innerHTML=tasks.map(t=>{const l=logs[t.id]||{},st=l.status||'';const operatorText=l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':st==='problem'?'problem':'oczekuje'):'przypisane';return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+t.task_name+'<div class="sixs-tv-meta">'+operatorText+'</div></span></div>';}).join('');if(meta)meta.textContent='Odkliknięto: '+marked+'/'+tasks.length+' • operator_6s.html';box.classList.add('show');}
-    async function sixsTvUpdate(timing, now){if(!timing||timing.kind!=='6S'){sixsTvHide();return;}const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();const key=logDate+'|'+shift+'|'+start;const age=Date.now()-SIXS_TV_CACHE.lastFetch;if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}try{const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);if(logsRes.error)throw logsRes.error;const assignedLogs=(logsRes.data||[]).filter(l=>l&&l.task_id!=null&&(l.operator_id!=null||String(l.operator_name||'').trim()!==''));if(!assignedLogs.length){SIXS_TV_CACHE={key,tasks:[],logs:{},lastFetch:Date.now()};sixsTvRender();return;}const taskIds=[...new Set(assignedLogs.map(l=>l.task_id).filter(v=>v!=null))];const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').in('id',taskIds).eq('active',true).order('sort_order');if(tasksRes.error)throw tasksRes.error;const logs={};assignedLogs.forEach(l=>logs[l.task_id]=l);const tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&(!Array.isArray(t.days)||t.days.includes(dow))&&logs[t.id]);SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};sixsTvRender();}catch(e){const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList');if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać zadań 6S: '+e.message+'</div>';box.classList.add('show');}}}
+    function sixsTvRender(){
+        const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');
+        if(!box||!list||!prog)return;
+        const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};
+        if(!tasks.length){list.innerHTML='';prog.textContent='0/0 wykonane';if(meta)meta.textContent='Brak aktywnych zadań 6S dla tej przerwy.';box.classList.remove('show');return;}
+        const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;
+        const marked=tasks.filter(t=>logs[t.id]&&logs[t.id].status).length;
+        prog.textContent=done+'/'+tasks.length+' wykonane';
+        list.innerHTML=tasks.map(t=>{
+            const l=logs[t.id]||{},st=l.status||'';
+            const assignedNames=Array.isArray(t.assigned_operator_names)&&t.assigned_operator_names.length?t.assigned_operator_names.join(', '):'';
+            const operatorText=l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':st==='problem'?'problem':'oczekuje'):(assignedNames?'przypisane: '+assignedNames:'aktywne zadanie');
+            return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+escapeHtml(t.task_name||'Zadanie 6S')+'<div class="sixs-tv-meta">'+escapeHtml(operatorText)+'</div></span></div>';
+        }).join('');
+        if(meta)meta.textContent='Status: '+marked+'/'+tasks.length+' oznaczonych • operator_6s.html';
+        box.classList.add('show');
+    }
+    async function sixsTvUpdate(timing, now){
+        if(!timing||timing.kind!=='6S'){sixsTvHide();return;}
+        const logDate=formatDateKey(now),shift=timing.shift||'all',start=timing.start,dow=now.getDay();
+        const key=logDate+'|'+shift+'|'+start;
+        const age=Date.now()-SIXS_TV_CACHE.lastFetch;
+        if(SIXS_TV_CACHE.key===key&&age<12000){sixsTvRender();return;}
+        try{
+            const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');
+            if(tasksRes.error)throw tasksRes.error;
+            let tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(start))&&(!Array.isArray(t.days)||t.days.includes(dow)));
+            const taskIds=[...new Set(tasks.map(t=>t.id).filter(v=>v!=null))];
+            let assignedByTask={};
+            if(taskIds.length){
+                try{
+                    const assRes=await supabaseClient.from('sixs_operator_task_assignments').select('task_id,operator_id,active').in('task_id',taskIds).eq('active',true);
+                    if(!assRes.error){
+                        const assignments=assRes.data||[];
+                        const operatorIds=[...new Set(assignments.map(a=>a.operator_id).filter(v=>v!=null))];
+                        let names={};
+                        if(operatorIds.length){
+                            const opRes=await supabaseClient.from('sixs_operators').select('id,operator_name,active').in('id',operatorIds);
+                            if(!opRes.error)(opRes.data||[]).forEach(o=>{if(o.active!==false)names[o.id]=o.operator_name;});
+                        }
+                        assignments.forEach(a=>{if(names[a.operator_id]){(assignedByTask[a.task_id]=assignedByTask[a.task_id]||[]).push(names[a.operator_id]);}});
+                    }
+                }catch(_assignErr){console.warn('Nie pobrano przypisań 6S:',_assignErr.message);}
+            }
+            tasks=tasks.map(t=>Object.assign({},t,{assigned_operator_names:assignedByTask[t.id]||[]}));
+            let logs={};
+            try{
+                const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);
+                if(!logsRes.error){
+                    (logsRes.data||[]).forEach(l=>{
+                        if(l&&l.task_id!=null){
+                            const prev=logs[l.task_id];
+                            if(!prev||String(l.updated_at||l.created_at||'')>String(prev.updated_at||prev.created_at||''))logs[l.task_id]=l;
+                        }
+                    });
+                }
+            }catch(_logsErr){console.warn('Nie pobrano logów 6S:',_logsErr.message);}
+            SIXS_TV_CACHE={key,tasks,logs,lastFetch:Date.now()};
+            sixsTvRender();
+        }catch(e){
+            const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList');
+            if(box&&list){list.innerHTML='<div class="sixs-tv-task problem">Nie udało się pobrać zadań 6S: '+escapeHtml(e.message)+'</div>';box.classList.add('show');}
+        }
+    }
+
+
+    const getBreakTimingInfoOriginalForTest = getBreakTimingInfo;
+    getBreakTimingInfo = function(now){
+        try{
+            const p=new URLSearchParams(window.location.search);
+            if(p.get('testBreak')==='1'||p.get('testSixs')==='1'){
+                const kind=p.get('testSixs')==='1'?'6S':'main';
+                const shift=p.get('shift')||'1';
+                const start=timeTextFromMinutes(now.getHours()*60+now.getMinutes());
+                return {start:start,end:timeTextFromMinutes(now.getHours()*60+now.getMinutes()+15),durationMinutes:15,kind:kind,shift:shift,title:kind==='6S'?'CZAS 6S TEST':'PRZERWA TEST',subtitle:kind==='6S'?'Test zadań 6S — do końca pozostało:':'Test przerwy — do końca pozostało:',soundType:'none',customSoundUrl:'',customSoundName:'',startSeconds:now.getHours()*3600+now.getMinutes()*60,endSeconds:now.getHours()*3600+now.getMinutes()*60+900,currentSeconds:now.getHours()*3600+now.getMinutes()*60+now.getSeconds(),remainingSeconds:900-now.getSeconds(),isAlertWindow:false,isBreakWindow:true};
+            }
+        }catch(e){}
+        return getBreakTimingInfoOriginalForTest(now);
+    }
 
     function updateBreakOverlay() {
         const overlay = document.getElementById('breakOverlay');
@@ -3129,7 +3245,11 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         console.log('Domyślny wybrany dzień roboczy:', selectedDayGlobal);
         currentYear = parseDateKey(selectedDayGlobal).getFullYear();
         currentMonth = parseDateKey(selectedDayGlobal).getMonth();
-        setupBreakScheduleAutoRefresh();
+        await loadBreakScheduleFromSupabase();
+        setupBreakScheduleRealtime();
+        updateBreakOverlay();
+        if(window.__breakOverlayTickTimer) clearInterval(window.__breakOverlayTickTimer);
+        window.__breakOverlayTickTimer = setInterval(updateBreakOverlay, 1000);
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
         try {
