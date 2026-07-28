@@ -3115,7 +3115,13 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         const box=document.getElementById('sixsTvBox'),list=document.getElementById('sixsTvList'),prog=document.getElementById('sixsTvProgress'),meta=document.getElementById('sixsTvMeta');
         if(!box||!list||!prog)return;
         const tasks=SIXS_TV_CACHE.tasks||[],logs=SIXS_TV_CACHE.logs||{};
-        if(!tasks.length){list.innerHTML='';prog.textContent='0/0 wykonane';if(meta)meta.textContent='Brak aktywnych zadań 6S dla tej przerwy.';box.classList.remove('show');return;}
+        if(!tasks.length){
+            prog.textContent='0/0 wykonane';
+            list.innerHTML='<div class="sixs-tv-task problem"><span class="sixs-tv-icon">ℹ️</span><span>Brak aktywnych zadań 6S dla tej przerwy<div class="sixs-tv-meta">Sprawdź config_6s.html: zmiana, godzina startu 6S, dni tygodnia i status zadania.</div></span></div>';
+            if(meta)meta.textContent='Panel 6S działa, ale nie znaleziono zadań pasujących do tej przerwy.';
+            box.classList.add('show');
+            return;
+        }
         const done=tasks.filter(t=>logs[t.id]&&logs[t.id].status==='done').length;
         const marked=tasks.filter(t=>logs[t.id]&&logs[t.id].status).length;
         prog.textContent=done+'/'+tasks.length+' wykonane';
@@ -3125,7 +3131,10 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             const operatorText=l.operator_name?l.operator_name+' / '+(st==='done'?'wykonane':st==='skipped'?'pominięte':st==='problem'?'problem':'oczekuje'):(assignedNames?'przypisane: '+assignedNames:'aktywne zadanie');
             return '<div class="sixs-tv-task '+st+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span>'+escapeHtml(t.task_name||'Zadanie 6S')+'<div class="sixs-tv-meta">'+escapeHtml(operatorText)+'</div></span></div>';
         }).join('');
-        if(meta)meta.textContent='Status: '+marked+'/'+tasks.length+' oznaczonych • operator_6s.html';
+        if(meta){
+            const fallback=(tasks[0]&&tasks[0]._fallbackMode&&tasks[0]._fallbackMode!=='exact')?' • dopasowanie awaryjne: '+tasks[0]._fallbackMode:'';
+            meta.textContent='Status: '+marked+'/'+tasks.length+' oznaczonych • operator_6s.html'+fallback;
+        }
         box.classList.add('show');
     }
     async function sixsTvUpdate(timing, now){
@@ -3137,7 +3146,22 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         try{
             const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');
             if(tasksRes.error)throw tasksRes.error;
-            let tasks=(tasksRes.data||[]).filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(start))&&(!Array.isArray(t.days)||t.days.includes(dow)));
+            const allActiveTasks=(tasksRes.data||[]);
+            let tasks=allActiveTasks.filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(start))&&(!Array.isArray(t.days)||t.days.includes(dow)));
+            let tasksFallbackMode='exact';
+            if(!tasks.length){
+                tasks=allActiveTasks.filter(t=>(t.shift==='all'||String(t.shift)===String(shift))&&(!Array.isArray(t.days)||t.days.includes(dow)));
+                tasksFallbackMode='shift_any_start';
+            }
+            if(!tasks.length){
+                tasks=allActiveTasks.filter(t=>(t.shift==='all'||String(t.shift)===String(shift)));
+                tasksFallbackMode='shift_ignore_days';
+            }
+            if(!tasks.length){
+                tasks=allActiveTasks.filter(t=>!Array.isArray(t.days)||t.days.includes(dow));
+                tasksFallbackMode='all_shifts_today';
+            }
+            tasks=tasks.map(t=>Object.assign({},t,{_fallbackMode:tasksFallbackMode}));
             const taskIds=[...new Set(tasks.map(t=>t.id).filter(v=>v!=null))];
             let assignedByTask={};
             if(taskIds.length){
@@ -3203,6 +3227,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         const timing = getBreakTimingInfo(now);
         if (!timing) {
             overlay.classList.remove('show');
+            sixsTvHide();
             return;
         }
 
