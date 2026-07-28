@@ -2385,6 +2385,9 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   display:none !important;
 }
 
+/* V28: etykiety linii celu/krytycznej bez chwilowego tekstu CEL/KRYTYCZNY */
+.v6-target-label,.v6-critical-label{white-space:nowrap!important;}
+
 
 
 /* V29 - poprawki TOP 5 / Wszystkie
@@ -4139,11 +4142,11 @@ function buildCalendar() {
 
       const targetLine=grid.querySelector('.chart-target-guide');
       if(targetLine && !targetLine.querySelector('.v6-target-label')){
-        const n=document.createElement('span');n.className='v6-target-label';n.textContent='CEL '+target+'%';targetLine.appendChild(n);
+        const n=document.createElement('span');n.className='v6-target-label';n.textContent=target+'%';targetLine.appendChild(n);
       }
       const criticalLine=grid.querySelector('.chart-critical-guide');
       if(criticalLine && !criticalLine.querySelector('.v6-critical-label')){
-        const n=document.createElement('span');n.className='v6-critical-label';n.textContent='KRYTYCZNY '+critical+'%';criticalLine.appendChild(n);
+        const n=document.createElement('span');n.className='v6-critical-label';n.textContent=critical+'%';criticalLine.appendChild(n);
       }
 
       const wrappers=[...grid.querySelectorAll('.chart-css-bar-wrapper')];
