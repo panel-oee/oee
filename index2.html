@@ -2376,17 +2376,40 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 }
 
 
-/* V25 FIX SUPABASE: przerwy i 6S są sterowane harmonogramem z Supabase.
-   Domyślnie ukryte, ale JavaScript może je pokazać klasą .show. */
-#breakOverlay { display:none; visibility:hidden; pointer-events:none; }
-#breakOverlay.show { display:flex; visibility:visible; pointer-events:auto; }
-#sixsTvBox { display:none; visibility:hidden; pointer-events:none; }
-#sixsTvBox.show { display:block; visibility:visible; pointer-events:auto; }
+/* V25: wyłączone wyświetlanie przerw i zadań 6S — reszta bez zmian */
+#breakOverlay, #sixsTvBox { display:none !important; visibility:hidden !important; pointer-events:none !important; }
 
 /* V26: ukrycie powtórzonego oznaczenia 45% po lewej stronie wykresu.
    Prawa etykieta .v6-critical-label pozostaje widoczna. */
 .v4-chart-panel .chart-critical-guide > .chart-line-label {
   display:none !important;
+}
+
+
+
+/* V29 - poprawki TOP 5 / Wszystkie
+   - TOP 5 bez dodatkowej linii typu "Dostepnosc - ... • godziny"
+   - Wszystkie: lista elastyczna, z dolnym odstepem, zeby ostatni wpis nie byl ucinany przy scrollu
+*/
+.v4-comments-panel .comments-box-list[data-mode="all"]{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-rows:none!important;
+  gap:6px!important;
+  overflow-y:auto!important;
+  padding-bottom:18px!important;
+  scroll-padding-bottom:18px!important;
+}
+.v4-comments-panel .comments-box-list[data-mode="all"] .comment-box-item{
+  flex:0 0 auto!important;
+  min-height:38px!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+@media(max-width:700px){
+  .v4-comments-panel .comments-box-list[data-mode="all"]{
+    padding-bottom:22px!important;
+  }
 }
 
 </style>
@@ -2890,40 +2913,8 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
     function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
     function loadBreakScheduleFromLocalStorage(){try{const saved=localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes'),10)||5));if(saved){const p=JSON.parse(saved);if(Array.isArray(p)&&p.length){BREAK_SCHEDULE=p.map(normalizeBreakItem);return;}}}catch(e){console.warn('Błąd lokalnej konfiguracji przerw:',e.message);}BREAK_SCHEDULE=JSON.parse(JSON.stringify(DEFAULT_BREAK_SCHEDULE)).map(normalizeBreakItem);}
-    async function loadBreakScheduleFromSupabase(){
-        try{
-            const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();
-            if(error)throw error;
-            if(data&&Array.isArray(data.schedule)){
-                BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
-                BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
-                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
-                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
-                setupBreakScheduleAutoRefresh();
-                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
-                console.log('Pobrano harmonogram przerw z Supabase:', BREAK_SCHEDULE.length, 'poz.');
-            }
-        }catch(e){
-            console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);
-            loadBreakScheduleFromLocalStorage();
-            setupBreakScheduleAutoRefresh();
-            if(typeof updateBreakOverlay==='function') updateBreakOverlay();
-        }
-    }
+    async function loadBreakScheduleFromSupabase(){try{const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();if(error)throw error;if(data&&Array.isArray(data.schedule)){BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));setupBreakScheduleAutoRefresh();}}catch(e){console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);loadBreakScheduleFromLocalStorage();setupBreakScheduleAutoRefresh();}}
     function setupBreakScheduleAutoRefresh(){if(breakScheduleRefreshTimer)clearInterval(breakScheduleRefreshTimer);breakScheduleRefreshTimer=setInterval(loadBreakScheduleFromSupabase,Math.max(1,Math.min(60,BREAK_REFRESH_MINUTES))*60*1000);}
-    let breakScheduleRealtimeChannel=null;
-    function setupBreakScheduleRealtime(){
-        try{
-            if(breakScheduleRealtimeChannel||!supabaseClient||typeof supabaseClient.channel!=='function')return;
-            breakScheduleRealtimeChannel=supabaseClient
-                .channel('break_schedule_config_watch')
-                .on('postgres_changes',{event:'*',schema:'public',table:'break_schedule_config',filter:'id=eq.1'},function(){
-                    console.log('Zmiana harmonogramu przerw w Supabase - odświeżam TV.');
-                    loadBreakScheduleFromSupabase();
-                })
-                .subscribe();
-        }catch(e){console.warn('Realtime Supabase dla przerw niedostępny:',e.message);}
-    }
 
     function prepareBreakAudio() {
         // TV-compatible preparation: use normal HTML <audio> first.
@@ -3135,11 +3126,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
         console.log('Domyślny wybrany dzień roboczy:', selectedDayGlobal);
         currentYear = parseDateKey(selectedDayGlobal).getFullYear();
         currentMonth = parseDateKey(selectedDayGlobal).getMonth();
-        await loadBreakScheduleFromSupabase();
-        setupBreakScheduleRealtime();
-        updateBreakOverlay();
-        if(window.__breakOverlayTickTimer) clearInterval(window.__breakOverlayTickTimer);
-        window.__breakOverlayTickTimer = setInterval(updateBreakOverlay, 1000);
+        setupBreakScheduleAutoRefresh();
         updateHeaderClock();
         setInterval(updateHeaderClock, 1000);
         try {
@@ -3308,6 +3295,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             btnTop.id = 'commentsTop5Btn';
             btnTop.type = 'button';
             btnTop.innerText = 'TOP 5';
+            btnTop.title = '5 najważniejszych zakłóceń z ostatnich 30 dni: czas przestoju + powtarzalność';
             btnTop.style.padding = '4px 12px';
             btnTop.style.borderRadius = '6px';
             btnTop.style.border = '1px solid var(--border-color)';
@@ -3321,6 +3309,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             btnAll.id = 'commentsAllBtn';
             btnAll.type = 'button';
             btnAll.innerText = 'Wszystkie';
+            btnAll.title = 'Wszystkie zakłócenia z ostatnich 30 dni';
             btnAll.style.padding = '4px 12px';
             btnAll.style.borderRadius = '6px';
             btnAll.style.border = '1px solid var(--border-color)';
@@ -3348,12 +3337,21 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             activeStyle(btnAll, window.commentsMode === 'all');
         }
 
+        listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
         listContainer.innerHTML = '';
 
         let comments = [];
 
-        const notesStart = formatDateKey(new Date(currentYear, currentMonth, 1));
-        const notesEnd = formatDateKey(new Date(currentYear, currentMonth + 1, 0));
+        // V28: Ostatnie zakłócenia pokazują zakres kroczący 30 dni wstecz,
+        // a nie wyłącznie bieżący miesiąc kalendarzowy.
+        const rollingEndDate = new Date();
+        rollingEndDate.setHours(23, 59, 59, 999);
+        const rollingStartDate = new Date(rollingEndDate);
+        rollingStartDate.setDate(rollingStartDate.getDate() - 30);
+        rollingStartDate.setHours(0, 0, 0, 0);
+        const notesStart = formatDateKey(rollingStartDate);
+        const notesEnd = formatDateKey(rollingEndDate);
+
         const visibleLossCategories = [
             "Zmiana koloru",
             "Przemalowanie",
@@ -3365,7 +3363,59 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             "Inne"
         ];
 
-        function buildVisibleComment(dateKey, rawNote) {
+        function escapeHtmlLocal(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function parseNumberLocal(value) {
+            const parsed = parseFloat(String(value == null ? '' : value).replace(',', '.'));
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function compactTextLocal(value, maxLen) {
+            const text = String(value || '').replace(/\s+/g, ' ').trim();
+            if (!maxLen || text.length <= maxLen) return text;
+            return text.slice(0, maxLen - 1).trim() + '…';
+        }
+
+        function normalizeIncidentKeyLocal(text) {
+            return String(text || '')
+                .toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\b\d{1,2}[.:]\d{2}\b/g, '')
+                .replace(/\b\d+\s*(min|m|h|godz)\b/g, '')
+                .replace(/\b\d+[a-z]?\b/g, '')
+                .replace(/[^a-z0-9ąćęłńóśźż\s]/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function categoryOeeAreaLocal(category) {
+            if (category === 'Brak proszku') return 'Dostępność – brak surowca';
+            if (category === 'Serwis') return 'Dostępność – serwis';
+            if (category === 'Awaria maszyny' || category === 'Usterka maszyny') return 'Dostępność – awaria techniczna';
+            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return 'Dostępność – przezbrojenie/czyszczenie';
+            return 'OEE – inne zakłócenie';
+        }
+
+        function calculateIncidentMinutesLocal(category, source) {
+            source = source || {};
+            const breakdown = parseNumberLocal(source.breakdown);
+            const cleaning = parseNumberLocal(source.cleaning);
+            const service = parseNumberLocal(source.service);
+
+            if (category === 'Serwis') return service || breakdown || cleaning || 0;
+            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return cleaning || breakdown || service || 0;
+            if (category === 'Awaria maszyny' || category === 'Usterka maszyny' || category === 'Brak proszku' || category === 'Inne') return breakdown || service || cleaning || 0;
+            return breakdown || service || cleaning || 0;
+        }
+
+        function buildVisibleComment(dateKey, rawNote, sourceRow) {
             const cleanedNote = stripChangeoverMarker(rawNote || '').trim();
             if (!cleanedNote) return null;
 
@@ -3377,20 +3427,34 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             let text = cleanedNote;
             const match = cleanedNote.match(/\[(.*?)\]/);
             if (match) text = cleanedNote.replace(match[0], '').trim();
+            text = text || category;
+
+            const parsedDate = parseDateKey(dateKey);
+            if (!parsedDate || parsedDate < rollingStartDate || parsedDate > rollingEndDate) return null;
+
+            const minutes = calculateIncidentMinutesLocal(category, sourceRow || {});
+            const startValue = (sourceRow && (sourceRow.h_start || sourceRow.hStart || sourceRow.start || sourceRow.start_time)) || '';
+            const endValue = (sourceRow && (sourceRow.h_end || sourceRow.hEnd || sourceRow.end || sourceRow.end_time)) || '';
 
             return {
                 dateKey: dateKey,
-                date: parseDateKey(dateKey),
+                date: parsedDate,
                 note: cleanedNote,
                 category: category,
-                text: text
+                text: text,
+                minutes: minutes,
+                count: 1,
+                start: startValue,
+                end: endValue,
+                status: cleanedNote,
+                oeeArea: categoryOeeAreaLocal(category)
             };
         }
 
         try {
             const { data, error } = await supabaseClient
                 .from('oee_reports')
-                .select('date, notes')
+                .select('date, notes, breakdown, cleaning, service, h_start, h_end')
                 .gte('date', notesStart)
                 .lte('date', notesEnd)
                 .order('date', { ascending: false });
@@ -3399,7 +3463,7 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
             if (data) {
                 data.forEach(function(row) {
-                    const prepared = buildVisibleComment(row.date, row.notes ? String(row.notes) : '');
+                    const prepared = buildVisibleComment(row.date, row.notes ? String(row.notes) : '', row);
                     if (prepared) comments.push(prepared);
                 });
             }
@@ -3408,27 +3472,74 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
 
             for (const dateKey in gemaBazaDanych) {
                 const parsedDate = parseDateKey(dateKey);
-                if (!parsedDate || parsedDate.getFullYear() !== currentYear || parsedDate.getMonth() !== currentMonth) continue;
+                if (!parsedDate || parsedDate < rollingStartDate || parsedDate > rollingEndDate) continue;
 
                 const rec = gemaBazaDanych[dateKey];
-                const prepared = buildVisibleComment(dateKey, rec && rec.notes ? String(rec.notes) : '');
+                const prepared = buildVisibleComment(dateKey, rec && rec.notes ? String(rec.notes) : '', rec || {});
                 if (prepared) comments.push(prepared);
             }
         }
 
-        // Najnowsze jako pierwsze — TOP 5 pokazuje 5 ostatnich skategoryzowanych zakłóceń tylko z wybranego miesiąca.
         comments.sort((a, b) => b.date - a.date);
 
         if (window.commentsMode === 'top5') {
-            comments = comments.slice(0, 5);
+            // V28: TOP 5 = najważniejsze zdarzenia, nie najnowsze 5 wpisów.
+            // Score łączy łączny czas przestoju i powtarzalność mikroprzestojów.
+            const grouped = {};
+            comments.forEach(function(comment) {
+                const key = comment.category + '|' + (normalizeIncidentKeyLocal(comment.text) || comment.category.toLowerCase());
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        dateKey: comment.dateKey,
+                        date: comment.date,
+                        category: comment.category,
+                        text: comment.text,
+                        note: comment.note,
+                        minutes: 0,
+                        count: 0,
+                        start: comment.start || '',
+                        end: comment.end || '',
+                        status: comment.status || comment.note || '',
+                        oeeArea: comment.oeeArea,
+                        examples: []
+                    };
+                }
+                const row = grouped[key];
+                row.minutes += parseNumberLocal(comment.minutes);
+                row.count += 1;
+                row.examples.push(comment);
+                if (comment.date > row.date) {
+                    row.dateKey = comment.dateKey;
+                    row.date = comment.date;
+                    row.text = comment.text;
+                    row.note = comment.note;
+                    row.start = comment.start || row.start;
+                    row.end = comment.end || row.end;
+                    row.status = comment.status || row.status;
+                }
+            });
+
+            comments = Object.keys(grouped).map(function(key) {
+                const row = grouped[key];
+                row.minutes = Math.round(row.minutes);
+                row.score = row.minutes + (row.count * 5);
+                row.isTopAggregate = true;
+                return row;
+            }).sort(function(a, b) {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.minutes !== a.minutes) return b.minutes - a.minutes;
+                if (b.count !== a.count) return b.count - a.count;
+                return b.date - a.date;
+            }).slice(0, 5);
         }
 
         if (comments.length === 0) {
-            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w wybranym okresie.</div>`;
+            listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
+            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w ostatnich 30 dniach.</div>`;
             return;
         }
 
-        comments.forEach(function(comment) {
+        comments.forEach(function(comment, index) {
             const item = document.createElement('div');
             item.className = 'comment-box-item';
 
@@ -3437,12 +3548,24 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
             const category = comment.category || "Inne";
             const catStyle = getCommentCategoryStyle(category);
             const icon = KATEGORIE_IKON[category] || KATEGORIE_IKON["Inne"] || "⚠️";
-            const cleanNote = comment.text || '';
+            const cleanNote = compactTextLocal(comment.text || '', window.commentsMode === 'top5' ? 58 : 120);
+            const minutes = Math.round(parseNumberLocal(comment.minutes));
+            const durationText = minutes > 0 ? `${minutes} min` : 'czas n/d';
+            const countText = comment.count > 1 ? ` / ${comment.count}x` : '';
+            const timeText = (comment.start || comment.end) ? ` • ${comment.start || '?'}–${comment.end || '?'}` : '';
+            const statusText = compactTextLocal(comment.status || comment.note || '', 80);
 
             item.style.borderLeftColor = catStyle.border;
-            const iconHtml = `<span class="comment-box-icon" title="${category}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${icon} ${category}</span>`;
+            const iconHtml = `<span class="comment-box-icon" title="${escapeHtmlLocal(category)}" style="background:${catStyle.bg}; border:1px solid ${catStyle.border}; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:0.15px; color:${catStyle.text}; text-transform:uppercase; opacity:1;">${icon} ${escapeHtmlLocal(category)}</span>`;
 
-            item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${cleanNote}</span>`;
+            if (window.commentsMode === 'top5') {
+                const rank = index + 1;
+                item.title = `${rank}. ${comment.text} | ${durationText}${countText} | Status/działanie: ${statusText}`;
+                item.innerHTML = `<span class="comment-box-date">#${rank} ${fullDateStr}</span> – ${iconHtml} <span><strong>${escapeHtmlLocal(cleanNote)}</strong> — ${escapeHtmlLocal(durationText + countText)}</span>`;
+            } else {
+                item.title = `${fullDateStr}${timeText} | ${category} | ${durationText} | ${statusText}`;
+                item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${escapeHtmlLocal(cleanNote)}${minutes > 0 ? ' — ' + escapeHtmlLocal(durationText) : ''}</span>`;
+            }
             listContainer.appendChild(item);
         });
     }
