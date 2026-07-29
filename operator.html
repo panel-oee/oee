@@ -8,7 +8,31 @@ function escHtml(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&qu
 async function loadBreakSchedule(){try{const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule').eq('id',1).single();if(error)throw error;if(data&&Array.isArray(data.schedule)){BREAK_SCHEDULE=data.schedule;localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));return}}catch(e){try{const local=JSON.parse(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY)||'[]');if(local.length)BREAK_SCHEDULE=local}catch(_e){}}}
 async function loadOperators(){const{data,error}=await supabaseClient.from('sixs_operators').select('*').eq('active',true).order('operator_name');if(error)throw error;OPERATORS=data||[];document.getElementById('operatorSelect').innerHTML=OPERATORS.map(o=>`<option value="${o.id}">${o.operator_name}</option>`).join('')}
 function buildSessions(){const d=new Date(document.getElementById('sessionDate').value+'T00:00:00'),dow=dayNum(d);const sessions=BREAK_SCHEDULE.filter(x=>x.enabled!==false&&x.kind==='6S'&&Array.isArray(x.days)&&x.days.includes(dow)).sort((a,b)=>minFromTime(a.start)-minFromTime(b.start));const sel=document.getElementById('sessionSelect');sel.innerHTML=sessions.map(x=>`<option value="${x.shift||'all'}|${x.start}">Zmiana ${x.shift||'all'} / ${x.start} / ${x.durationMinutes||15} min</option>`).join('');if(!sessions.length)sel.innerHTML='<option value="all|00:00">Brak przerwy 6S w tym dniu</option>'}
-function currentSessionAuto(){const now=new Date();document.getElementById('sessionDate').value=dateKey(now);buildSessions();const sel=document.getElementById('sessionSelect'),nowMin=now.getHours()*60+now.getMinutes();let best=Array.from(sel.options)[0];for(const o of Array.from(sel.options)){const m=minFromTime(o.value.split('|')[1]);if(nowMin>=m-2)best=o}if(best)sel.value=best.value}
+function currentSessionAuto(forceToday=true){
+    const now=new Date();
+    const dateEl=document.getElementById('sessionDate');
+    if(forceToday||!dateEl.value)dateEl.value=dateKey(now);
+    buildSessions();
+    selectNearestSessionByClock();
+}
+function selectNearestSessionByClock(){
+    const sel=document.getElementById('sessionSelect');
+    const opts=Array.from(sel.options);
+    if(!opts.length)return;
+    const selectedDate=document.getElementById('sessionDate').value;
+    const now=new Date();
+    const today=dateKey(now);
+    if(selectedDate!==today){sel.value=opts[0].value;return;}
+    const nowMin=now.getHours()*60+now.getMinutes();
+    let best=opts[0],bestDiff=Infinity;
+    for(const o of opts){
+        const start=o.value.split('|')[1];
+        const m=minFromTime(start);
+        const diff=Math.abs(m-nowMin);
+        if(diff<bestDiff){best=o;bestDiff=diff;}
+    }
+    if(best)sel.value=best.value;
+}
 async function loadTasksAndLogs(){
     const opId=document.getElementById('operatorSelect').value;
     const op=OPERATORS.find(o=>String(o.id)===String(opId));
@@ -89,5 +113,5 @@ async function saveSingleTaskStatus(id,status,prevLog){
 }
 function updateSummary(){let d=0,p=0;Object.values(LOGS).forEach(l=>{if(l.status==='done')d++;if(l.status==='problem')p++});document.getElementById('sumDone').textContent='Wykonane: '+d;document.getElementById('sumProblem').textContent='Problem: '+p}
 async function saveSixsLogs(){const opId=document.getElementById('operatorSelect').value,op=OPERATORS.find(o=>String(o.id)===String(opId));if(!op){setSave('Wybierz operatora.','err');return}const [shift,start]=document.getElementById('sessionSelect').value.split('|'),logDate=document.getElementById('sessionDate').value,comment=document.getElementById('globalComment').value.trim().slice(0,COMMENT_LIMIT);const rows=TASKS.filter(t=>LOGS[t.id]&&LOGS[t.id].status).map(t=>({log_date:logDate,shift,sixs_start:start,task_id:t.id,task_name:t.task_name,operator_id:op.id,operator_name:op.operator_name,status:LOGS[t.id].status,comment,device_id:navigator.userAgent.slice(0,120),updated_at:new Date().toISOString()}));if(!rows.length){setSave('Nie zaznaczono żadnego zadania.','warn');return}const{error}=await supabaseClient.from('sixs_task_logs').upsert(rows,{onConflict:'log_date,shift,sixs_start,operator_id,task_id'});if(error){setSave('Błąd zapisu: '+error.message,'err');return}setSave('Zapisano odklikanie 6S: '+rows.length+' zadań.','ok');await loadTasksAndLogs()}
-async function init(){await loadBreakSchedule();await loadOperators();currentSessionAuto();document.getElementById('sessionDate').addEventListener('change',()=>{buildSessions();loadTasksAndLogs()});document.getElementById('sessionSelect').addEventListener('change',loadTasksAndLogs);document.getElementById('operatorSelect').addEventListener('change',loadTasksAndLogs);document.getElementById('globalComment').addEventListener('input',function(){if(this.value.trim())this.classList.remove('required');updateCommentCounter()});updateCommentCounter();await loadTasksAndLogs()}window.onload=init;
+async function init(){await loadBreakSchedule();await loadOperators();currentSessionAuto();document.getElementById('sessionDate').addEventListener('change',()=>{buildSessions();selectNearestSessionByClock();loadTasksAndLogs()});document.getElementById('sessionSelect').addEventListener('change',loadTasksAndLogs);document.getElementById('operatorSelect').addEventListener('change',loadTasksAndLogs);document.getElementById('globalComment').addEventListener('input',function(){if(this.value.trim())this.classList.remove('required');updateCommentCounter()});updateCommentCounter();await loadTasksAndLogs();setInterval(async()=>{const before=document.getElementById('sessionSelect').value;currentSessionAuto(false);const after=document.getElementById('sessionSelect').value;if(after&&after!==before)await loadTasksAndLogs()},60000)}window.onload=init;
 </script></body></html>
