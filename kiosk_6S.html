@@ -30,8 +30,9 @@
     .operator-start{padding:22px}.operator-start h1{margin:0 0 5px;font-size:28px}.operator-start p{color:var(--muted);margin:0 0 22px}.field label{display:block;color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.field select,.field input,.field textarea{width:100%;border:1px solid var(--border);background:#081321;color:var(--text);border-radius:13px;padding:13px;font-size:17px}.primary{width:100%;margin-top:14px;border:0;border-radius:14px;padding:15px;background:#2563eb;color:white;font-weight:950;font-size:17px;cursor:pointer}
     .toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,130%);opacity:0;z-index:20;background:#07101d;border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:14px;transition:.25s;max-width:calc(100% - 24px)}.toast.show{transform:translate(-50%,0);opacity:1}.toast button{border:0;background:var(--blue);color:#062033;border-radius:9px;padding:8px 12px;font-weight:950;cursor:pointer}.toast.err{border-color:var(--red)}
     .modal-backdrop{position:fixed;inset:0;background:rgba(2,8,23,.78);display:none;align-items:flex-end;justify-content:center;z-index:30;padding:12px}.modal-backdrop.open{display:flex}.modal{width:min(620px,100%);background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow)}.modal h2{margin:0 0 5px}.modal p{margin:0 0 17px;color:var(--muted)}.reasons{display:grid;grid-template-columns:1fr 1fr;gap:9px}.reason{border:1px solid var(--border);background:#0b1627;color:var(--text);border-radius:12px;padding:13px;text-align:left;font-weight:800;cursor:pointer}.reason.selected{border-color:var(--red);outline:2px solid rgba(239,68,68,.25);background:#2a1720}.modal-actions{display:grid;grid-template-columns:.7fr 1.3fr;gap:10px;margin-top:14px}.cancel,.confirm{border:0;border-radius:13px;padding:14px;color:white;font-weight:950;cursor:pointer}.cancel{background:#334155}.confirm{background:var(--red)}.confirm:disabled{opacity:.45;cursor:not-allowed}.details{margin-top:12px}.details summary{cursor:pointer;color:var(--muted);font-size:12px}.advanced{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.advanced input,.advanced select{width:100%;background:#081321;color:white;border:1px solid var(--border);border-radius:10px;padding:9px}
+    .history-toolbar{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}.history-toolbar .primary{margin:0;width:auto;padding:13px 18px}.history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.history-table-wrap{overflow:auto;margin-top:14px;border:1px solid var(--border);border-radius:14px;background:#081321}.history-table{border-collapse:separate;border-spacing:0;min-width:1050px;width:100%;font-size:12px}.history-table th,.history-table td{border-right:1px solid #263951;border-bottom:1px solid #263951;text-align:center;padding:7px 5px;min-width:30px;height:38px}.history-table th{position:sticky;top:0;background:#17253a;z-index:2;color:#cbd5e1}.history-table th:first-child,.history-table td:first-child{position:sticky;left:0;z-index:3;text-align:left;min-width:230px;max-width:230px;background:#111d30;padding-left:10px}.history-table th:first-child{z-index:4;background:#17253a}.history-cell{font-weight:950;border-radius:7px;padding:5px 3px;display:block}.history-done{background:rgba(16,185,129,.22);color:#6ee7b7}.history-problem{background:rgba(239,68,68,.22);color:#fca5a5}.history-mixed{background:rgba(245,158,11,.22);color:#fcd34d}.history-empty{color:#52657e}.history-legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}.legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px}.history-comments{margin-top:14px}.comment-item{border-left:3px solid var(--red);background:#0b1627;border-radius:0 12px 12px 0;padding:12px 14px;margin-top:9px;font-size:13px}.comment-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;color:var(--muted);margin-bottom:9px}.comment-date{font-weight:900;color:#dbeafe}.comment-task{font-weight:850;color:var(--text);line-height:1.35}.comment-body{display:flex;flex-wrap:wrap;align-items:center;gap:7px;line-height:1.4}.comment-text{color:#e2e8f0}.comment-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:950;letter-spacing:.2px}.badge-deleted{background:rgba(245,158,11,.17);color:#fcd34d;border:1px solid rgba(245,158,11,.35)}.badge-problem{background:rgba(239,68,68,.17);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}.comment-time{color:var(--muted);font-size:12px}.comment-shift{background:#17253a;border:1px solid var(--border);border-radius:999px;padding:3px 7px;font-size:11px;font-weight:850;color:#cbd5e1}.nav-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.secondary{width:100%;margin-top:10px;border:1px solid var(--border);border-radius:14px;padding:14px;background:#0b1627;color:var(--text);font-weight:950;font-size:16px;cursor:pointer}
     .hidden{display:none!important}.problem-banner{border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.09);border-radius:12px;padding:10px;color:#fecaca;font-size:13px;margin-bottom:12px}
-    @media(max-width:600px){.app{padding:10px}.actions,.reasons{grid-template-columns:1fr}.task-card{min-height:390px;padding:19px}.session-card{grid-template-columns:1fr}.session-card .small-btn{justify-self:start}.topbar{align-items:flex-start}.connection{margin-top:5px}.modal-actions{grid-template-columns:1fr}.advanced{grid-template-columns:1fr}}
+    @media(max-width:600px){.history-toolbar{grid-template-columns:1fr}.history-summary{grid-template-columns:1fr 1fr 1fr}.nav-row{grid-template-columns:1fr}.app{padding:10px}.actions,.reasons{grid-template-columns:1fr}.task-card{min-height:390px;padding:19px}.session-card{grid-template-columns:1fr}.session-card .small-btn{justify-self:start}.topbar{align-items:flex-start}.connection{margin-top:5px}.modal-actions{grid-template-columns:1fr}.advanced{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -45,7 +46,7 @@
     <h1>Wybierz operatora</h1><p>System automatycznie dobierze dzisiejszą zmianę, przerwę i przypisane zadania.</p>
     <div class="field"><label for="operatorSelect">Operator</label><select id="operatorSelect"><option>Ładowanie...</option></select></div>
     <details class="details"><summary>Ustawienia ręczne</summary><div class="advanced"><input id="sessionDate" type="date" aria-label="Data"><select id="sessionSelect" aria-label="Przerwa 6S"></select></div></details>
-    <button id="startButton" class="primary">Rozpocznij 6S</button>
+    <div class="nav-row"><button id="startButton" class="primary">Rozpocznij 6S</button><button id="historyButton" class="secondary">Historia miesięczna</button></div>
     <div id="startStatus" class="sub" style="margin-top:12px"></div>
   </section>
 
@@ -60,6 +61,19 @@
       <div class="counts"><span>Wykonane: <b id="doneCount">0</b></span><span>Problemy: <b id="problemCount">0</b></span></div>
     </div>
     <div id="taskArea" class="card task-card"></div>
+  </section>
+
+  <section id="historyView" class="hidden">
+    <div class="card session-card"><div><div class="eyebrow">Karta miesięczna</div><div class="session-title">Historia czynności 6S</div><div class="session-meta">Widok wzorowany na dotychczasowych kartach Excel: zadania w wierszach, dni miesiąca w kolumnach.</div></div><button id="closeHistory" class="small-btn">Powrót</button></div>
+    <div class="card">
+      <div class="history-toolbar">
+        <div class="field"><label for="historyOperator">Operator</label><select id="historyOperator"></select></div>
+        <div class="field"><label for="historyMonth">Miesiąc</label><input id="historyMonth" type="month"></div>
+        <button id="loadHistory" class="primary">Pokaż</button>
+      </div>
+      <div id="historyStatus" class="sub" style="margin-top:10px">Wybierz operatora i miesiąc.</div>
+      <div id="historyContent"></div>
+    </div>
   </section>
 </main>
 
@@ -101,8 +115,72 @@ async function undo(){if(!lastAction)return;const {id,previous}=lastAction;lastA
 function openProblem(id){$('problemModal').dataset.taskId=id;selectedReason='';$('problemNote').value='';$('confirmProblem').disabled=true;$('reasonList').innerHTML=REASONS.map(r=>`<button class="reason" data-reason="${esc(r)}">${esc(r)}</button>`).join('');$('problemModal').classList.add('open')}
 function closeProblem(){$('problemModal').classList.remove('open')}
 function backToStart(){$('workView').classList.add('hidden');$('startView').classList.remove('hidden');setStartStatus('')}
+function openHistory(){
+  $('startView').classList.add('hidden');$('workView').classList.add('hidden');$('historyView').classList.remove('hidden');
+  $('historyOperator').innerHTML=operators.map(o=>`<option value="${o.id}">${esc(o.operator_name)}</option>`).join('');
+  $('historyOperator').value=$('operatorSelect').value;
+  if(!$('historyMonth').value)$('historyMonth').value=dateKey(new Date()).slice(0,7);
+  loadMonthlyHistory();
+}
+function closeHistory(){
+  $('historyView').classList.add('hidden');$('startView').classList.remove('hidden');
+  if($('historyOperator').value)$('operatorSelect').value=$('historyOperator').value;
+}
+function formatHistoryDate(value){
+  const text=String(value||'');
+  const parts=text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return parts?`${parts[3]}.${parts[2]}.${parts[1]}`:text;
+}
+function formatLogTimestamp(value){
+  if(!value)return '';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return String(value);
+  return new Intl.DateTimeFormat('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d);
+}
+function parseHistoryComment(value){
+  const raw=String(value||'').trim();
+  const deleted=raw.match(/^\[USUNIETE_6S\]\s*(\d{4}-\d{2}-\d{2}T[^\s]+)\s*(.*)$/i);
+  if(deleted)return {kind:'deleted',label:'Usunięto wpis 6S',time:formatLogTimestamp(deleted[1]),text:deleted[2].trim()};
+  return {kind:'comment',label:'Problem',time:'',text:raw};
+}
+function renderHistoryComment(r){
+  const info=parseHistoryComment(r.comment);
+  const badge=info.kind==='deleted'?'<span class="comment-badge badge-deleted">Usunięto wpis</span>':'<span class="comment-badge badge-problem">Problem</span>';
+  const bodyText=info.text?`<span class="comment-text">${esc(info.text)}</span>`:'';
+  const time=info.time?`<span class="comment-time">Data operacji: ${esc(info.time)}</span>`:'';
+  return `<div class="comment-item"><div class="comment-head"><span class="comment-date">${esc(formatHistoryDate(r.log_date))}</span><span class="comment-shift">Zmiana ${esc(r.shift)}</span><span class="comment-task">${esc(r.task_name)}</span></div><div class="comment-body">${badge}${bodyText}${time}</div></div>`;
+}
+async function loadMonthlyHistory(){
+  const opId=$('historyOperator').value,month=$('historyMonth').value;
+  if(!opId||!month)return;
+  const [year,mon]=month.split('-').map(Number),lastDay=new Date(year,mon,0).getDate();
+  const from=`${month}-01`,to=`${month}-${pad(lastDay)}`;
+  $('historyStatus').textContent='Pobieranie historii...';$('historyContent').innerHTML='';
+  const {data,error}=await db.from('sixs_task_logs').select('log_date,shift,sixs_start,task_id,task_name,status,comment,operator_name,updated_at').eq('operator_id',opId).gte('log_date',from).lte('log_date',to).order('log_date').order('task_name');
+  if(error){$('historyStatus').textContent='Błąd pobierania historii: '+error.message;return}
+  const rows=data||[],taskMap=new Map();let done=0,problems=0;
+  rows.forEach(r=>{if(r.status==='done')done++;if(r.status==='problem')problems++;const key=String(r.task_id||r.task_name);if(!taskMap.has(key))taskMap.set(key,{name:r.task_name,days:{}});const day=Number(r.log_date.slice(8,10));(taskMap.get(key).days[day] ||= []).push(r)});
+  const op=operators.find(o=>String(o.id)===String(opId));
+  $('historyStatus').textContent=`${op?.operator_name||'Operator'} • ${month} • wpisów: ${rows.length}`;
+  let head='<tr><th>Czynność</th>'+Array.from({length:lastDay},(_,i)=>`<th>${i+1}</th>`).join('')+'</tr>';
+  let body='';
+  for(const task of [...taskMap.values()].sort((a,b)=>a.name.localeCompare(b.name,'pl'))){
+    body+=`<tr><td>${esc(task.name)}</td>`;
+    for(let d=1;d<=lastDay;d++){
+      const entries=task.days[d]||[],dCount=entries.filter(x=>x.status==='done').length,pCount=entries.filter(x=>x.status==='problem').length;
+      let cls='history-empty',txt='·';if(dCount&&pCount){cls='history-mixed';txt=`✓${dCount} !${pCount}`}else if(pCount){cls='history-problem';txt=`!${pCount}`}else if(dCount){cls='history-done';txt=dCount>1?`✓${dCount}`:'✓'}
+      const tip=entries.map(x=>`Zmiana ${x.shift}, ${x.sixs_start}: ${x.status==='done'?'wykonane':'problem'}${x.comment?' — '+x.comment:''}`).join(' | ');
+      body+=`<td title="${esc(tip)}"><span class="history-cell ${cls}">${txt}</span></td>`;
+    }
+    body+='</tr>';
+  }
+  if(!taskMap.size)body=`<tr><td colspan="${lastDay+1}" style="text-align:center;padding:25px;color:var(--muted)">Brak zapisanych czynności w tym miesiącu.</td></tr>`;
+  const comments=rows.filter(r=>r.status==='problem'||r.comment).sort((a,b)=>b.log_date.localeCompare(a.log_date));
+  $('historyContent').innerHTML=`<div class="history-summary"><div class="stat"><b>${done}</b><span>wykonane</span></div><div class="stat"><b>${problems}</b><span>problemy</span></div><div class="stat"><b>${taskMap.size}</b><span>różne czynności</span></div></div><div class="history-legend"><span><i class="legend-dot" style="background:#10b981"></i>wykonane</span><span><i class="legend-dot" style="background:#ef4444"></i>problem</span><span><i class="legend-dot" style="background:#f59e0b"></i>oba statusy</span><span>✓2 = dwa wpisy, np. różne zmiany</span></div><div class="history-table-wrap"><table class="history-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>${comments.length?`<div class="history-comments"><h3>Uwagi i problemy</h3>${comments.map(renderHistoryComment).join('')}</div>`:''}`;
+}
+
 window.backToStart=backToStart;window.setStatus=setStatus;window.openProblem=openProblem;
-async function init(){updateConnection();window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);$('sessionDate').value=dateKey(new Date());try{await loadBreaks();buildSessions();await loadOperators();setStartStatus('Gotowe. Wybierz operatora i rozpocznij.')}catch(e){setStartStatus('Błąd uruchamiania: '+e.message,true)}$('sessionDate').addEventListener('change',buildSessions);$('startButton').addEventListener('click',async()=>{try{await loadWork()}catch(e){setStartStatus('Nie można pobrać danych: '+e.message,true)}});$('changeOperator').addEventListener('click',backToStart);$('undoButton').addEventListener('click',undo);$('cancelProblem').addEventListener('click',closeProblem);$('reasonList').addEventListener('click',e=>{const b=e.target.closest('.reason');if(!b)return;selectedReason=b.dataset.reason;[...$('reasonList').children].forEach(x=>x.classList.toggle('selected',x===b));$('confirmProblem').disabled=false});$('confirmProblem').addEventListener('click',()=>{const id=Number($('problemModal').dataset.taskId),note=$('problemNote').value.trim();const comment=selectedReason+(note?' — '+note:'');closeProblem();setStatus(id,'problem',comment)});$('problemModal').addEventListener('click',e=>{if(e.target===$('problemModal'))closeProblem()})}
+async function init(){updateConnection();window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);$('sessionDate').value=dateKey(new Date());try{await loadBreaks();buildSessions();await loadOperators();setStartStatus('Gotowe. Wybierz operatora i rozpocznij.')}catch(e){setStartStatus('Błąd uruchamiania: '+e.message,true)}$('sessionDate').addEventListener('change',buildSessions);$('startButton').addEventListener('click',async()=>{try{await loadWork()}catch(e){setStartStatus('Nie można pobrać danych: '+e.message,true)}});$('changeOperator').addEventListener('click',backToStart);$('historyButton').addEventListener('click',openHistory);$('closeHistory').addEventListener('click',closeHistory);$('loadHistory').addEventListener('click',loadMonthlyHistory);$('undoButton').addEventListener('click',undo);$('cancelProblem').addEventListener('click',closeProblem);$('reasonList').addEventListener('click',e=>{const b=e.target.closest('.reason');if(!b)return;selectedReason=b.dataset.reason;[...$('reasonList').children].forEach(x=>x.classList.toggle('selected',x===b));$('confirmProblem').disabled=false});$('confirmProblem').addEventListener('click',()=>{const id=Number($('problemModal').dataset.taskId),note=$('problemNote').value.trim();const comment=selectedReason+(note?' — '+note:'');closeProblem();setStatus(id,'problem',comment)});$('problemModal').addEventListener('click',e=>{if(e.target===$('problemModal'))closeProblem()})}
 window.addEventListener('load',init);
 </script>
 </body>
