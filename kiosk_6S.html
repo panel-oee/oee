@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Terminal 6S</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --bg:#08111f;--panel:#111d30;--panel2:#17253a;--border:#2b3e59;
+      --text:#f8fafc;--muted:#9fb0c6;--blue:#38bdf8;--green:#10b981;
+      --green2:#047857;--red:#ef4444;--red2:#b91c1c;--yellow:#f59e0b;
+      --shadow:0 18px 45px rgba(0,0,0,.28)
+    }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{margin:0;background:radial-gradient(circle at top,#132642 0,#08111f 48%);color:var(--text);font-family:Segoe UI,system-ui,-apple-system,sans-serif}
+    button,select,textarea,input{font:inherit}
+    button{touch-action:manipulation}
+    .app{max-width:760px;min-height:100vh;margin:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+    .topbar,.card{background:rgba(17,29,48,.96);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+    .topbar{padding:15px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}.logo{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,var(--blue),#2563eb);display:grid;place-items:center;font-size:20px;font-weight:950}.brand strong{font-size:20px}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .connection{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.offline .dot{background:var(--red);box-shadow:0 0 12px var(--red)}
+    .card{padding:18px}.session-card{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.eyebrow{text-transform:uppercase;letter-spacing:.8px;font-size:11px;font-weight:900;color:var(--blue)}.session-title{font-size:22px;font-weight:950;margin-top:4px}.session-meta{color:var(--muted);font-size:13px;margin-top:5px}.small-btn{border:1px solid var(--border);background:#0b1627;color:var(--text);border-radius:11px;padding:9px 12px;font-weight:800;cursor:pointer}
+    .progress-card{padding:15px 18px}.progress-head{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:850;margin-bottom:10px}.progress-track{height:12px;border-radius:999px;background:#07101d;overflow:hidden;border:1px solid var(--border)}.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),#34d399);transition:width .25s ease}.counts{display:flex;gap:15px;margin-top:10px;color:var(--muted);font-size:12px}.counts b{color:var(--text)}
+    .task-card{flex:1;min-height:360px;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:24px}.counter{font-size:13px;color:var(--blue);font-weight:900;text-transform:uppercase;letter-spacing:.6px}.task-title{font-size:clamp(25px,5vw,38px);line-height:1.12;font-weight:950;margin:22px 0 12px}.task-desc{font-size:16px;line-height:1.5;color:var(--muted);max-width:590px;margin:0 auto 28px}.actions{display:grid;grid-template-columns:1.25fr .75fr;gap:12px;margin-top:8px}.action{border:0;border-radius:16px;min-height:68px;color:white;font-size:18px;font-weight:950;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.2);transition:transform .08s,filter .12s}.action:active{transform:scale(.985)}.action:hover{filter:brightness(1.06)}.done{background:linear-gradient(135deg,var(--green),var(--green2))}.problem{background:linear-gradient(135deg,var(--red),var(--red2))}
+    .empty{padding:36px 18px;text-align:center}.big-icon{font-size:55px;margin-bottom:12px}.empty h2{font-size:27px;margin:0 0 10px}.empty p{color:var(--muted);line-height:1.5;margin:0 auto;max-width:520px}.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:22px 0}.stat{padding:16px;background:#0b1627;border:1px solid var(--border);border-radius:14px}.stat b{display:block;font-size:27px}.stat span{font-size:12px;color:var(--muted)}
+    .operator-start{padding:22px}.operator-start h1{margin:0 0 5px;font-size:28px}.operator-start p{color:var(--muted);margin:0 0 22px}.field label{display:block;color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.field select,.field input,.field textarea{width:100%;border:1px solid var(--border);background:#081321;color:var(--text);border-radius:13px;padding:13px;font-size:17px}.primary{width:100%;margin-top:14px;border:0;border-radius:14px;padding:15px;background:#2563eb;color:white;font-weight:950;font-size:17px;cursor:pointer}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,130%);opacity:0;z-index:20;background:#07101d;border:1px solid var(--border);box-shadow:var(--shadow);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:14px;transition:.25s;max-width:calc(100% - 24px)}.toast.show{transform:translate(-50%,0);opacity:1}.toast button{border:0;background:var(--blue);color:#062033;border-radius:9px;padding:8px 12px;font-weight:950;cursor:pointer}.toast.err{border-color:var(--red)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,8,23,.78);display:none;align-items:flex-end;justify-content:center;z-index:30;padding:12px}.modal-backdrop.open{display:flex}.modal{width:min(620px,100%);background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:var(--shadow)}.modal h2{margin:0 0 5px}.modal p{margin:0 0 17px;color:var(--muted)}.reasons{display:grid;grid-template-columns:1fr 1fr;gap:9px}.reason{border:1px solid var(--border);background:#0b1627;color:var(--text);border-radius:12px;padding:13px;text-align:left;font-weight:800;cursor:pointer}.reason.selected{border-color:var(--red);outline:2px solid rgba(239,68,68,.25);background:#2a1720}.modal-actions{display:grid;grid-template-columns:.7fr 1.3fr;gap:10px;margin-top:14px}.cancel,.confirm{border:0;border-radius:13px;padding:14px;color:white;font-weight:950;cursor:pointer}.cancel{background:#334155}.confirm{background:var(--red)}.confirm:disabled{opacity:.45;cursor:not-allowed}.details{margin-top:12px}.details summary{cursor:pointer;color:var(--muted);font-size:12px}.advanced{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.advanced input,.advanced select{width:100%;background:#081321;color:white;border:1px solid var(--border);border-radius:10px;padding:9px}
+    .hidden{display:none!important}.problem-banner{border:1px solid rgba(239,68,68,.5);background:rgba(239,68,68,.09);border-radius:12px;padding:10px;color:#fecaca;font-size:13px;margin-bottom:12px}
+    @media(max-width:600px){.app{padding:10px}.actions,.reasons{grid-template-columns:1fr}.task-card{min-height:390px;padding:19px}.session-card{grid-template-columns:1fr}.session-card .small-btn{justify-self:start}.topbar{align-items:flex-start}.connection{margin-top:5px}.modal-actions{grid-template-columns:1fr}.advanced{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">6S</div><div><strong>Terminal 6S</strong><div class="sub">Szybkie potwierdzanie czynności</div></div></div>
+    <div id="connection" class="connection"><span class="dot"></span><span id="connectionText">Online</span></div>
+  </header>
+
+  <section id="startView" class="card operator-start">
+    <h1>Wybierz operatora</h1><p>System automatycznie dobierze dzisiejszą zmianę, przerwę i przypisane zadania.</p>
+    <div class="field"><label for="operatorSelect">Operator</label><select id="operatorSelect"><option>Ładowanie...</option></select></div>
+    <details class="details"><summary>Ustawienia ręczne</summary><div class="advanced"><input id="sessionDate" type="date" aria-label="Data"><select id="sessionSelect" aria-label="Przerwa 6S"></select></div></details>
+    <button id="startButton" class="primary">Rozpocznij 6S</button>
+    <div id="startStatus" class="sub" style="margin-top:12px"></div>
+  </section>
+
+  <section id="workView" class="hidden">
+    <div class="card session-card">
+      <div><div class="eyebrow">Aktualna sesja</div><div id="sessionTitle" class="session-title">—</div><div id="sessionMeta" class="session-meta">—</div></div>
+      <button id="changeOperator" class="small-btn">Zmień operatora</button>
+    </div>
+    <div class="card progress-card">
+      <div class="progress-head"><span>Postęp sesji</span><span id="progressText">0 z 0</span></div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="counts"><span>Wykonane: <b id="doneCount">0</b></span><span>Problemy: <b id="problemCount">0</b></span></div>
+    </div>
+    <div id="taskArea" class="card task-card"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast"><span id="toastText"></span><button id="undoButton">Cofnij</button></div>
+<div id="problemModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="problemTitle">
+  <div class="modal"><h2 id="problemTitle">Zgłoś problem</h2><p>Wybierz przyczynę. Możesz także dodać krótki opis.</p>
+    <div id="reasonList" class="reasons"></div>
+    <div class="field" style="margin-top:14px"><label for="problemNote">Dodatkowy opis (opcjonalnie, maks. 100 znaków)</label><textarea id="problemNote" maxlength="100" rows="3" placeholder="Co dokładnie wymaga reakcji?"></textarea></div>
+    <div class="modal-actions"><button id="cancelProblem" class="cancel">Anuluj</button><button id="confirmProblem" class="confirm" disabled>Zapisz problem</button></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://vyobsgknuxxlglkyhulb.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const BREAK_KEY='gema_break_schedule_config_v2';
+const DEFAULT_BREAKS=[{start:'05:45',durationMinutes:15,kind:'6S',shift:'1',days:[1,2,3,4,5],enabled:true},{start:'13:45',durationMinutes:15,kind:'6S',shift:'2',days:[1,2,3,4,5],enabled:true},{start:'21:45',durationMinutes:15,kind:'6S',shift:'3',days:[1,2,3,4,5],enabled:true}];
+const REASONS=['Brak materiału','Awaria','Brak narzędzia','Brak czasu','Zagrożenie bezpieczeństwa','Inne'];
+let breaks=DEFAULT_BREAKS,operators=[],tasks=[],logs={},currentIndex=0,lastAction=null,toastTimer=null,selectedReason='';
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const mins=t=>{const [h,m]=String(t||'00:00').split(':').map(Number);return (h||0)*60+(m||0)};
+const esc=v=>String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function setStartStatus(text,error=false){$('startStatus').textContent=text;$('startStatus').style.color=error?'#fca5a5':'#9fb0c6'}
+function updateConnection(){const online=navigator.onLine;$('connection').classList.toggle('offline',!online);$('connectionText').textContent=online?'Online':'Brak połączenia'}
+async function loadBreaks(){try{const {data,error}=await db.from('break_schedule_config').select('schedule').eq('id',1).single();if(error)throw error;if(Array.isArray(data?.schedule)){breaks=data.schedule;localStorage.setItem(BREAK_KEY,JSON.stringify(breaks));return}}catch(e){try{const local=JSON.parse(localStorage.getItem(BREAK_KEY)||'[]');if(local.length)breaks=local}catch(_){}}}
+async function loadOperators(){const {data,error}=await db.from('sixs_operators').select('*').eq('active',true).order('operator_name');if(error)throw error;operators=data||[];$('operatorSelect').innerHTML=operators.map(o=>`<option value="${o.id}">${esc(o.operator_name)}</option>`).join('')||'<option value="">Brak aktywnych operatorów</option>';const saved=localStorage.getItem('sixs_last_operator');if(saved&&operators.some(o=>String(o.id)===saved))$('operatorSelect').value=saved}
+function buildSessions(){const d=new Date($('sessionDate').value+'T00:00:00'),dow=d.getDay();const list=breaks.filter(x=>x.enabled!==false&&x.kind==='6S'&&Array.isArray(x.days)&&x.days.includes(dow)).sort((a,b)=>mins(a.start)-mins(b.start));$('sessionSelect').innerHTML=list.map(x=>`<option value="${x.shift||'all'}|${x.start}">Zmiana ${x.shift||'all'} / ${x.start}</option>`).join('')||'<option value="all|00:00">Brak przerwy 6S</option>';selectNearest()}
+function selectNearest(){const opts=[...$('sessionSelect').options];if(!opts.length)return;const now=new Date();if($('sessionDate').value!==dateKey(now)){$('sessionSelect').selectedIndex=0;return}const nowM=now.getHours()*60+now.getMinutes();let best=opts[0],diff=Infinity;for(const o of opts){const d=Math.abs(mins(o.value.split('|')[1])-nowM);if(d<diff){best=o;diff=d}}$('sessionSelect').value=best.value}
+async function loadWork(){const opId=$('operatorSelect').value;if(!opId)return;setStartStatus('Pobieranie przypisanych zadań...');const [shift,start]=$('sessionSelect').value.split('|');const logDate=$('sessionDate').value;const dow=new Date(logDate+'T00:00:00').getDay();const {data,error}=await db.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');if(error)throw error;const candidates=(data||[]).filter(t=>(t.shift==='all'||t.shift===shift)&&((t.sixs_start||'all')==='all'||t.sixs_start===start)&&(!Array.isArray(t.days)||t.days.includes(dow)));const ids=candidates.map(t=>t.id).filter(Boolean);let assigned=new Set();if(ids.length){const a=await db.from('sixs_operator_task_assignments').select('task_id,active').eq('operator_id',opId).eq('active',true).in('task_id',ids);if(a.error)throw a.error;assigned=new Set((a.data||[]).map(x=>String(x.task_id)))}tasks=candidates.filter(t=>assigned.has(String(t.id)));const r=await db.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start).eq('operator_id',opId);if(r.error)throw r.error;logs={};(r.data||[]).forEach(x=>logs[x.task_id]=x);currentIndex=0;localStorage.setItem('sixs_last_operator',String(opId));$('startView').classList.add('hidden');$('workView').classList.remove('hidden');render()}
+function pendingTasks(){return tasks.filter(t=>!logs[t.id]||logs[t.id].status!=='done')}
+function render(){const op=operators.find(o=>String(o.id)===$('operatorSelect').value);const [shift,start]=$('sessionSelect').value.split('|');$('sessionTitle').textContent=`${op?.operator_name||'Operator'} • zmiana ${shift}`;$('sessionMeta').textContent=`${$('sessionDate').value} • przerwa 6S o ${start}`;const done=Object.values(logs).filter(l=>l.status==='done').length;const problems=Object.values(logs).filter(l=>l.status==='problem').length;const total=tasks.length;const completed=Math.min(done,total);$('progressText').textContent=`${completed} z ${total}`;$('progressBar').style.width=(total?completed/total*100:0)+'%';$('doneCount').textContent=done;$('problemCount').textContent=problems;const pending=pendingTasks();const area=$('taskArea');if(!tasks.length){area.innerHTML='<div class="empty"><div class="big-icon">📋</div><h2>Brak przypisanych zadań</h2><p>Dla tego operatora i tej przerwy nie znaleziono aktywnych przypisań 6S.</p></div>';return}if(!pending.length){area.innerHTML=`<div class="empty"><div class="big-icon">✓</div><h2>6S zakończone</h2><p>Wszystkie przypisane czynności zostały zapisane.</p><div class="summary-grid"><div class="stat"><b>${done}</b><span>wykonane</span></div><div class="stat"><b>${problems}</b><span>problemy</span></div></div><button class="primary" onclick="backToStart()">Zakończ sesję</button></div>`;return}currentIndex=Math.min(currentIndex,pending.length-1);const t=pending[currentIndex],problem=logs[t.id]?.status==='problem';area.innerHTML=`${problem?'<div class="problem-banner">To zadanie ma otwarty problem i pozostaje na liście do wykonania.</div>':''}<div class="counter">Zadanie ${total-pending.length+1} z ${total}</div><div class="task-title">${esc(t.task_name)}</div><div class="task-desc">${esc(t.description||'Wykonaj przypisaną czynność zgodnie ze standardem 6S.')}</div><div class="actions"><button class="action done" onclick="setStatus(${t.id},'done')">✓ Wykonane</button><button class="action problem" onclick="openProblem(${t.id})">! Zgłoś problem</button></div>`}
+async function saveStatus(id,status,comment=''){const op=operators.find(o=>String(o.id)===$('operatorSelect').value),task=tasks.find(t=>String(t.id)===String(id));if(!op||!task)return;const [shift,start]=$('sessionSelect').value.split('|');const row={log_date:$('sessionDate').value,shift,sixs_start:start,task_id:task.id,task_name:task.task_name,operator_id:op.id,operator_name:op.operator_name,status,comment:comment.slice(0,100),device_id:navigator.userAgent.slice(0,120),updated_at:new Date().toISOString()};const {error}=await db.from('sixs_task_logs').upsert([row],{onConflict:'log_date,shift,sixs_start,operator_id,task_id'});if(error)throw error;logs[id]=row}
+async function setStatus(id,status,comment=''){const previous=logs[id]?{...logs[id]}:null;logs[id]={...(logs[id]||{}),task_id:id,status,comment};render();try{await saveStatus(id,status,comment);lastAction={id,previous};showToast(status==='done'?'Zapisano wykonanie':'Zapisano problem',true)}catch(e){if(previous)logs[id]=previous;else delete logs[id];render();showToast('Błąd zapisu: '+e.message,false,true)}}
+function showToast(text,undo=false,error=false){clearTimeout(toastTimer);$('toastText').textContent=text;$('undoButton').classList.toggle('hidden',!undo);$('toast').classList.toggle('err',error);$('toast').classList.add('show');toastTimer=setTimeout(()=>$('toast').classList.remove('show'),8000)}
+async function undo(){if(!lastAction)return;const {id,previous}=lastAction;lastAction=null;$('toast').classList.remove('show');try{if(previous){await saveStatus(id,previous.status,previous.comment||'');logs[id]=previous}else{const opId=$('operatorSelect').value,[shift,start]=$('sessionSelect').value.split('|');const {error}=await db.from('sixs_task_logs').delete().eq('log_date',$('sessionDate').value).eq('shift',shift).eq('sixs_start',start).eq('operator_id',opId).eq('task_id',id);if(error)throw error;delete logs[id]}render();showToast('Cofnięto ostatnią operację')}catch(e){showToast('Nie udało się cofnąć: '+e.message,false,true)}}
+function openProblem(id){$('problemModal').dataset.taskId=id;selectedReason='';$('problemNote').value='';$('confirmProblem').disabled=true;$('reasonList').innerHTML=REASONS.map(r=>`<button class="reason" data-reason="${esc(r)}">${esc(r)}</button>`).join('');$('problemModal').classList.add('open')}
+function closeProblem(){$('problemModal').classList.remove('open')}
+function backToStart(){$('workView').classList.add('hidden');$('startView').classList.remove('hidden');setStartStatus('')}
+window.backToStart=backToStart;window.setStatus=setStatus;window.openProblem=openProblem;
+async function init(){updateConnection();window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);$('sessionDate').value=dateKey(new Date());try{await loadBreaks();buildSessions();await loadOperators();setStartStatus('Gotowe. Wybierz operatora i rozpocznij.')}catch(e){setStartStatus('Błąd uruchamiania: '+e.message,true)}$('sessionDate').addEventListener('change',buildSessions);$('startButton').addEventListener('click',async()=>{try{await loadWork()}catch(e){setStartStatus('Nie można pobrać danych: '+e.message,true)}});$('changeOperator').addEventListener('click',backToStart);$('undoButton').addEventListener('click',undo);$('cancelProblem').addEventListener('click',closeProblem);$('reasonList').addEventListener('click',e=>{const b=e.target.closest('.reason');if(!b)return;selectedReason=b.dataset.reason;[...$('reasonList').children].forEach(x=>x.classList.toggle('selected',x===b));$('confirmProblem').disabled=false});$('confirmProblem').addEventListener('click',()=>{const id=Number($('problemModal').dataset.taskId),note=$('problemNote').value.trim();const comment=selectedReason+(note?' — '+note:'');closeProblem();setStatus(id,'problem',comment)});$('problemModal').addEventListener('click',e=>{if(e.target===$('problemModal'))closeProblem()})}
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
