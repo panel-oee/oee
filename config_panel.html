@@ -130,11 +130,10 @@ async function buildMissedHistoryRows(logDate,shiftFilter,existingLogs){
   const d=new Date(logDate+'T00:00:00'),dow=d.getDay();
   const breaks=SCHEDULE.map(normalizeBreak).filter(b=>b.enabled!==false&&b.kind==='6S'&&Array.isArray(b.days)&&b.days.includes(dow)&&(shiftFilter==='all'||String(b.shift)===String(shiftFilter))&&deadlinePassedForBreak(logDate,b));
   if(!breaks.length)return [];
-  const breakPairs=new Set(breaks.map(b=>breakKey(b)));
   const logsByKey=new Set((existingLogs||[]).map(l=>historyExpectedKey(l.log_date,l.shift,l.sixs_start,l.operator_id,l.task_id)));
   const tasksRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).order('sort_order');
   if(tasksRes.error)throw tasksRes.error;
-  const allTasks=(tasksRes.data||[]).filter(t=>breakPairs.has(String(t.shift||'all')+'|'+String(t.sixs_start||'all'))||breaks.some(b=>(t.shift==='all'||String(t.shift)===String(b.shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(b.start))));
+  const allTasks=(tasksRes.data||[]).filter(t=>breaks.some(b=>(t.shift==='all'||String(t.shift)===String(b.shift))&&((t.sixs_start||'all')==='all'||String(t.sixs_start)===String(b.start))));
   const taskIds=allTasks.map(t=>t.id).filter(Boolean);
   if(!taskIds.length)return [];
   const assignRes=await supabaseClient.from('sixs_operator_task_assignments').select('operator_id,task_id,active').eq('active',true).in('task_id',taskIds);
@@ -149,7 +148,7 @@ async function buildMissedHistoryRows(logDate,shiftFilter,existingLogs){
       if(!t||!opMap.has(String(a.operator_id)))continue;
       const k=historyExpectedKey(logDate,b.shift,b.start,a.operator_id,t.id);
       if(logsByKey.has(k))continue;
-      rows.push({log_date:logDate,shift:b.shift,sixs_start:b.start,task_id:t.id,task_name:t.task_name,operator_id:a.operator_id,operator_name:opMap.get(String(a.operator_id)),status:'missed',comment:'Nie odkliknięto zadania do końca przerwy 6S.',updated_at:null,created_at:null,_virtual:true,_deadline:localDateTimeFromParts(logDate,b.start).toISOString()});
+      rows.push({log_date:logDate,shift:b.shift,sixs_start:b.start,task_id:t.id,task_name:t.task_name,operator_id:a.operator_id,operator_name:opMap.get(String(a.operator_id)),status:'missed',comment:'Nie odkliknięto zadania do końca przerwy 6S.',updated_at:null,created_at:null,_virtual:true});
     }
   }
   return rows;
