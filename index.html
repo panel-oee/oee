@@ -3031,6 +3031,29 @@ body.v4-dashboard #directorNoFailureCard.v4-kpi{
 body.v4-dashboard .v4-mini-row #directorNoFailureCard{display:flex!important;}
 </style>
 
+
+<style id="copilot-kpi-left-bar-status-fix">
+/* COPILOT: belka po lewej stronie kart KPI ma kolor zgodny z wartością, także dla Średniej Miesięcznej i Tygodnia */
+body.v4-dashboard .v4-kpi.good::before,
+body.v4-dashboard .stat-card-single.good::before,
+body.v4-dashboard .director-mini-card.good::before{background:#10b981!important;}
+body.v4-dashboard .v4-kpi.warn::before,
+body.v4-dashboard .stat-card-single.warn::before,
+body.v4-dashboard .director-mini-card.warn::before{background:#f59e0b!important;}
+body.v4-dashboard .v4-kpi.alert::before,
+body.v4-dashboard .stat-card-single.alert::before,
+body.v4-dashboard .director-mini-card.alert::before{background:#ef4444!important;}
+body.v4-dashboard .v4-kpi.good,
+body.v4-dashboard .stat-card-single.good,
+body.v4-dashboard .director-mini-card.good{border-left-color:#10b981!important;}
+body.v4-dashboard .v4-kpi.warn,
+body.v4-dashboard .stat-card-single.warn,
+body.v4-dashboard .director-mini-card.warn{border-left-color:#f59e0b!important;}
+body.v4-dashboard .v4-kpi.alert,
+body.v4-dashboard .stat-card-single.alert,
+body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;}
+</style>
+
 </head>
 <body>
 <div class="container">
@@ -4784,6 +4807,88 @@ function buildCalendar() {
     setTimeout(applyFixes, 250);
     setTimeout(applyFixes, 900);
     setTimeout(applyFixes, 1800);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+
+<script id="copilot-kpi-left-bar-status-fix">
+(function(){
+  function parsePct(text){
+    const match = String(text || '').replace(',', '.').match(/-?\d+(?:\.\d+)?/);
+    return match ? parseFloat(match[0]) : NaN;
+  }
+  function getCfg(){
+    return window.OEE_CONFIG || { greenMin:70, yellowMin:60 };
+  }
+  function setStatus(card, status){
+    if(!card) return;
+    card.classList.remove('good','warn','alert');
+    if(status) card.classList.add(status);
+    const color = status === 'good' ? '#10b981' : (status === 'warn' ? '#f59e0b' : (status === 'alert' ? '#ef4444' : '#64748b'));
+    card.style.borderLeftColor = color;
+    card.style.borderTopColor = color;
+  }
+  function statusFromValue(value){
+    const cfg = getCfg();
+    if(!Number.isFinite(value)) return '';
+    return value >= cfg.greenMin ? 'good' : (value >= cfg.yellowMin ? 'warn' : 'alert');
+  }
+  function applyKpiBarColors(){
+    const ids = [
+      'monthOeeCard',
+      'currentWeekOeeCard',
+      'lastWeekOeeCard',
+      'recordOeeCard',
+      'directorTrendCard',
+      'directorAlertCard',
+      'directorNoFailureCard',
+      'directorTopLossCard'
+    ];
+    ids.forEach(function(id){
+      const card = document.getElementById(id);
+      if(!card) return;
+      const valueEl = card.querySelector('.stat-card-value,.director-mini-value');
+      const text = valueEl ? valueEl.textContent : '';
+      let status = '';
+      if(id === 'directorAlertCard'){
+        const lower = text.toLowerCase();
+        status = (lower.includes('ok') || lower.includes('brak')) ? 'good' : 'alert';
+      } else if(id === 'directorNoFailureCard'){
+        const days = parseInt((text.match(/\d+/) || ['0'])[0], 10);
+        status = days >= 30 ? 'good' : (days >= 20 ? 'warn' : 'alert');
+      } else if(id === 'directorTrendCard'){
+        if(/^\s*▲/.test(text)) status = 'good';
+        else if(/^\s*▼/.test(text)) status = 'alert';
+        else status = statusFromValue(parsePct(text));
+      } else if(id === 'directorTopLossCard'){
+        const lower = text.toLowerCase();
+        status = lower.includes('brak') ? 'good' : 'warn';
+      } else {
+        status = statusFromValue(parsePct(text));
+      }
+      setStatus(card, status);
+    });
+  }
+  function wrapAfter(name){
+    const original = window[name];
+    if(typeof original === 'function' && !original.__copilotLeftBarWrapped){
+      const wrapped = function(){
+        const result = original.apply(this, arguments);
+        setTimeout(applyKpiBarColors, 0);
+        return result;
+      };
+      wrapped.__copilotLeftBarWrapped = true;
+      window[name] = wrapped;
+    }
+  }
+  function init(){
+    ['renderDirectorInsights','calculateWeeklyAverageFromDay','renderChart','refreshDashboardView','changeTheme','selectDay'].forEach(wrapAfter);
+    applyKpiBarColors();
+    setTimeout(applyKpiBarColors, 250);
+    setTimeout(applyKpiBarColors, 900);
+    setTimeout(applyKpiBarColors, 1800);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
