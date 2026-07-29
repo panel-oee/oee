@@ -2485,6 +2485,26 @@ body.v4-dashboard .chart-css-bar{max-width:32px!important;}
   try { localStorage.setItem('gema_theme', 'dark'); } catch(e) {}
 })();
 </script>
+
+<style id="copilot-trend-nofail-visible-fix">
+/* COPILOT: Trend M/M strzalka wg znaku pp + Bez awarii widoczne i kolorowane progami 20/30 dni */
+@media (min-width: 900px){
+  .v4-kpis.has-nofailure-kpi{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+}
+@media (max-width: 899px){
+  .v4-kpis.has-nofailure-kpi{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media (max-width: 560px){
+  .v4-kpis.has-nofailure-kpi{grid-template-columns:1fr!important;}
+}
+body.v4-dashboard #directorNoFailureCard.v4-kpi{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body.v4-dashboard .v4-mini-row #directorNoFailureCard{display:flex!important;}
+</style>
+
 </head>
 <body>
 <div class="container">
@@ -4483,5 +4503,102 @@ function buildCalendar() {
   });
 })();
 </script>
+
+<script id="copilot-trend-nofail-visible-fix">
+(function(){
+  function statusColor(status){
+    return status === 'good' ? '#10b981' : (status === 'warn' ? '#f59e0b' : '#ef4444');
+  }
+  function setCardStatus(card, valueEl, status){
+    if(!card) return;
+    card.classList.remove('good','warn','alert');
+    card.classList.add(status);
+    const color = statusColor(status);
+    card.style.borderLeftColor = color;
+    card.style.borderTopColor = color;
+    if(valueEl) valueEl.style.color = color;
+  }
+  function fixTrendMm(){
+    const card = document.getElementById('directorTrendCard');
+    const valueEl = document.getElementById('directorTrendValue');
+    const infoEl = document.getElementById('directorTrendInfo');
+    if(!card || !valueEl) return;
+    try{
+      let avg = null;
+      let prev = null;
+      if(typeof window.directorCurrentMonthRecords === 'function' && typeof window.directorAvg === 'function' && typeof window.directorPrevAvg === 'function'){
+        avg = window.directorAvg(window.directorCurrentMonthRecords());
+        prev = window.directorPrevAvg();
+      }
+      if(avg !== null && avg !== undefined && prev !== null && prev !== undefined){
+        const delta = avg - prev;
+        valueEl.textContent = (delta >= 0 ? '▲ ' : '▼ ') + Math.abs(delta).toFixed(1) + ' pp';
+        if(infoEl) infoEl.textContent = 'Bieżący vs poprzedni miesiąc';
+        setCardStatus(card, valueEl, delta >= 1 ? 'good' : (delta <= -1 ? 'alert' : 'warn'));
+      } else if(card.classList.contains('alert') && /^\s*▲/.test(valueEl.textContent)){
+        valueEl.textContent = valueEl.textContent.replace('▲','▼');
+      }
+    }catch(e){
+      if(card.classList.contains('alert') && /^\s*▲/.test(valueEl.textContent)){
+        valueEl.textContent = valueEl.textContent.replace('▲','▼');
+      }
+    }
+  }
+  function fixNoFailure(){
+    const card = document.getElementById('directorNoFailureCard');
+    const valueEl = document.getElementById('directorNoFailureValue');
+    const infoEl = document.getElementById('directorNoFailureInfo');
+    if(!card || !valueEl) return;
+    const match = String(valueEl.textContent || '').match(/\d+/);
+    const days = match ? parseInt(match[0], 10) : 0;
+    // <20 dni = czerwony, 20-29 dni = pomaranczowy/zolty, >=30 dni = zielony.
+    const status = days >= 30 ? 'good' : (days >= 20 ? 'warn' : 'alert');
+    if(infoEl) infoEl.textContent = 'Dni od ostatniej awarii/usterki';
+    setCardStatus(card, valueEl, status);
+  }
+  function ensureNoFailureVisible(){
+    const kpis = document.querySelector('.v4-kpis');
+    const card = document.getElementById('directorNoFailureCard');
+    if(!kpis || !card) return;
+    if(card.parentElement !== kpis){
+      card.classList.add('v4-kpi');
+      kpis.appendChild(card);
+    }
+    card.classList.add('v4-kpi');
+    card.style.display = '';
+    kpis.classList.add('has-nofailure-kpi');
+  }
+  function applyFixes(){
+    ensureNoFailureVisible();
+    fixTrendMm();
+    fixNoFailure();
+  }
+  function wrapAfter(name){
+    const original = window[name];
+    if(typeof original === 'function' && !original.__copilotTrendNoFailVisibleWrapped){
+      const wrapped = function(){
+        const result = original.apply(this, arguments);
+        setTimeout(applyFixes, 0);
+        return result;
+      };
+      wrapped.__copilotTrendNoFailVisibleWrapped = true;
+      window[name] = wrapped;
+    }
+  }
+  function init(){
+    wrapAfter('renderDirectorInsights');
+    wrapAfter('calculateWeeklyAverageFromDay');
+    wrapAfter('renderChart');
+    wrapAfter('refreshDashboardView');
+    wrapAfter('changeTheme');
+    applyFixes();
+    setTimeout(applyFixes, 250);
+    setTimeout(applyFixes, 900);
+    setTimeout(applyFixes, 1800);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
 </body>
 </html>
