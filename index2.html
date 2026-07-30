@@ -2576,31 +2576,6 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
   #sixsTvList{grid-template-columns:1fr!important}
 }
 </style>
-<style id="sixs-auto-width-final">
-/* Automatyczne dopasowanie szerokosci kolumn do liczby przypisanych osob */
-#sixsTvList{
-  width:100%!important;
-  grid-template-columns:repeat(var(--sixs-group-count,1),minmax(0,1fr))!important;
-  justify-content:stretch!important;
-}
-#sixsTvList[data-group-count="1"]{
-  grid-template-columns:minmax(320px,760px)!important;
-  justify-content:center!important;
-}
-#sixsTvList[data-group-count="2"]{
-  grid-template-columns:repeat(2,minmax(320px,1fr))!important;
-}
-#sixsTvList[data-group-count="3"]{
-  grid-template-columns:repeat(3,minmax(280px,1fr))!important;
-}
-.sixs-operator-group{width:100%!important;max-width:100%!important}
-@media(max-width:1100px){
-  #sixsTvList[data-group-count="3"]{grid-template-columns:repeat(2,minmax(300px,1fr))!important}
-}
-@media(max-width:850px){
-  #sixsTvList{grid-template-columns:1fr!important;justify-content:stretch!important}
-}
-</style>
 </head>
 <body>
 <div class="container">
@@ -3267,10 +3242,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             const assigned=Array.isArray(t.assigned_operator_names)&&t.assigned_operator_names.length?t.assigned_operator_names:['Nieprzypisane'];
             assigned.forEach(operatorName=>{(groups[operatorName]=groups[operatorName]||[]).push(t);});
         });
-        const groupNames=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'pl'));
-        list.dataset.groupCount=String(groupNames.length);
-        list.style.setProperty('--sixs-group-count',String(Math.max(1,groupNames.length)));
-        list.innerHTML=groupNames.map(operatorName=>{
+        list.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'pl')).map(operatorName=>{
             const groupTasks=groups[operatorName];
             const groupDone=groupTasks.filter(t=>String((logs[String(t.id)]||{}).status||'').toLowerCase()==='done').length;
             const cards=groupTasks.map(t=>{
@@ -3293,13 +3265,13 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         if(firstLoad&&list)list.innerHTML='<div class="sixs-tv-task pending"><span class="sixs-tv-icon">⏳</span><span>Pobieranie zadań 6S...</span></div>';
         if(firstLoad&&prog)prog.textContent='—';
         try{
-            const taskRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).eq('shift',shift).eq('sixs_start',start).order('sort_order');
+            const taskRes=await supabaseClient.from('sixs_tasks_config').select('*').eq('active',true).eq('shift','all').eq('sixs_start','all').order('sort_order');
             if(taskRes.error)throw taskRes.error;
             let tasks=(taskRes.data||[]).filter(t=>sixsTaskIsDue(t,now));
             const taskIds=tasks.map(t=>t.id).filter(v=>v!=null);
             let assignments=[],names={};
             if(taskIds.length){
-                const assRes=await supabaseClient.from('sixs_operator_task_assignments').select('task_id,operator_id,active').in('task_id',taskIds).eq('active',true);
+                const assRes=await supabaseClient.from('sixs_break_task_assignments').select('task_id,operator_id,active').eq('shift',shift).eq('sixs_start',start).in('task_id',taskIds).eq('active',true);
                 if(assRes.error)throw assRes.error;
                 assignments=assRes.data||[];
                 const operatorIds=[...new Set(assignments.map(a=>a.operator_id).filter(v=>v!=null))];
