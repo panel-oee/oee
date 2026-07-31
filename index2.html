@@ -2534,6 +2534,38 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 #breakOverlay.show .break-countdown{font-size:clamp(44px,6vw,88px)!important}
 #sixsTvBox.show{display:block!important;visibility:visible!important;opacity:1!important;width:min(1200px,96vw)!important;max-height:48vh!important;overflow:auto!important;margin:3px auto 18px!important;background:#111d30!important;border:2px solid #38bdf8!important}
 </style>
+<style id="ordinary-break-center-fix">
+#breakOverlay.show.ordinary-break{
+  justify-content:center!important;
+  align-items:center!important;
+  overflow:hidden!important;
+  padding:clamp(20px,4vw,64px)!important;
+  gap:clamp(16px,2.2vh,30px)!important;
+}
+#breakOverlay.show.ordinary-break #sixsTvBox{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+}
+#breakOverlay.show.ordinary-break .break-overlay-title{
+  font-size:clamp(72px,11vw,170px)!important;
+  line-height:.95!important;
+}
+#breakOverlay.show.ordinary-break .break-overlay-subtitle{
+  font-size:clamp(24px,3.5vw,52px)!important;
+}
+#breakOverlay.show.ordinary-break .break-countdown{
+  font-size:clamp(72px,11vw,160px)!important;
+}
+#breakOverlay.show.ordinary-break .break-overlay-time{
+  font-size:clamp(22px,2.8vw,42px)!important;
+}
+@media(max-height:700px){
+ #breakOverlay.show.ordinary-break{gap:12px!important;padding:18px!important}
+ #breakOverlay.show.ordinary-break .break-overlay-title{font-size:clamp(54px,9vw,105px)!important}
+ #breakOverlay.show.ordinary-break .break-countdown{font-size:clamp(58px,9vw,110px)!important}
+}
+</style>
 <style id="sixs-operator-groups-fix">
 #sixsTvList{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
 .sixs-operator-group{display:block;margin:0 0 12px}
@@ -3009,31 +3041,29 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
     }
 
 
-    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}/.test(String(n.start))?String(n.start).slice(0,5):f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=String(n.kind||'').trim().toUpperCase()==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false&&String(n.enabled).toLowerCase()!=='false';return n;}
+    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
     function loadBreakScheduleFromLocalStorage(){try{const saved=localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes'),10)||5));if(saved){const p=JSON.parse(saved);if(Array.isArray(p)&&p.length){BREAK_SCHEDULE=p.map(normalizeBreakItem);return;}}}catch(e){console.warn('Błąd lokalnej konfiguracji przerw:',e.message);}BREAK_SCHEDULE=JSON.parse(JSON.stringify(DEFAULT_BREAK_SCHEDULE)).map(normalizeBreakItem);}
     async function loadBreakScheduleFromSupabase(){
         try{
-            const result=await supabaseClient.from('break_schedule_config').select('id,schedule,refresh_minutes').eq('id',1).limit(1);
-            if(result.error)throw result.error;
-            const data=(result.data||[])[0];
-            if(!data||!Array.isArray(data.schedule))throw new Error('Brak rekordu harmonogramu id=1.');
-            BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
-            BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
-            localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
-            localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
-            window.__breakScheduleSource='baza';
-            window.__breakScheduleLoadedAt=new Date().toISOString();
-            setupBreakScheduleAutoRefresh();
-            if(typeof updateBreakOverlay==='function')updateBreakOverlay();
-            console.log('Harmonogram z bazy:',BREAK_SCHEDULE.map(x=>x.shift+' / '+x.start+' / '+x.kind));
-            return BREAK_SCHEDULE;
+            const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();
+            if(error)throw error;
+            if(data&&Array.isArray(data.schedule)){
+                BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
+                BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
+                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
+                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
+                setupBreakScheduleAutoRefresh();
+                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+                console.log('Pobrano harmonogram przerw z Supabase:', BREAK_SCHEDULE.length, 'poz.');
+            }else{
+                loadBreakScheduleFromLocalStorage();
+                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+            }
         }catch(e){
-            console.error('Błąd odczytu harmonogramu z bazy:',e.message);
+            console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);
             loadBreakScheduleFromLocalStorage();
-            window.__breakScheduleSource='pamięć lokalna po błędzie: '+e.message;
             setupBreakScheduleAutoRefresh();
-            if(typeof updateBreakOverlay==='function')updateBreakOverlay();
-            return BREAK_SCHEDULE;
+            if(typeof updateBreakOverlay==='function') updateBreakOverlay();
         }
     }
     function setupBreakScheduleAutoRefresh(){if(breakScheduleRefreshTimer)clearInterval(breakScheduleRefreshTimer);breakScheduleRefreshTimer=setInterval(loadBreakScheduleFromSupabase,Math.max(1,Math.min(60,BREAK_REFRESH_MINUTES))*60*1000);}
@@ -3050,10 +3080,6 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
                 .subscribe();
         }catch(e){console.warn('Realtime Supabase dla przerw niedostępny:',e.message);}
     }
-
-    window.addEventListener('focus',function(){loadBreakScheduleFromSupabase();});
-    document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')loadBreakScheduleFromSupabase();});
-    window.addEventListener('storage',function(e){if(e.key===BREAK_SCHEDULE_STORAGE_KEY)loadBreakScheduleFromSupabase();});
 
     function prepareBreakAudio() {
         // TV-compatible preparation: use normal HTML <audio> first.
@@ -3336,7 +3362,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         const now = new Date();
         const timing = getBreakTimingInfo(now);
         if (!timing) {
-            overlay.classList.remove('show');
+            overlay.classList.remove('show','ordinary-break','sixs-break');
             sixsTvHide();
             return;
         }
@@ -3345,7 +3371,8 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         const alertKey = todayKey + ' ' + timing.start;
 
         if (timing.isAlertWindow) {
-            overlay.classList.remove('show');
+            overlay.classList.remove('show','ordinary-break','sixs-break');
+            sixsTvHide();
             if (lastBreakAlertKey !== alertKey) {
                 lastBreakAlertKey = alertKey;
                 const secondsToBreak = timing.startSeconds - timing.currentSeconds;
@@ -3355,7 +3382,11 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         }
 
         if (timing.isBreakWindow) {
+            const isSixs=timing.kind==='6S';
+            overlay.classList.toggle('sixs-break',isSixs);
+            overlay.classList.toggle('ordinary-break',!isSixs);
             overlay.classList.add('show');
+            if(!isSixs)sixsTvHide();
             const fallbackTitle = timing.kind === '6S' ? 'CZAS 6S' : 'PRZERWA';
             const fallbackSubtitle = timing.kind === '6S' ? 'Sprzątanie / porządki — do końca pozostało:' : 'Do końca przerwy pozostało:';
             const baseLabel = timing.kind === '6S' ? '6S' : 'Przerwa';
@@ -3364,7 +3395,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             if (subtitleEl) subtitleEl.textContent = timing.subtitle || fallbackSubtitle;
             if (timeEl) timeEl.textContent = baseLabel + shiftLabelText + ': ' + timing.start + ' – ' + timing.end + ' (' + timing.durationMinutes + ' min)';
             if (countdownEl) countdownEl.textContent = formatRemainingTime(timing.remainingSeconds);
-            sixsTvUpdate(timing, now);
+            if(isSixs)sixsTvUpdate(timing, now);
         }
     }
 
