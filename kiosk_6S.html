@@ -45,7 +45,7 @@
   <section id="startView" class="card operator-start">
     <h1>Wybierz operatora</h1><p>System automatycznie dobierze dzisiejszą zmianę, przerwę i przypisane zadania. Wykonanie przez jedną przypisaną osobę zamyka zadanie dla całej przerwy.</p>
     <div class="field"><label for="operatorSelect">Operator</label><select id="operatorSelect"><option>Ładowanie...</option></select></div>
-    <details class="details"><summary>Ustawienia ręczne</summary><div class="advanced"><input id="sessionDate" type="date" aria-label="Data"><select id="sessionSelect" aria-label="Przerwa 6S"></select></div></details>
+    <details class="details"><summary>Ustawienia ręczne</summary><div class="advanced"><input id="sessionDate" type="date" aria-label="Data"><select id="sessionSelect" aria-label="Przerwa 6S"></select></div></details><button id="refreshBreaksButton" class="secondary" type="button">↻ Odśwież listę przerw 6S</button>
     <div class="nav-row"><button id="startButton" class="primary">Rozpocznij 6S</button><button id="historyButton" class="secondary">Historia miesięczna</button></div>
     <div id="startStatus" class="sub" style="margin-top:12px"></div>
   </section>
@@ -101,9 +101,33 @@ const mins=t=>{const [h,m]=String(t||'00:00').split(':').map(Number);return (h||
 const esc=v=>String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function setStartStatus(text,error=false){$('startStatus').textContent=text;$('startStatus').style.color=error?'#fca5a5':'#9fb0c6'}
 function updateConnection(){const online=navigator.onLine;$('connection').classList.toggle('offline',!online);$('connectionText').textContent=online?'Online':'Brak połączenia'}
-async function loadBreaks(){try{const {data,error}=await db.from('break_schedule_config').select('schedule').eq('id',1).single();if(error)throw error;if(Array.isArray(data?.schedule)){breaks=data.schedule;localStorage.setItem(BREAK_KEY,JSON.stringify(breaks));return}}catch(e){try{const local=JSON.parse(localStorage.getItem(BREAK_KEY)||'[]');if(local.length)breaks=local}catch(_){}}}
+function normalizeKioskBreak(item){const n={...(item||{})};n.start=String(n.start||'00:00').slice(0,5);n.shift=String(n.shift||'all');n.kind=String(n.kind||'').trim().toUpperCase()==='6S'?'6S':'main';n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];n.enabled=n.enabled!==false&&String(n.enabled).toLowerCase()!=='false';n.durationMinutes=parseInt(n.durationMinutes,10)||15;return n}
+async function loadBreaks(options={}){
+ const allowLocal=options.allowLocal!==false;
+ try{
+  const result=await db.from('break_schedule_config').select('id,schedule').eq('id',1).limit(1);
+  if(result.error)throw result.error;
+  const row=(result.data||[])[0];
+  if(!row||!Array.isArray(row.schedule))throw new Error('Brak rekordu id=1 lub pola schedule.');
+  breaks=row.schedule.map(normalizeKioskBreak);
+  localStorage.setItem(BREAK_KEY,JSON.stringify(breaks));
+  return {source:'baza',count:breaks.length};
+ }catch(e){
+  if(!allowLocal)throw e;
+  try{const local=JSON.parse(localStorage.getItem(BREAK_KEY)||'[]');if(Array.isArray(local)&&local.length){breaks=local.map(normalizeKioskBreak);return{source:'pamięć lokalna',count:breaks.length,error:e.message}}}catch(_){}
+  breaks=DEFAULT_BREAKS.map(normalizeKioskBreak);
+  return{source:'harmonogram domyślny',count:breaks.length,error:e.message};
+ }
+}
+async function refreshBreaks(showMessage=true){
+ try{
+  if(showMessage)setStartStatus('Pobieranie harmonogramu bezpośrednio z bazy...');
+  const result=await loadBreaks({allowLocal:false});buildSessions();
+  if(showMessage){const all6s=breaks.filter(x=>x.enabled&&x.kind==='6S').map(x=>'zm. '+x.shift+' / '+x.start).join(', ');setStartStatus('Źródło: '+result.source+'. Wszystkie aktywne przerwy 6S: '+(all6s||'brak')+'.')}
+ }catch(e){setStartStatus('Błąd odczytu harmonogramu z bazy: '+e.message,true)}
+}
 async function loadOperators(){const {data,error}=await db.from('sixs_operators').select('*').eq('active',true).order('operator_name');if(error)throw error;operators=data||[];$('operatorSelect').innerHTML=operators.map(o=>`<option value="${o.id}">${esc(o.operator_name)}</option>`).join('')||'<option value="">Brak aktywnych operatorów</option>';const saved=localStorage.getItem('sixs_last_operator');if(saved&&operators.some(o=>String(o.id)===saved))$('operatorSelect').value=saved}
-function buildSessions(){const d=new Date($('sessionDate').value+'T00:00:00'),dow=d.getDay();const list=breaks.filter(x=>x.enabled!==false&&x.kind==='6S'&&Array.isArray(x.days)&&x.days.includes(dow)).sort((a,b)=>mins(a.start)-mins(b.start));$('sessionSelect').innerHTML=list.map(x=>`<option value="${x.shift||'all'}|${x.start}">Zmiana ${x.shift||'all'} / ${x.start}</option>`).join('')||'<option value="all|00:00">Brak przerwy 6S</option>';selectNearest()}
+function buildSessions(){const value=$('sessionDate').value;if(!value)return;const d=new Date(value+'T00:00:00'),dow=d.getDay();const list=breaks.map(normalizeKioskBreak).filter(x=>x.enabled&&x.kind==='6S'&&x.days.includes(dow)).sort((a,b)=>mins(a.start)-mins(b.start)||String(a.shift).localeCompare(String(b.shift)));$('sessionSelect').innerHTML=list.map(x=>`<option value="${esc(x.shift)}|${esc(x.start)}">Zmiana ${esc(x.shift)} / ${esc(x.start)}</option>`).join('')||'<option value="all|00:00">Brak aktywnej przerwy 6S dla wybranego dnia</option>';selectNearest()}
 function selectNearest(){const opts=[...$('sessionSelect').options];if(!opts.length)return;const now=new Date();if($('sessionDate').value!==dateKey(now)){$('sessionSelect').selectedIndex=0;return}const nowM=now.getHours()*60+now.getMinutes();let best=opts[0],diff=Infinity;for(const o of opts){const d=Math.abs(mins(o.value.split('|')[1])-nowM);if(d<diff){best=o;diff=d}}$('sessionSelect').value=best.value}
 function isoWeek(date){const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));const y=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-y)/86400000)+1)/7)}
 function lastWorkday(year,month){const d=new Date(year,month+1,0);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return d.getDate()}
@@ -195,7 +219,7 @@ async function loadMonthlyHistory(){
 }
 
 window.backToStart=backToStart;window.setStatus=setStatus;window.openProblem=openProblem;
-async function init(){updateConnection();window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);$('sessionDate').value=dateKey(new Date());try{await loadBreaks();buildSessions();await loadOperators();setStartStatus('Gotowe. Wybierz operatora i rozpocznij.')}catch(e){setStartStatus('Błąd uruchamiania: '+e.message,true)}$('sessionDate').addEventListener('change',buildSessions);$('startButton').addEventListener('click',async()=>{try{await loadWork()}catch(e){setStartStatus('Nie można pobrać danych: '+e.message,true)}});$('changeOperator').addEventListener('click',backToStart);$('historyButton').addEventListener('click',openHistory);$('closeHistory').addEventListener('click',closeHistory);$('loadHistory').addEventListener('click',loadMonthlyHistory);$('undoButton').addEventListener('click',undo);$('cancelProblem').addEventListener('click',closeProblem);$('reasonList').addEventListener('click',e=>{const b=e.target.closest('.reason');if(!b)return;selectedReason=b.dataset.reason;[...$('reasonList').children].forEach(x=>x.classList.toggle('selected',x===b));$('confirmProblem').disabled=false});$('confirmProblem').addEventListener('click',()=>{const id=Number($('problemModal').dataset.taskId),note=$('problemNote').value.trim();const comment=selectedReason+(note?' — '+note:'');closeProblem();setStatus(id,'problem',comment)});$('problemModal').addEventListener('click',e=>{if(e.target===$('problemModal'))closeProblem()})}
+async function init(){updateConnection();window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);$('sessionDate').value=dateKey(new Date());try{const breakResult=await loadBreaks();buildSessions();await loadOperators();setStartStatus('Gotowe. Harmonogram: '+breakResult.source+', '+breakResult.count+' pozycji.')}catch(e){setStartStatus('Błąd uruchamiania: '+e.message,true)}$('sessionDate').addEventListener('change',buildSessions);$('refreshBreaksButton').addEventListener('click',()=>refreshBreaks(true));window.addEventListener('focus',()=>refreshBreaks(false));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshBreaks(false)});$('startButton').addEventListener('click',async()=>{try{await loadWork()}catch(e){setStartStatus('Nie można pobrać danych: '+e.message,true)}});$('changeOperator').addEventListener('click',backToStart);$('historyButton').addEventListener('click',openHistory);$('closeHistory').addEventListener('click',closeHistory);$('loadHistory').addEventListener('click',loadMonthlyHistory);$('undoButton').addEventListener('click',undo);$('cancelProblem').addEventListener('click',closeProblem);$('reasonList').addEventListener('click',e=>{const b=e.target.closest('.reason');if(!b)return;selectedReason=b.dataset.reason;[...$('reasonList').children].forEach(x=>x.classList.toggle('selected',x===b));$('confirmProblem').disabled=false});$('confirmProblem').addEventListener('click',()=>{const id=Number($('problemModal').dataset.taskId),note=$('problemNote').value.trim();const comment=selectedReason+(note?' — '+note:'');closeProblem();setStatus(id,'problem',comment)});$('problemModal').addEventListener('click',e=>{if(e.target===$('problemModal'))closeProblem()})}
 window.addEventListener('load',init);
 </script>
 </body>

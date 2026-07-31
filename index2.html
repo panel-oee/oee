@@ -3009,29 +3009,31 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
     }
 
 
-    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}$/.test(String(n.start))?n.start:f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=n.kind==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false;return n;}
+    function normalizeBreakItem(item){const f={start:"09:30",durationMinutes:30,kind:"main",shift:"1",soundType:"siren",customSoundUrl:"",customSoundName:"",title:"PRZERWA",subtitle:"Do końca przerwy pozostało:",days:[1,2,3,4,5],enabled:true};const n=Object.assign({},f,item||{});n.start=/^\d{2}:\d{2}/.test(String(n.start))?String(n.start).slice(0,5):f.start;n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||f.durationMinutes));n.kind=String(n.kind||'').trim().toUpperCase()==='6S'?'6S':'main';n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.customSoundUrl=String(n.customSoundUrl||'').trim();n.customSoundName=String(n.customSoundName||'').trim();if(n.soundType==='custom'&&!n.customSoundUrl)n.soundType=n.kind==='6S'?'chime':'siren';n.title=String(n.title||(n.kind==='6S'?'CZAS 6S':'PRZERWA')).trim();n.subtitle=String(n.subtitle||(n.kind==='6S'?'Sprzątanie / porządki — do końca pozostało:':'Do końca przerwy pozostało:')).trim();n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):f.days;if(!n.days.length)n.days=f.days;n.enabled=n.enabled!==false&&String(n.enabled).toLowerCase()!=='false';return n;}
     function loadBreakScheduleFromLocalStorage(){try{const saved=localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY);BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(localStorage.getItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes'),10)||5));if(saved){const p=JSON.parse(saved);if(Array.isArray(p)&&p.length){BREAK_SCHEDULE=p.map(normalizeBreakItem);return;}}}catch(e){console.warn('Błąd lokalnej konfiguracji przerw:',e.message);}BREAK_SCHEDULE=JSON.parse(JSON.stringify(DEFAULT_BREAK_SCHEDULE)).map(normalizeBreakItem);}
     async function loadBreakScheduleFromSupabase(){
         try{
-            const{data,error}=await supabaseClient.from('break_schedule_config').select('schedule, refresh_minutes').eq('id',1).single();
-            if(error)throw error;
-            if(data&&Array.isArray(data.schedule)){
-                BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
-                BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
-                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
-                localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
-                setupBreakScheduleAutoRefresh();
-                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
-                console.log('Pobrano harmonogram przerw z Supabase:', BREAK_SCHEDULE.length, 'poz.');
-            }else{
-                loadBreakScheduleFromLocalStorage();
-                if(typeof updateBreakOverlay==='function') updateBreakOverlay();
-            }
-        }catch(e){
-            console.warn('Nie pobrano konfiguracji przerw z Supabase:',e.message);
-            loadBreakScheduleFromLocalStorage();
+            const result=await supabaseClient.from('break_schedule_config').select('id,schedule,refresh_minutes').eq('id',1).limit(1);
+            if(result.error)throw result.error;
+            const data=(result.data||[])[0];
+            if(!data||!Array.isArray(data.schedule))throw new Error('Brak rekordu harmonogramu id=1.');
+            BREAK_SCHEDULE=data.schedule.map(normalizeBreakItem);
+            BREAK_REFRESH_MINUTES=Math.max(1,Math.min(60,parseInt(data.refresh_minutes,10)||5));
+            localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY,JSON.stringify(BREAK_SCHEDULE));
+            localStorage.setItem(BREAK_SCHEDULE_STORAGE_KEY+'_refresh_minutes',String(BREAK_REFRESH_MINUTES));
+            window.__breakScheduleSource='baza';
+            window.__breakScheduleLoadedAt=new Date().toISOString();
             setupBreakScheduleAutoRefresh();
-            if(typeof updateBreakOverlay==='function') updateBreakOverlay();
+            if(typeof updateBreakOverlay==='function')updateBreakOverlay();
+            console.log('Harmonogram z bazy:',BREAK_SCHEDULE.map(x=>x.shift+' / '+x.start+' / '+x.kind));
+            return BREAK_SCHEDULE;
+        }catch(e){
+            console.error('Błąd odczytu harmonogramu z bazy:',e.message);
+            loadBreakScheduleFromLocalStorage();
+            window.__breakScheduleSource='pamięć lokalna po błędzie: '+e.message;
+            setupBreakScheduleAutoRefresh();
+            if(typeof updateBreakOverlay==='function')updateBreakOverlay();
+            return BREAK_SCHEDULE;
         }
     }
     function setupBreakScheduleAutoRefresh(){if(breakScheduleRefreshTimer)clearInterval(breakScheduleRefreshTimer);breakScheduleRefreshTimer=setInterval(loadBreakScheduleFromSupabase,Math.max(1,Math.min(60,BREAK_REFRESH_MINUTES))*60*1000);}
@@ -3048,6 +3050,10 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
                 .subscribe();
         }catch(e){console.warn('Realtime Supabase dla przerw niedostępny:',e.message);}
     }
+
+    window.addEventListener('focus',function(){loadBreakScheduleFromSupabase();});
+    document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')loadBreakScheduleFromSupabase();});
+    window.addEventListener('storage',function(e){if(e.key===BREAK_SCHEDULE_STORAGE_KEY)loadBreakScheduleFromSupabase();});
 
     function prepareBreakAudio() {
         // TV-compatible preparation: use normal HTML <audio> first.

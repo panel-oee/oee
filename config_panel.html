@@ -94,7 +94,7 @@ function dayName(d){return ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'][d]||'?'}
 function minutesFromTimeText(t){const p=String(t||'00:00').split(':').map(Number);return(p[0]||0)*60+(p[1]||0)}
 function timeTextFromMinutes(total){total=((total%1440)+1440)%1440;return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0')}
 function formatDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function normalizeBreak(item){const n=Object.assign({start:'09:30',durationMinutes:15,kind:'main',shift:'1',soundType:'siren',title:'PRZERWA',subtitle:'Do końca przerwy pozostało:',days:[1,2,3,4,5],enabled:true,customSoundUrl:'',customSoundName:''},item||{});n.kind=n.kind==='6S'?'6S':'main';n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||15));n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];if(!n.days.length)n.days=[1,2,3,4,5];n.enabled=n.enabled!==false;return n}
+function normalizeBreak(item){const n=Object.assign({start:'09:30',durationMinutes:15,kind:'main',shift:'1',soundType:'siren',title:'PRZERWA',subtitle:'Do końca przerwy pozostało:',days:[1,2,3,4,5],enabled:true,customSoundUrl:'',customSoundName:''},item||{});n.start=String(n.start||'09:30').slice(0,5);n.kind=String(n.kind||'').trim().toUpperCase()==='6S'?'6S':'main';n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||15));n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];if(!n.days.length)n.days=[1,2,3,4,5];n.enabled=n.enabled!==false;return n}
 function breakKey(x){return String(x.shift||'all')+'|'+String(x.start||'00:00')}
 function selectedBreakObj(){const p=(SELECTED_BREAK_KEY||'').split('|');return{shift:p[0]||'all',start:p[1]||'00:00'}}
 function showTab(name){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');event&&event.target&&event.target.classList.add('active');if(name==='sixs')loadTasks();if(name==='operators'){renderBreakDropdowns();loadAssignments();}if(name==='history')loadHistory();}
@@ -173,7 +173,30 @@ async function processPendingBreakChanges(){let migrated=await migrateTasksForCh
 function removeBreak(i){if(!confirm('Usunąć tę przerwę z harmonogramu?'))return;SCHEDULE.splice(i,1);renderSchedule();msg('Usunięto przerwę lokalnie. Kliknij Zapisz harmonogram w bazie.')}
 function duplicateBreak(i){const x=Object.assign({},normalizeBreak(SCHEDULE[i]));SCHEDULE.push(x);renderSchedule();msg('Zduplikowano przerwę. Zmień godzinę lub zmianę i zapisz w bazie.')}
 function restoreDefaultBreaks(){if(confirm('Przywrócić domyślny harmonogram?')){SCHEDULE=DEFAULT_BREAKS.map(normalizeBreak);renderSchedule();msg('Przywrócono domyślne. Kliknij Zapisz harmonogram w bazie.')}}
-async function saveBreakScheduleToDb(){SCHEDULE=SCHEDULE.map(normalizeBreak).sort((a,b)=>String(a.shift||'1').localeCompare(String(b.shift||'1'))||String(a.start).localeCompare(String(b.start)));const refresh=Math.max(1,Math.min(60,parseInt(document.getElementById('breakRefreshMinutes').value,10)||5));localStorage.setItem(KEY,JSON.stringify(SCHEDULE));localStorage.setItem(KEY+'_refresh_minutes',String(refresh));const{error}=await supabaseClient.from('break_schedule_config').upsert({id:1,schedule:SCHEDULE,refresh_minutes:refresh,updated_at:new Date().toISOString()},{onConflict:'id'});if(error){msg('Błąd zapisu harmonogramu: '+error.message,true);return}try{const r=await processPendingBreakChanges();renderSchedule();msg(`Zapisano harmonogram. Przeniesiono ${r.migrated} zadań; skopiowano ${r.tasks} zadań i ${r.assignments} przypisań do nowych przerw.`)}catch(e){renderSchedule();msg('Harmonogram zapisano, ale zadania nie zostały w pełni przetworzone: '+e.message,true)}}
+async function saveBreakScheduleToDb(){
+ try{
+  SCHEDULE=SCHEDULE.map(normalizeBreak).sort((a,b)=>String(a.shift||'1').localeCompare(String(b.shift||'1'))||String(a.start).localeCompare(String(b.start)));
+  const refresh=Math.max(1,Math.min(60,parseInt(document.getElementById('breakRefreshMinutes').value,10)||5));
+  const payload={id:1,schedule:SCHEDULE,refresh_minutes:refresh};
+  msg('Zapisywanie harmonogramu w bazie...');
+  const write=await supabaseClient.from('break_schedule_config').upsert(payload,{onConflict:'id'}).select('id,schedule,refresh_minutes');
+  if(write.error)throw write.error;
+  const verify=await supabaseClient.from('break_schedule_config').select('id,schedule,refresh_minutes').eq('id',1).limit(1);
+  if(verify.error)throw verify.error;
+  const row=(verify.data||[])[0];
+  if(!row||!Array.isArray(row.schedule))throw new Error('Baza nie zwróciła zapisanego harmonogramu.');
+  const saved=row.schedule.map(normalizeBreak);
+  const expectedKeys=new Set(SCHEDULE.map(x=>breakKey(x))),savedKeys=new Set(saved.map(x=>breakKey(x)));
+  const missing=[...expectedKeys].filter(k=>!savedKeys.has(k));
+  if(missing.length)throw new Error('Po zapisie brakuje w bazie: '+missing.join(', '));
+  SCHEDULE=saved;
+  localStorage.setItem(KEY,JSON.stringify(SCHEDULE));
+  localStorage.setItem(KEY+'_refresh_minutes',String(row.refresh_minutes||refresh));
+  const r=await processPendingBreakChanges();
+  renderSchedule();renderBreakDropdowns();
+  msg(`Zapisano i potwierdzono ${SCHEDULE.length} pozycji harmonogramu w bazie. Przeniesiono ${r.migrated} zadań; skopiowano ${r.tasks} zadań i ${r.assignments} przypisań.`);
+ }catch(e){msg('Błąd zapisu lub weryfikacji harmonogramu: '+e.message,true)}
+}
 function sixsBreakOptions(){return SCHEDULE.map(normalizeBreak).filter(x=>x.enabled!==false&&x.kind==='6S').sort((a,b)=>String(a.shift).localeCompare(String(b.shift))||minutesFromTimeText(a.start)-minutesFromTimeText(b.start))}
 function renderBreakDropdowns(){const opts=sixsBreakOptions();const html=opts.length?opts.map(x=>`<option value="${breakKey(x)}">Zmiana ${escapeHtml(x.shift)} / ${escapeHtml(x.start)} / ${x.durationMinutes} min</option>`).join(''):'<option value="">Brak przerw 6S</option>';['sixsBreakSelect','assignBreakSelect'].forEach(id=>{const sel=document.getElementById(id);if(!sel)return;const prev=sel.value||SELECTED_BREAK_KEY;sel.innerHTML=html;if(prev&&Array.from(sel.options).some(o=>o.value===prev))sel.value=prev;else if(opts[0])sel.value=breakKey(opts[0]);});if(!SELECTED_BREAK_KEY&&opts[0])SELECTED_BREAK_KEY=breakKey(opts[0]);}
 function selectSixsFromDropdown(){return}
