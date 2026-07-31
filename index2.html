@@ -2535,7 +2535,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 #sixsTvBox.show{display:block!important;visibility:visible!important;opacity:1!important;width:min(1200px,96vw)!important;max-height:48vh!important;overflow:auto!important;margin:3px auto 18px!important;background:#111d30!important;border:2px solid #38bdf8!important}
 </style>
 <style id="sixs-operator-groups-fix">
-#sixsTvList{display:block!important}
+#sixsTvList{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:10px}
 .sixs-operator-group{display:block;margin:0 0 12px}
 .sixs-operator-head{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;margin-bottom:7px;border-left:5px solid #38bdf8;background:rgba(56,189,248,.12);border-radius:7px;color:#e0f2fe;font-size:17px;font-weight:1000;text-transform:uppercase;letter-spacing:.4px}
 .sixs-operator-head strong{color:#7dd3fc;font-size:16px}
@@ -3233,26 +3233,17 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         const marked=tasks.filter(t=>String((logs[String(t.id)]||{}).status||'').trim()!=='').length;
         prog.textContent=done+'/'+tasks.length+' wykonane';
         if(!tasks.length){
-            list.innerHTML='<div class="sixs-tv-task pending"><span class="sixs-tv-icon">ℹ️</span><span>Brak przypisanych zadań dla tej przerwy<div class="sixs-tv-meta">Zmiana '+sixsSafe(SIXS_TV_CACHE.shift)+' / '+sixsSafe(SIXS_TV_CACHE.start)+'</div></span></div>';
-            if(meta)meta.textContent='Pokazywane są wyłącznie aktywne zadania przypisane operatorom dla dokładnej godziny przerwy.';
+            list.innerHTML='<div class="sixs-tv-task pending"><span class="sixs-tv-icon">ℹ️</span><span>Brak zadań przypisanych do tej przerwy<div class="sixs-tv-meta">Zmiana '+sixsSafe(SIXS_TV_CACHE.shift)+' / '+sixsSafe(SIXS_TV_CACHE.start)+'</div></span></div>';
+            if(meta)meta.textContent='Wyświetlane są unikalne zadania przypisane do dokładnej godziny przerwy 6S.';
             box.classList.add('show');return;
         }
-        const groups={};
-        tasks.forEach(t=>{
-            const assigned=Array.isArray(t.assigned_operator_names)&&t.assigned_operator_names.length?t.assigned_operator_names:['Nieprzypisane'];
-            assigned.forEach(operatorName=>{(groups[operatorName]=groups[operatorName]||[]).push(t);});
-        });
-        list.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b,'pl')).map(operatorName=>{
-            const groupTasks=groups[operatorName];
-            const groupDone=groupTasks.filter(t=>String((logs[String(t.id)]||{}).status||'').toLowerCase()==='done').length;
-            const cards=groupTasks.map(t=>{
-                const l=logs[String(t.id)]||{},st=String(l.status||'pending').toLowerCase();
-                const statusText=st==='done'?'wykonane':st==='problem'?'problem':st==='skipped'?'pominięte':'oczekuje';
-                return '<div class="sixs-tv-task '+sixsSafe(st)+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span><span class="sixs-tv-area">'+sixsSafe(t.area||'Pozostałe')+'</span>'+sixsSafe(t.task_name||'Zadanie 6S')+'<div class="sixs-tv-meta">'+sixsSafe(operatorName+' / '+statusText)+'</div></span></div>';
-            }).join('');
-            return '<section class="sixs-operator-group"><div class="sixs-operator-head"><span>'+sixsSafe(operatorName)+'</span><strong>'+groupDone+'/'+groupTasks.length+'</strong></div><div class="sixs-operator-grid">'+cards+'</div></section>';
+        list.innerHTML=tasks.map(t=>{
+            const l=logs[String(t.id)]||{},st=String(l.status||'pending').toLowerCase();
+            const statusText=st==='done'?'wykonane':st==='problem'?'problem':st==='skipped'?'pominięte':'oczekuje';
+            const responsible=Array.isArray(t.responsible_names)&&t.responsible_names.length?' • Odpowiedzialni: '+t.responsible_names.join(', '):'';
+            return '<div class="sixs-tv-task '+sixsSafe(st)+'"><span class="sixs-tv-icon">'+sixsTvStatusIcon(st)+'</span><span><span class="sixs-tv-area">'+sixsSafe(t.area||'Pozostałe')+'</span>'+sixsSafe(t.task_name||'Zadanie 6S')+'<div class="sixs-tv-meta">'+sixsSafe(statusText+responsible)+'</div></span></div>';
         }).join('');
-        if(meta)meta.textContent='Status łączny: '+marked+'/'+tasks.length+' oznaczonych • wszystkie przypisane osoby • zmiana '+SIXS_TV_CACHE.shift+' • '+SIXS_TV_CACHE.start;
+        if(meta)meta.textContent='Status łączny: '+marked+'/'+tasks.length+' oznaczonych • zadania dla przerwy • zmiana '+SIXS_TV_CACHE.shift+' • '+SIXS_TV_CACHE.start;
         box.classList.add('show');
     }
     async function sixsTvUpdate(timing,now){
@@ -3269,26 +3260,36 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             if(taskRes.error)throw taskRes.error;
             let tasks=(taskRes.data||[]).filter(t=>sixsTaskIsDue(t,now));
             const taskIds=tasks.map(t=>t.id).filter(v=>v!=null);
-            let assignments=[],names={};
+            let assignments=[],responsibleByTask={};
             if(taskIds.length){
-                const assRes=await supabaseClient.from('sixs_break_task_assignments').select('task_id,operator_id,active').eq('shift',shift).eq('sixs_start',start).in('task_id',taskIds).eq('active',true);
+                const assRes=await supabaseClient.from('sixs_group_task_assignments').select('task_id,group_id,active').eq('shift',shift).eq('sixs_start',start).in('task_id',taskIds).eq('active',true);
                 if(assRes.error)throw assRes.error;
                 assignments=assRes.data||[];
-                const operatorIds=[...new Set(assignments.map(a=>a.operator_id).filter(v=>v!=null))];
-                if(operatorIds.length){
-                    const opRes=await supabaseClient.from('sixs_operators').select('id,operator_name,active').in('id',operatorIds);
+                const groupIds=[...new Set(assignments.map(a=>a.group_id).filter(v=>v!=null))];
+                let members=[];
+                if(groupIds.length){
+                    const opRes=await supabaseClient.from('sixs_operators').select('id,operator_name,active,group_id').in('group_id',groupIds).eq('active',true);
                     if(opRes.error)throw opRes.error;
-                    (opRes.data||[]).forEach(o=>{if(o.active!==false)names[String(o.id)]=o.operator_name;});
+                    members=opRes.data||[];
                 }
+                assignments.forEach(a=>{
+                    const names=members.filter(o=>String(o.group_id)===String(a.group_id)).map(o=>o.operator_name).filter(Boolean);
+                    const bucket=responsibleByTask[String(a.task_id)]||(responsibleByTask[String(a.task_id)]=new Set());
+                    names.forEach(n=>bucket.add(n));
+                });
             }
+            const assignedIds=new Set(assignments.map(a=>String(a.task_id)));
+            tasks=tasks.filter(t=>assignedIds.has(String(t.id))).map(t=>Object.assign({},t,{responsible_names:[...(responsibleByTask[String(t.id)]||new Set())]}));
             let logs={};
-            const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start);
+            const logsRes=await supabaseClient.from('sixs_task_logs').select('*').eq('log_date',logDate).eq('shift',shift).eq('sixs_start',start).in('task_id',tasks.map(t=>t.id));
             if(logsRes.error)throw logsRes.error;
-            const sessionLogs=logsRes.data||[];
-            sessionLogs.forEach(l=>{if(l&&l.task_id!=null){const k=String(l.task_id),prev=logs[k];if(!prev||String(l.updated_at||l.created_at||'')>String(prev.updated_at||prev.created_at||''))logs[k]=l;}});
-            const visibleAssignments=assignments.filter(a=>names[String(a.operator_id)]);
-            const assignedIds=new Set(visibleAssignments.map(a=>String(a.task_id)));
-            tasks=tasks.filter(t=>assignedIds.has(String(t.id))).map(t=>Object.assign({},t,{assigned_operator_names:visibleAssignments.filter(a=>String(a.task_id)===String(t.id)).map(a=>names[String(a.operator_id)]).filter(Boolean)}));
+            const groupedLogs={};
+            (logsRes.data||[]).forEach(l=>{if(l&&l.task_id!=null)(groupedLogs[String(l.task_id)]||(groupedLogs[String(l.task_id)]=[])).push(l);});
+            Object.entries(groupedLogs).forEach(([taskId,rows])=>{
+                const activeRows=rows.filter(r=>String(r.status||'').toLowerCase()!=='deleted');
+                const chosen=activeRows.find(r=>String(r.status||'').toLowerCase()==='done')||activeRows.find(r=>String(r.status||'').toLowerCase()==='problem')||activeRows.find(r=>String(r.status||'').toLowerCase()==='skipped')||activeRows.sort((a,b)=>String(b.updated_at||b.created_at||'').localeCompare(String(a.updated_at||a.created_at||'')))[0];
+                if(chosen)logs[taskId]=chosen;
+            });
             SIXS_TV_CACHE={key,tasks,logs,shift,start,lastFetch:Date.now()};
             sixsTvRender();
         }catch(e){
