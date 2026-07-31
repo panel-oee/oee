@@ -26,7 +26,7 @@
 </style>
 </head>
 <body><div class="wrap">
-<div class="box topbar"><div><h1>⚙️ Panel konfiguracji przerw i 6S</h1><div class="muted">Jedno miejsce do ustawiania harmonogramu przerw, zadań 6S, operatorów, przypisań i historii.</div></div><button class="btn" onclick="window.location.href='panel.html'">← Wróć do panelu</button></div>
+<div class="box topbar"><div><h1>⚙️ Panel konfiguracji przerw i 6S</h1><div class="muted">Jedno miejsce do ustawiania harmonogramu przerw, zadań 6S, operatorów, przypisań i historii.</div></div><div class="actions"><button class="btn" onclick="window.location.href='kiosk_6S.html'">✅ Terminal 6S</button><button class="btn" onclick="window.location.href='statystyki_6S.html'">📅 Statystyki 6S</button><button class="btn" onclick="window.location.href='panel.html'">← Wróć do panelu</button></div></div>
 <div class="tabs"><button class="tab active" onclick="showTab('schedule')">1. Harmonogram</button><button class="tab" onclick="showTab('sixs')">2. Katalog zadań 6S</button><button class="tab" onclick="showTab('operators')">3. Operatorzy i przypisania</button><button class="tab" onclick="showTab('history')">4. Historia</button></div>
 <div id="globalStatus" class="status">Status: ładowanie...</div>
 
@@ -102,7 +102,7 @@ function formatDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padS
 function normalizeBreak(item){const n=Object.assign({start:'09:30',durationMinutes:15,kind:'main',shift:'1',soundType:'siren',title:'PRZERWA',subtitle:'Do końca przerwy pozostało:',days:[1,2,3,4,5],enabled:true,customSoundUrl:'',customSoundName:''},item||{});n.start=String(n.start||'09:30').slice(0,5);n.kind=String(n.kind||'').trim().toUpperCase()==='6S'?'6S':'main';n.durationMinutes=Math.max(1,Math.min(240,parseInt(n.durationMinutes,10)||15));n.shift=['1','2','3','all'].includes(String(n.shift))?String(n.shift):'1';n.soundType=['siren','chime','double','beep','none','custom'].includes(String(n.soundType))?String(n.soundType):(n.kind==='6S'?'chime':'siren');n.days=Array.isArray(n.days)?n.days.map(Number).filter(d=>d>=0&&d<=6):[1,2,3,4,5];if(!n.days.length)n.days=[1,2,3,4,5];n.enabled=n.enabled!==false;return n}
 function breakKey(x){return String(x.shift||'all')+'|'+String(x.start||'00:00')}
 function selectedBreakObj(){const p=(SELECTED_BREAK_KEY||'').split('|');return{shift:p[0]||'all',start:p[1]||'00:00'}}
-function showTab(name){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');event&&event.target&&event.target.classList.add('active');if(name==='sixs')loadTasks();if(name==='operators'){renderBreakDropdowns();loadAssignments();}if(name==='history')loadHistory();}
+function showTab(name){document.querySelectorAll('.section').forEach(section=>section.classList.remove('active'));const names=['schedule','sixs','operators','history'];document.querySelectorAll('.tab').forEach((tab,index)=>tab.classList.toggle('active',names[index]===name));const section=document.getElementById('tab-'+name);if(section)section.classList.add('active');if(name==='sixs')loadTasks();if(name==='operators'){renderBreakDropdowns();loadAssignments();}if(name==='history')loadHistory();}
 function renderDayChips(){const c=document.getElementById('fDays');c.innerHTML=[1,2,3,4,5,6,0].map(d=>`<label class="chip checked"><input type="checkbox" checked value="${d}" onchange="this.closest('.chip').classList.toggle('checked',this.checked)">${dayName(d)}</label>`).join('')}
 function setDayChips(days){document.querySelectorAll('#fDays input').forEach(cb=>{cb.checked=(days||[]).includes(Number(cb.value));cb.closest('.chip').classList.toggle('checked',cb.checked)})}
 function readDayChips(){return Array.from(document.querySelectorAll('#fDays input:checked')).map(cb=>Number(cb.value))}
@@ -181,6 +181,8 @@ function restoreDefaultBreaks(){if(confirm('Przywrócić domyślny harmonogram?'
 async function saveBreakScheduleToDb(){
  try{
   SCHEDULE=SCHEDULE.map(normalizeBreak).sort((a,b)=>String(a.shift||'1').localeCompare(String(b.shift||'1'))||String(a.start).localeCompare(String(b.start)));
+  const duplicateBreakKeys=SCHEDULE.map(breakKey).filter((key,index,all)=>all.indexOf(key)!==index);
+  if(duplicateBreakKeys.length)throw new Error('Powielona zmiana i godzina przerwy: '+[...new Set(duplicateBreakKeys)].join(', ')+'. Zmień godzinę albo usuń duplikat.');
   const refresh=Math.max(1,Math.min(60,parseInt(document.getElementById('breakRefreshMinutes').value,10)||5));
   const payload={id:1,schedule:SCHEDULE,refresh_minutes:refresh};
   msg('Zapisywanie harmonogramu w bazie...');
