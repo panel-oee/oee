@@ -3110,93 +3110,44 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 </style>
 
 
-<style id="copilot-center-deadline-clock-v1">
-/* COPILOT: centralny zegar do 17.08.2026 05:59 + dashboard odswiezany w tle */
-#copilotDeadlineClockOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  background: radial-gradient(circle at center, rgba(8, 17, 31, .66) 0%, rgba(8, 17, 31, .28) 48%, rgba(8, 17, 31, .12) 100%);
-  color: #f8fafc;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+<style id="copilot-center-clock-final-v1">
+/* COPILOT: zegar centralny + odliczanie + keepalive Supabase */
+#copilotDeadlineClockOverlay{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle at center,rgba(10,22,39,.82) 0%,rgba(10,22,39,.62) 52%,rgba(10,22,39,.42) 100%);color:#f8fafc;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+#copilotDeadlineClockOverlay.is-hidden{display:none!important;}
+.copilot-deadline-clock-card{width:min(94vw,1240px);min-height:min(78vh,820px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,3.3vh,42px);padding:clamp(24px,3.2vw,54px) clamp(28px,4vw,72px);border:1px solid rgba(125,211,252,.46);border-radius:clamp(18px,2.2vw,34px);background:linear-gradient(135deg,rgba(15,26,44,.92),rgba(16,29,49,.78));box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.06);text-align:center;backdrop-filter:blur(5px);}
+.copilot-current-clock-section,.copilot-countdown-section{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.copilot-current-clock-section{gap:clamp(6px,1vh,12px);}
+.copilot-countdown-section{gap:clamp(8px,1.2vh,14px);}
+.copilot-deadline-clock-label,.copilot-countdown-label{font-size:clamp(18px,1.55vw,31px);line-height:1;font-weight:1000;letter-spacing:.22em;text-transform:uppercase;color:#7dd3fc;text-shadow:0 2px 12px rgba(56,189,248,.20);}
+#copilotCurrentClockValue{font-size:clamp(82px,12.2vw,220px);line-height:.86;font-weight:1000;letter-spacing:.015em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 8px 26px rgba(0,0,0,.74),0 2px 8px rgba(56,189,248,.16);}
+#copilotCurrentDateValue{margin-top:clamp(2px,.4vh,6px);font-size:clamp(18px,1.55vw,30px);line-height:1;font-weight:900;letter-spacing:.08em;color:#cbd5e1;font-variant-numeric:tabular-nums;text-transform:uppercase;}
+#copilotDeadlineClockValue{display:block;white-space:pre-line;font-size:clamp(74px,10.9vw,196px);line-height:.86;font-weight:1000;letter-spacing:.025em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 8px 26px rgba(0,0,0,.76),0 2px 8px rgba(56,189,248,.16);}
+.copilot-deadline-clock-subtitle{display:grid;gap:7px;color:#f1f5f9;font-size:clamp(16px,1.25vw,26px);font-weight:1000;}
+#copilotDeadlineClockNow{color:#94a3b8;font-size:clamp(13px,1vw,21px);font-weight:900;font-variant-numeric:tabular-nums;}
+#copilotKeepAliveStatus{position:fixed;right:14px;bottom:10px;z-index:1000000;pointer-events:none;color:rgba(203,213,225,.78);font-size:clamp(10px,.72vw,14px);font-weight:800;letter-spacing:.03em;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px rgba(0,0,0,.9);}
+@media(max-width:700px){.copilot-deadline-clock-card{width:calc(100vw - 18px);min-height:72vh;padding:22px 12px;gap:24px}.copilot-deadline-clock-label,.copilot-countdown-label{font-size:clamp(14px,4vw,20px);letter-spacing:.16em}#copilotCurrentClockValue{font-size:clamp(58px,17vw,110px)}#copilotDeadlineClockValue{font-size:clamp(52px,15vw,98px)}#copilotCurrentDateValue{font-size:clamp(14px,4vw,20px)}}
+</style>
+
+
+<style id="copilot-current-clock-color-v3">
+/* COPILOT: zmiana kolorystyki tylko gornej sekcji aktualnej godziny. Odliczanie zostaje bez zmian. */
+.copilot-current-clock-section {
+  padding: clamp(10px, 1.5vh, 18px) clamp(8px, 1vw, 16px);
+  border-radius: clamp(14px, 1.4vw, 24px);
+  background: linear-gradient(135deg, rgba(245, 158, 11, .12), rgba(251, 191, 36, .05) 48%, rgba(15, 23, 42, .05));
+  box-shadow: inset 0 0 0 1px rgba(251, 191, 36, .18), 0 0 38px rgba(245, 158, 11, .08);
 }
-#copilotDeadlineClockOverlay.is-hidden {
-  display: none !important;
+.copilot-current-clock-section .copilot-deadline-clock-label {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 18px rgba(251, 191, 36, .30) !important;
 }
-.copilot-deadline-clock-card {
-  width: min(92vw, 1120px);
-  min-height: min(54vh, 520px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(12px, 2.1vh, 26px);
-  padding: clamp(28px, 4.3vw, 68px);
-  border: 1px solid rgba(125, 211, 252, .46);
-  border-radius: clamp(18px, 2.2vw, 34px);
-  background: linear-gradient(135deg, rgba(15, 23, 42, .84), rgba(30, 41, 59, .72));
-  box-shadow: 0 28px 90px rgba(0, 0, 0, .48), inset 0 0 0 1px rgba(255, 255, 255, .06);
-  text-align: center;
-  backdrop-filter: blur(5px);
+#copilotCurrentClockValue {
+  color: #fff7ed !important;
+  text-shadow: 0 8px 28px rgba(0, 0, 0, .78), 0 0 24px rgba(251, 191, 36, .26), 0 0 54px rgba(245, 158, 11, .16) !important;
 }
-.copilot-deadline-clock-label {
-  font-size: clamp(18px, 1.45vw, 30px);
-  font-weight: 900;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: #7dd3fc;
-}
-#copilotDeadlineClockValue {
-  font-size: clamp(64px, 10.8vw, 190px);
-  line-height: .92;
-  font-weight: 1000;
-  letter-spacing: .03em;
-  color: #ffffff;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 6px 30px rgba(56, 189, 248, .22), 0 2px 8px rgba(0, 0, 0, .82);
-}
-.copilot-deadline-clock-subtitle {
-  display: grid;
-  gap: 6px;
-  color: #cbd5e1;
-  font-size: clamp(17px, 1.25vw, 26px);
-  font-weight: 800;
-}
-#copilotDeadlineClockNow {
-  color: #94a3b8;
-  font-size: clamp(14px, 1vw, 21px);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-#copilotKeepAliveStatus {
-  position: fixed;
-  right: 14px;
-  bottom: 10px;
-  z-index: 1000000;
-  pointer-events: none;
-  color: rgba(203, 213, 225, .78);
-  font-size: clamp(10px, .72vw, 14px);
-  font-weight: 800;
-  letter-spacing: .03em;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 3px rgba(0,0,0,.9);
-}
-@media (max-width: 700px) {
-  #copilotDeadlineClockOverlay {
-    background: rgba(8, 17, 31, .74);
-  }
-  .copilot-deadline-clock-card {
-    width: calc(100vw - 20px);
-    min-height: 45vh;
-    padding: 26px 16px;
-  }
-  #copilotDeadlineClockValue {
-    font-size: clamp(48px, 17vw, 94px);
-  }
+#copilotCurrentDateValue {
+  color: #fed7aa !important;
+  text-shadow: 0 2px 14px rgba(245, 158, 11, .18) !important;
 }
 </style>
 
@@ -3205,12 +3156,19 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 
 <div id="copilotDeadlineClockOverlay" aria-live="polite">
   <div class="copilot-deadline-clock-card">
-    <div class="copilot-deadline-clock-label">Zegar do 17.08.2026 05:59</div>
-    <div id="copilotDeadlineClockValue">--d --:--:--</div>
-    <div class="copilot-deadline-clock-subtitle">
-      <span>Pozostały czas do startu / końca postoju</span>
-      <span id="copilotDeadlineClockNow">Aktualny czas: --:--:--</span>
-    </div>
+    <section class="copilot-current-clock-section">
+      <div class="copilot-deadline-clock-label">AKTUALNA GODZINA</div>
+      <div id="copilotCurrentClockValue">--:--:--</div>
+      <div id="copilotCurrentDateValue">--.--.----</div>
+    </section>
+    <section class="copilot-countdown-section">
+      <div class="copilot-countdown-label">DO KOŃCA POSTOJU POZOSTAŁO</div>
+      <div id="copilotDeadlineClockValue">--d
+--:--:--</div>
+      <div class="copilot-deadline-clock-subtitle">
+        <span>START PRODUKCJI 17.08.2026, GODZ. 6:00</span>
+      </div>
+    </section>
   </div>
 </div>
 <div id="copilotKeepAliveStatus">Supabase: odświeżanie w tle...</div>
@@ -5090,91 +5048,72 @@ function buildCalendar() {
 
 
 <script id="copilot-center-deadline-clock-script-v1">
-(function () {
-  const DEADLINE = new Date(2026, 7, 17, 5, 59, 0, 0); // 17 sierpnia 2026 05:59 czasu lokalnego
-  const KEEPALIVE_INTERVAL_MS = 60 * 1000;
-  let refreshInProgress = false;
-  let keepAliveTimer = null;
-
-  function pad2(value) {
-    return String(value).padStart(2, '0');
-  }
-
-  function formatCurrentDateTime(date) {
-    return pad2(date.getDate()) + '.' + pad2(date.getMonth() + 1) + '.' + date.getFullYear() + ' ' +
-      pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
-  }
-
-  function updateCenterDeadlineClock() {
-    const overlay = document.getElementById('copilotDeadlineClockOverlay');
-    const value = document.getElementById('copilotDeadlineClockValue');
-    const nowLabel = document.getElementById('copilotDeadlineClockNow');
-    if (!overlay || !value) return;
-
-    const now = new Date();
-    const remainingMs = DEADLINE.getTime() - now.getTime();
-    if (remainingMs <= 0) {
+(function(){
+  const DEADLINE=new Date(2026,7,17,5,59,0,0);
+  const KEEPALIVE_INTERVAL_MS=60*1000;
+  let refreshInProgress=false;
+  let keepAliveTimer=null;
+  function pad2(v){return String(v).padStart(2,'0');}
+  function formatCurrentDateTime(d){return pad2(d.getDate())+'.'+pad2(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());}
+  function updateCenterDeadlineClock(){
+    const overlay=document.getElementById('copilotDeadlineClockOverlay');
+    const currentValue=document.getElementById('copilotCurrentClockValue');
+    const currentDateValue=document.getElementById('copilotCurrentDateValue');
+    const value=document.getElementById('copilotDeadlineClockValue');
+    const nowLabel=document.getElementById('copilotDeadlineClockNow');
+    if(!overlay||!value||!currentValue)return;
+    const now=new Date();
+    currentValue.textContent=pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds());
+    if(currentDateValue)currentDateValue.textContent=pad2(now.getDate())+'.'+pad2(now.getMonth()+1)+'.'+now.getFullYear();
+    const remainingMs=DEADLINE.getTime()-now.getTime();
+    if(remainingMs<=0){
       overlay.classList.add('is-hidden');
-      value.textContent = '00d 00:00:00';
-      if (keepAliveTimer) {
-        window.clearInterval(keepAliveTimer);
-        keepAliveTimer = null;
-      }
-      const status = document.getElementById('copilotKeepAliveStatus');
-      if (status) status.textContent = 'Supabase: odświeżanie zakończone 17.08.2026 05:59';
+      value.textContent='00d\n00:00:00';
+      if(keepAliveTimer){window.clearInterval(keepAliveTimer);keepAliveTimer=null;}
+      const status=document.getElementById('copilotKeepAliveStatus');
+      if(status)status.textContent='Supabase: odświeżanie zakończone 17.08.2026 05:59';
       return;
     }
-
-    const totalSeconds = Math.floor(remainingMs / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    value.textContent = String(days).padStart(2, '0') + 'd ' + pad2(hours) + ':' + pad2(minutes) + ':' + pad2(seconds);
-    if (nowLabel) nowLabel.textContent = 'Aktualny czas: ' + formatCurrentDateTime(now);
+    const totalSeconds=Math.floor(remainingMs/1000);
+    const days=Math.floor(totalSeconds/86400);
+    const hours=Math.floor((totalSeconds%86400)/3600);
+    const minutes=Math.floor((totalSeconds%3600)/60);
+    const seconds=totalSeconds%60;
+    value.textContent=String(days).padStart(2,'0')+'d\n'+pad2(hours)+':'+pad2(minutes)+':'+pad2(seconds);
+    if(nowLabel)nowLabel.textContent='Aktualny czas: '+formatCurrentDateTime(now);
   }
-
-  async function refreshSupabaseInBackground() {
-    if (refreshInProgress || new Date() >= DEADLINE) return;
-    refreshInProgress = true;
-    const status = document.getElementById('copilotKeepAliveStatus');
-    try {
-      if (status) status.textContent = 'Supabase: odświeżam wykresy...';
-      const dynamicDate = new Date();
-      if (typeof currentYear !== 'undefined') currentYear = dynamicDate.getFullYear();
-      if (typeof currentMonth !== 'undefined') currentMonth = dynamicDate.getMonth();
-      if (typeof getDefaultDashboardDay === 'function' && typeof selectedDayGlobal !== 'undefined') {
-        selectedDayGlobal = getDefaultDashboardDay();
-      }
-      if (typeof refreshDashboardView === 'function') {
+  async function refreshSupabaseInBackground(){
+    if(refreshInProgress||new Date()>=DEADLINE)return;
+    refreshInProgress=true;
+    const status=document.getElementById('copilotKeepAliveStatus');
+    try{
+      if(status)status.textContent='Supabase: odświeżam wykresy...';
+      const dynamicDate=new Date();
+      if(typeof currentYear!=='undefined')currentYear=dynamicDate.getFullYear();
+      if(typeof currentMonth!=='undefined')currentMonth=dynamicDate.getMonth();
+      if(typeof getDefaultDashboardDay==='function'&&typeof selectedDayGlobal!=='undefined')selectedDayGlobal=getDefaultDashboardDay();
+      if(typeof refreshDashboardView==='function'){
         await refreshDashboardView();
-      } else {
-        if (typeof loadOeeConfigFromSupabase === 'function') await loadOeeConfigFromSupabase();
-        if (typeof loadDataFromSupabase === 'function') await loadDataFromSupabase();
-        if (typeof buildCalendar === 'function') buildCalendar();
-        if (typeof renderChart === 'function') renderChart();
-        if (typeof renderCommentsBox === 'function') await renderCommentsBox();
+      }else{
+        if(typeof loadOeeConfigFromSupabase==='function')await loadOeeConfigFromSupabase();
+        if(typeof loadDataFromSupabase==='function')await loadDataFromSupabase();
+        if(typeof buildCalendar==='function')buildCalendar();
+        if(typeof renderChart==='function')renderChart();
+        if(typeof renderCommentsBox==='function')await renderCommentsBox();
       }
-      if (status) status.textContent = 'Supabase: ostatnie odświeżenie ' + formatCurrentDateTime(new Date());
-    } catch (error) {
-      console.error('COPILOT keepalive: błąd odświeżania w tle:', error);
-      if (status) status.textContent = 'Supabase: błąd odświeżania, ponawiam za 60 s';
-    } finally {
-      refreshInProgress = false;
-    }
+      if(status)status.textContent='Supabase: ostatnie odświeżenie '+formatCurrentDateTime(new Date());
+    }catch(error){
+      console.error('COPILOT keepalive: błąd odświeżania w tle:',error);
+      if(status)status.textContent='Supabase: błąd odświeżania, ponawiam za 60 s';
+    }finally{refreshInProgress=false;}
   }
-
-  document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded',function(){
     updateCenterDeadlineClock();
-    window.setInterval(updateCenterDeadlineClock, 1000);
-    window.setTimeout(refreshSupabaseInBackground, 15000);
-    keepAliveTimer = window.setInterval(refreshSupabaseInBackground, KEEPALIVE_INTERVAL_MS);
+    window.setInterval(updateCenterDeadlineClock,1000);
+    window.setTimeout(refreshSupabaseInBackground,15000);
+    keepAliveTimer=window.setInterval(refreshSupabaseInBackground,KEEPALIVE_INTERVAL_MS);
   });
-
-  window.addEventListener('focus', function () {
-    updateCenterDeadlineClock();
-    refreshSupabaseInBackground();
-  });
+  window.addEventListener('focus',function(){updateCenterDeadlineClock();refreshSupabaseInBackground();});
 })();
 </script>
 
