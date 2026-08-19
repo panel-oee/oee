@@ -1942,7 +1942,7 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
         const avg=directorAvg(recs),prev=directorPrevAvg(),delta=(avg!==null&&prev!==null)?avg-prev:null;
         const pareto=directorPareto(recs);
         const noFail=directorDaysNoFailure(recs);
-        const crit=recs.filter(x=>parseFloat(x.rec.oee)<=readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
+        const crit=recs.filter(x=>parseFloat(x.rec.oee)<readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
         const missing=(function(){const d=new Date();d.setDate(d.getDate()-1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);if(d.getFullYear()!==currentYear||d.getMonth()!==currentMonth)return false;return !gemaBazaDanych[formatDateKey(d)];})();
         function setCard(cardId,valueId,infoId,value,info,cls,color){const card=document.getElementById(cardId),val=document.getElementById(valueId),sub=document.getElementById(infoId);if(!card||!val||!sub)return;card.classList.remove('good','warn','alert');if(cls)card.classList.add(cls);val.innerText=value;sub.innerText=info;val.style.color=color||'var(--text-main)';}
         const alertText=missing?'Brak raportu':(crit>0?crit+' dni kryt.':'OK');
@@ -2567,9 +2567,10 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
 
                 if (gemaBazaDanych[dateKey]) {
                     var oeeValue = parseFloat(gemaBazaDanych[dateKey].oee);
-                    if (oeeValue >= OEE_CONFIG.greenMin) cell.className += ' oee-good';
-                    else if (oeeValue >= OEE_CONFIG.yellowMin) cell.className += ' oee-warn';
-                    else cell.className += ' oee-bad';
+                    const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+                    if (oeeValue < criticalForColor) cell.className += ' oee-bad';
+                    else if (oeeValue < OEE_CONFIG.greenMin) cell.className += ' oee-warn';
+                    else cell.className += ' oee-good';
 
                     cell.innerHTML += '<span class="mini-oee">' + gemaBazaDanych[dateKey].oee + '%</span>';
                     if (gemaBazaDanych[dateKey].notes) {
@@ -2762,15 +2763,16 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
         var valueDisplay = document.getElementById(valueId);
         if (avgOee !== null) {
             valueDisplay.innerText = avgOee + "%";
-            if (avgOee >= OEE_CONFIG.greenMin) {
-                card.style.borderTopColor = '#10b981';
-                valueDisplay.style.color = '#10b981';
-            } else if (avgOee >= OEE_CONFIG.yellowMin) {
+            const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+            if (avgOee < criticalForColor) {
+                card.style.borderTopColor = '#ef4444';
+                valueDisplay.style.color = '#ef4444';
+            } else if (avgOee < OEE_CONFIG.greenMin) {
                 card.style.borderTopColor = '#f59e0b';
                 valueDisplay.style.color = '#f59e0b';
             } else {
-                card.style.borderTopColor = '#ef4444';
-                valueDisplay.style.color = '#ef4444';
+                card.style.borderTopColor = '#10b981';
+                valueDisplay.style.color = '#10b981';
             }
         } else {
             valueDisplay.innerText = "—";
@@ -2824,9 +2826,10 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
         if (maxDay !== null && maxOee > 0) {
             recordDisplay.innerText = maxOee.toFixed(1) + "%";
             document.getElementById('recordTextInfo').innerHTML = `Dzień <b>${maxDay}</b><br>Najlepszy wynik w tym miesiącu`;
-            if (maxOee >= OEE_CONFIG.greenMin) { recordCard.style.borderTopColor = '#10b981'; recordDisplay.style.color = '#10b981'; }
-            else if (maxOee >= OEE_CONFIG.yellowMin) { recordCard.style.borderTopColor = '#f59e0b'; recordDisplay.style.color = '#f59e0b'; }
-            else { recordCard.style.borderTopColor = '#ef4444'; recordDisplay.style.color = '#ef4444'; }
+            const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+            if (maxOee < criticalForColor) { recordCard.style.borderTopColor = '#ef4444'; recordDisplay.style.color = '#ef4444'; }
+            else if (maxOee < OEE_CONFIG.greenMin) { recordCard.style.borderTopColor = '#f59e0b'; recordDisplay.style.color = '#f59e0b'; }
+            else { recordCard.style.borderTopColor = '#10b981'; recordDisplay.style.color = '#10b981'; }
         } else {
             recordDisplay.innerText = "—";
             recordCard.style.borderTopColor = '#64748b';
@@ -2966,7 +2969,7 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
         var quality = diffPieces > 0 ? Math.max(0, Math.min(1, (diffPieces - badPieces) / diffPieces)) : 1;
         var oee = availability * performance * quality;
         var oeePercentForControl = oee * 100;
-        if ((oeePercentForControl < OEE_CONFIG.yellowMin || oeePercentForControl <= readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45)) && (category === "Brak przestojów" || noteText.length < 3)) { alert("OEE poniżej progu wymaga wskazania kategorii i krótkiej notatki przyczyny."); return; }
+        if (oeePercentForControl < readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45) && (category === "Brak przestojów" || noteText.length < 3)) { alert("OEE poniżej progu krytycznego wymaga wskazania kategorii i krótkiej notatki przyczyny."); return; }
 
         const oldAuditRecord = gemaBazaDanych[dateKey] ? JSON.parse(JSON.stringify(gemaBazaDanych[dateKey])) : null;
         const dbRow = {
@@ -3216,8 +3219,10 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
 
             if (gemaBazaDanych[dateKey]) {
                 var rec = gemaBazaDanych[dateKey];
-                var flatColor = rec.oee >= OEE_CONFIG.greenMin ? '#10b981' : (rec.oee >= OEE_CONFIG.yellowMin ? '#f59e0b' : '#ef4444');
-                var gradient = rec.oee >= OEE_CONFIG.greenMin ? 'linear-gradient(180deg, #34d399 0%, #10b981 100%)' : (rec.oee >= OEE_CONFIG.yellowMin ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' : 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)');
+                var criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+                var oeeForColor = parseFloat(rec.oee);
+                var flatColor = oeeForColor < criticalForColor ? '#ef4444' : (oeeForColor < OEE_CONFIG.greenMin ? '#f59e0b' : '#10b981');
+                var gradient = oeeForColor < criticalForColor ? 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)' : (oeeForColor < OEE_CONFIG.greenMin ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' : 'linear-gradient(180deg, #34d399 0%, #10b981 100%)');
 
                 bar.style.height = rec.oee + '%';
                 bar.style.background = gradient;
@@ -3300,7 +3305,8 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
       const label = valueEl ? valueEl.textContent : '';
       const value = parsePct(label);
       if(Number.isFinite(value)){
-        card.classList.add(value >= cfg.greenMin ? 'good' : (value >= cfg.yellowMin ? 'warn' : 'alert'));
+        const critical = (window.readStoredCriticalGuide && window.OEE_CONFIG) ? window.readStoredCriticalGuide(window.OEE_CONFIG.criticalGuide, 45) : 45;
+        card.classList.add(value < critical ? 'alert' : (value < cfg.greenMin ? 'warn' : 'good'));
       }
       const lower = String(label).toLowerCase();
       if(lower.includes('brak') || lower.includes('ok') || lower.includes('bez')) card.classList.add('good');
