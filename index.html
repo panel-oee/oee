@@ -3427,8 +3427,6 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             const { data, error } = await supabaseClient
                 .from('oee_reports')
                 .select('*')
-                .gte('date', startOfMonth)
-                .lte('date', endOfMonth)
                 .order('date', { ascending: true });
 
             if (error) throw error;
@@ -3616,7 +3614,22 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             avgChangeover:map[k].changeoverCount>0?Math.round(map[k].changeoverMinutes/map[k].changeoverCount):null
         })).sort((a,b)=>b.minutes-a.minutes).slice(0,5);
     }
-    function directorDaysNoFailure(records){const sorted=records.slice().sort((a,b)=>b.date-a.date);let days=0;for(const x of sorted){if(directorIsMachineFailure((x.rec||{}).notes))break;if((parseFloat((x.rec||{}).oee)||0)>0)days++;}return days;}
+    function directorDaysNoFailure(records){
+        // Liczymy dni od ostatniego zgłoszenia awarii/usterki w całej pobranej historii,
+        // a nie tylko w aktualnie wybranym miesiącu. Przykład: awaria 29.06,
+        // dzisiejsza data 19.08 => 51 dni.
+        const allRows = Object.keys(gemaBazaDanych || {})
+            .map(k => ({ key:k, rec:gemaBazaDanych[k], date:directorDateFromKey(k, gemaBazaDanych[k]) }))
+            .filter(x => x.rec && x.date)
+            .sort((a,b) => b.date - a.date);
+        const lastFailure = allRows.find(x => directorIsMachineFailure((x.rec || {}).notes));
+        if (!lastFailure) return null;
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const failureDate = new Date(lastFailure.date);
+        failureDate.setHours(0,0,0,0);
+        return Math.max(0, Math.floor((today - failureDate) / 86400000));
+    }
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
         if(!alertValue)return;
@@ -3632,7 +3645,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         const trendText=delta===null?'—':`${delta>=0?'▲':'▼'} ${Math.abs(delta).toFixed(1)} pp`;
         const trendCls=delta===null?'':(delta>=1?'good':(delta<=-1?'alert':'warn'));
         setCard('directorTrendCard','directorTrendValue','directorTrendInfo',trendText,'Bieżący vs poprzedni miesiąc',trendCls,delta===null?'var(--text-main)':(delta>=1?'#10b981':(delta<=-1?'#ef4444':'#f59e0b')));
-        setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',String(noFail),'Dni od ostatniej awarii/usterki',noFail>=5?'good':'warn',noFail>=5?'#10b981':'#f59e0b');
+        setCard('directorNoFailureCard','directorNoFailureValue','directorNoFailureInfo',noFail===null?'—':String(noFail),noFail===null?'Brak zgłoszeń awarii/usterki w pobranej historii':'Dni od ostatniego zgłoszenia awarii/usterki',noFail===null?'good':(noFail>=30?'good':(noFail>=20?'warn':'alert')),noFail===null?'#10b981':(noFail>=30?'#10b981':(noFail>=20?'#f59e0b':'#ef4444')));
         const topLossInfo = pareto.length
             ? `${Math.round(pareto[0].minutes)} min / ${pareto[0].count}x${pareto[0].avgChangeover!==null ? ' • śr. ' + pareto[0].avgChangeover + ' min/przezbr.' : ''}`
             : 'W bieżącym miesiącu';
