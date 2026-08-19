@@ -4057,10 +4057,12 @@ function buildCalendar() {
 
             cell.innerHTML = html;
 
-            if (month === currentMonth) {
+            // Każda komórka ma identyfikator daty, także dni z poprzedniego / następnego miesiąca.
+            // Dzięki temu kalendarz pokazuje zapisane OEE dla dni sąsiedniego miesiąca.
+            cell.id = 'cal-day-' + dateKey;
+            cell.dataset.date = dateKey;
 
-                cell.id = 'cal-day-' + dateKey;
-                cell.dataset.date = dateKey;
+            if (month === currentMonth) {
 
                 cell.onclick = function () {
                     selectDay(dateKey);
