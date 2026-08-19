@@ -3624,7 +3624,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
         const avg=directorAvg(recs),prev=directorPrevAvg(),delta=(avg!==null&&prev!==null)?avg-prev:null;
         const pareto=directorPareto(recs);
         const noFail=directorDaysNoFailure(recs);
-        const crit=recs.filter(x=>parseFloat(x.rec.oee)<=readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
+        const crit=recs.filter(x=>parseFloat(x.rec.oee)<readStoredCriticalGuide(OEE_CONFIG.criticalGuide,45)&&parseFloat(x.rec.oee)>0).length;
         const missing=(function(){const d=new Date();d.setDate(d.getDate()-1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);if(d.getFullYear()!==currentYear||d.getMonth()!==currentMonth)return false;return !gemaBazaDanych[formatDateKey(d)];})();
         function setCard(cardId,valueId,infoId,value,info,cls,color){const card=document.getElementById(cardId),val=document.getElementById(valueId),sub=document.getElementById(infoId);if(!card||!val||!sub)return;card.classList.remove('good','warn','alert');if(cls)card.classList.add(cls);val.innerText=value;sub.innerText=info;val.style.color=color||'var(--text-main)';}
         const alertText=missing?'Brak raportu':(crit>0?crit+' dni kryt.':'OK');
@@ -4082,12 +4082,14 @@ function buildCalendar() {
 			const oeeNum =
 			parseFloat(gemaBazaDanych[dateKey].oee);
 
-			if (oeeNum >= OEE_CONFIG.greenMin) {
-			cell.classList.add('oee-good');
-			} else if (oeeNum >= OEE_CONFIG.yellowMin) {
+			const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+
+			if (oeeNum < criticalForColor) {
+			cell.classList.add('oee-bad');
+			} else if (oeeNum < OEE_CONFIG.greenMin) {
 			cell.classList.add('oee-warn');
 			} else {
-			cell.classList.add('oee-bad');
+			cell.classList.add('oee-good');
 			}
 
 			html +=
@@ -4253,15 +4255,16 @@ function buildCalendar() {
         if (avgOee !== null) {
             valueDisplay.innerText = avgOee + "%";
             
-            if (avgOee >= OEE_CONFIG.greenMin) { 
-                card.style.borderTopColor = '#10b981'; 
-                valueDisplay.style.color = '#10b981';
-            } else if (avgOee >= OEE_CONFIG.yellowMin) { 
+            const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+            if (parseFloat(avgOee) < criticalForColor) { 
+                card.style.borderTopColor = '#ef4444'; 
+                valueDisplay.style.color = '#ef4444';
+            } else if (parseFloat(avgOee) < OEE_CONFIG.greenMin) { 
                 card.style.borderTopColor = '#f59e0b'; 
                 valueDisplay.style.color = '#f59e0b';
             } else { 
-                card.style.borderTopColor = '#ef4444'; 
-                valueDisplay.style.color = '#ef4444';
+                card.style.borderTopColor = '#10b981'; 
+                valueDisplay.style.color = '#10b981';
             }
         } else {
             valueDisplay.innerText = "—"; 
@@ -4397,11 +4400,13 @@ function buildCalendar() {
 
                 bar.style.height = rec.oee + '%';
                 
-                bar.style.background = rec.oee >= OEE_CONFIG.greenMin 
-                    ? 'linear-gradient(180deg, #34d399 0%, #10b981 100%)' 
-                    : (rec.oee >= OEE_CONFIG.yellowMin 
-                        ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)' 
-                        : 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)');
+                const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
+                const oeeForColor = parseFloat(rec.oee);
+                bar.style.background = oeeForColor < criticalForColor
+                    ? 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)'
+                    : (oeeForColor < OEE_CONFIG.greenMin
+                        ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
+                        : 'linear-gradient(180deg, #34d399 0%, #10b981 100%)');
                 
                 let chartNote = rec.notes;
                 let match = chartNote.match(/\[(.*?)\]/);
@@ -4721,13 +4726,13 @@ function buildCalendar() {
   }
 
   function colorForOeeValue(value) {
-    const cfg = window.OEE_CONFIG || {};
+    const cfg = (typeof OEE_CONFIG !== 'undefined' ? OEE_CONFIG : (window.OEE_CONFIG || {}));
     const greenMin = Number(cfg.greenMin ?? cfg.target ?? 70);
-    const yellowMin = Number(cfg.yellowMin ?? 60);
+    const critical = window.readStoredCriticalGuide ? window.readStoredCriticalGuide(cfg.criticalGuide, 45) : Number(cfg.criticalGuide ?? 45);
     if (Number.isNaN(value)) return 'var(--v4-muted)';
-    if (value >= greenMin) return 'var(--v4-good)';
-    if (value >= yellowMin) return 'var(--v4-warn)';
-    return 'var(--v4-bad)';
+    if (value < critical) return 'var(--v4-bad)';
+    if (value < greenMin) return 'var(--v4-warn)';
+    return 'var(--v4-good)';
   }
 
   window.updateV4SelectedDayOee = function updateV4SelectedDayOee(dateKey) {
@@ -4875,7 +4880,7 @@ function buildCalendar() {
     return match ? parseFloat(match[0]) : NaN;
   }
   function getCfg(){
-    return window.OEE_CONFIG || { greenMin:70, yellowMin:60 };
+    return (typeof OEE_CONFIG !== 'undefined' ? OEE_CONFIG : (window.OEE_CONFIG || { greenMin:70, yellowMin:60, criticalGuide:45 }));
   }
   function setStatus(card, status){
     if(!card) return;
@@ -4887,8 +4892,9 @@ function buildCalendar() {
   }
   function statusFromValue(value){
     const cfg = getCfg();
+    const critical = window.readStoredCriticalGuide ? window.readStoredCriticalGuide(cfg.criticalGuide, 45) : Number(cfg.criticalGuide ?? 45);
     if(!Number.isFinite(value)) return '';
-    return value >= cfg.greenMin ? 'good' : (value >= cfg.yellowMin ? 'warn' : 'alert');
+    return value < critical ? 'alert' : (value < cfg.greenMin ? 'warn' : 'good');
   }
   function applyKpiBarColors(){
     const ids = [
@@ -4946,6 +4952,145 @@ function buildCalendar() {
     setTimeout(applyKpiBarColors, 1800);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+
+
+<script id="copilot-oee-threshold-consistency-final">
+(function(){
+  function getCfg(){ return (typeof OEE_CONFIG !== 'undefined' ? OEE_CONFIG : (window.OEE_CONFIG || {})); }
+  function critical(){
+    const cfg = getCfg();
+    if (typeof window.readStoredCriticalGuide === 'function') return window.readStoredCriticalGuide(cfg.criticalGuide, 45);
+    const v = parseFloat(cfg.criticalGuide);
+    return Number.isFinite(v) ? v : 45;
+  }
+  function green(){
+    const cfg = getCfg();
+    const v = parseFloat(cfg.greenMin != null ? cfg.greenMin : cfg.target);
+    return Number.isFinite(v) ? v : 70;
+  }
+  function status(value){
+    const v = parseFloat(String(value).replace(',', '.'));
+    if (!Number.isFinite(v) || v <= 0) return '';
+    if (v < critical()) return 'alert';
+    if (v < green()) return 'warn';
+    return 'good';
+  }
+  function color(statusName){
+    return statusName === 'good' ? '#10b981' : (statusName === 'warn' ? '#f59e0b' : (statusName === 'alert' ? '#ef4444' : '#64748b'));
+  }
+  function gradient(statusName){
+    return statusName === 'good'
+      ? 'linear-gradient(180deg, #34d399 0%, #10b981 100%)'
+      : (statusName === 'warn'
+        ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
+        : 'linear-gradient(180deg, #f87171 0%, #ef4444 100%)');
+  }
+  function dateKeyForDay(day){
+    if (!Number.isFinite(window.currentYear) || !Number.isFinite(window.currentMonth)) return '';
+    return String(window.currentYear) + '-' + String(window.currentMonth + 1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+  }
+  function repaintCalendar(){
+    const db = window.gemaBazaDanych || {};
+    document.querySelectorAll('.calendar-cell').forEach(function(cell){
+      const key = cell.dataset ? cell.dataset.date : '';
+      cell.classList.remove('oee-good','oee-warn','oee-bad');
+      if (!key || !db[key]) return;
+      const s = status(db[key].oee);
+      if (s === 'good') cell.classList.add('oee-good');
+      else if (s === 'warn') cell.classList.add('oee-warn');
+      else if (s === 'alert') cell.classList.add('oee-bad');
+    });
+  }
+  function repaintChart(){
+    const db = window.gemaBazaDanych || {};
+    const bars = Array.from(document.querySelectorAll('#chartGrid .chart-css-bar-wrapper'));
+    bars.forEach(function(wrap, index){
+      const day = index + 1;
+      const key = dateKeyForDay(day);
+      const rec = db[key];
+      const bar = wrap.querySelector('.chart-css-bar');
+      if (!bar) return;
+      if (!rec || !Number.isFinite(parseFloat(rec.oee))) {
+        bar.style.height = '0%';
+        bar.style.background = 'var(--chart-bar-empty)';
+        return;
+      }
+      const s = status(rec.oee);
+      bar.style.height = parseFloat(rec.oee) + '%';
+      bar.style.background = gradient(s);
+    });
+  }
+  function repaintCards(){
+    ['currentWeekOeeCard','lastWeekOeeCard','monthOeeCard','recordOeeCard'].forEach(function(id){
+      const card = document.getElementById(id);
+      if (!card) return;
+      const valueEl = card.querySelector('.stat-card-value');
+      const match = valueEl ? String(valueEl.textContent || '').replace(',', '.').match(/-?\d+(?:\.\d+)?/) : null;
+      const s = match ? status(parseFloat(match[0])) : '';
+      card.classList.remove('good','warn','alert');
+      if (s) card.classList.add(s);
+      const c = color(s);
+      card.style.borderTopColor = c;
+      card.style.borderLeftColor = c;
+      if (valueEl && s) valueEl.style.color = c;
+    });
+    const selected = document.getElementById('v4SelectedOee');
+    if (selected) {
+      const match = String(selected.textContent || '').replace(',', '.').match(/-?\d+(?:\.\d+)?/);
+      selected.style.color = match ? color(status(parseFloat(match[0]))) : 'var(--v4-muted)';
+    }
+  }
+  function repaintDirectorCritical(){
+    const db = window.gemaBazaDanych || {};
+    const alertValue = document.getElementById('directorAlertValue');
+    const alertInfo = document.getElementById('directorAlertInfo');
+    const alertCard = document.getElementById('directorAlertCard');
+    if (!alertValue || !alertInfo || !alertCard || !Number.isFinite(window.currentYear) || !Number.isFinite(window.currentMonth)) return;
+    let critCount = 0;
+    Object.keys(db).forEach(function(key){
+      const d = key && key.includes('-') ? new Date(key + 'T12:00:00') : null;
+      if (!d || d.getFullYear() !== window.currentYear || d.getMonth() !== window.currentMonth) return;
+      const v = parseFloat(db[key].oee);
+      if (Number.isFinite(v) && v > 0 && v < critical()) critCount++;
+    });
+    const text = String(alertValue.textContent || '').toLowerCase();
+    if (!text.includes('brak raportu')) {
+      alertValue.textContent = critCount > 0 ? (critCount + ' dni kryt.') : 'OK';
+      alertInfo.textContent = critCount > 0 ? 'Poniżej progu krytycznego' : 'Brak alertów krytycznych';
+      alertCard.classList.remove('good','warn','alert');
+      alertCard.classList.add(critCount > 0 ? 'alert' : 'good');
+      alertValue.style.color = critCount > 0 ? '#ef4444' : '#10b981';
+    }
+  }
+  function repaintAll(){
+    repaintCalendar();
+    repaintChart();
+    repaintCards();
+    repaintDirectorCritical();
+  }
+  function wrapAfter(name){
+    const original = window[name];
+    if (typeof original === 'function' && !original.__oeeThresholdConsistencyWrapped) {
+      const wrapped = function(){
+        const result = original.apply(this, arguments);
+        setTimeout(repaintAll, 0);
+        setTimeout(repaintAll, 80);
+        return result;
+      };
+      wrapped.__oeeThresholdConsistencyWrapped = true;
+      window[name] = wrapped;
+    }
+  }
+  function init(){
+    ['buildCalendar','renderChart','calculateWeeklyAverageFromDay','renderDirectorInsights','selectDay','refreshDashboardView','navigateMonth'].forEach(wrapAfter);
+    repaintAll();
+    setTimeout(repaintAll, 250);
+    setTimeout(repaintAll, 1000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.repaintOeeThresholdConsistency = repaintAll;
 })();
 </script>
 
