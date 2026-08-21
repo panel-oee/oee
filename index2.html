@@ -2663,6 +2663,25 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 }
 
 </style>
+
+<style>
+/* COPILOT V30 - COMMENTS 45 DAYS ALL MODE */
+.v4-comments-panel .comments-box-list[data-mode="all"]{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-rows:none!important;
+  overflow-y:auto!important;
+  padding-bottom:18px!important;
+  scroll-padding-bottom:18px!important;
+}
+.v4-comments-panel .comments-box-list[data-mode="all"] .comment-box-item{
+  display:flex!important;
+  flex:0 0 auto!important;
+  min-height:38px!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+</style>
 </head>
 <body>
 <div class="container">
@@ -2751,7 +2770,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 </div>
 <div class="panel-section right-bottom-section">
 <div class="comments-box-container">
-<div class="comments-box-title">Uwagi i zakłócenia pracy lakierni w wybranym miesiącu</div>
+<div class="comments-box-title">Uwagi i zakłócenia pracy lakierni z ostatnich 45 dni</div>
 <div class="comments-box-list" id="commentsBoxList"></div>
 </div>
 </div>
@@ -3652,7 +3671,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             btnTop.id = 'commentsTop5Btn';
             btnTop.type = 'button';
             btnTop.innerText = 'TOP 5';
-            btnTop.title = '5 najważniejszych zakłóceń z ostatnich 30 dni: czas przestoju + powtarzalność';
+            btnTop.title = '5 najważniejszych/powtarzających się problemów z ostatnich 45 dni: czas przestoju + liczba wystąpień';
             btnTop.style.padding = '4px 12px';
             btnTop.style.borderRadius = '6px';
             btnTop.style.border = '1px solid var(--border-color)';
@@ -3666,7 +3685,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             btnAll.id = 'commentsAllBtn';
             btnAll.type = 'button';
             btnAll.innerText = 'Wszystkie';
-            btnAll.title = 'Wszystkie zakłócenia z ostatnich 30 dni';
+            btnAll.title = 'Wszystkie zakłócenia z ostatnich 45 dni';
             btnAll.style.padding = '4px 12px';
             btnAll.style.borderRadius = '6px';
             btnAll.style.border = '1px solid var(--border-color)';
@@ -3699,12 +3718,13 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 
         let comments = [];
 
-        // V28: Ostatnie zakłócenia pokazują zakres kroczący 30 dni wstecz,
-        // a nie wyłącznie bieżący miesiąc kalendarzowy.
+        // Ostatnie zakłócenia pokazują zakres kroczący 45 dni wstecz.
+        // TOP 5 = najważniejsze/powtarzające się problemy z tego zakresu,
+        // a Wszystkie = każdy wpis z zakłóceniem z ostatnich 45 dni.
         const rollingEndDate = new Date();
         rollingEndDate.setHours(23, 59, 59, 999);
         const rollingStartDate = new Date(rollingEndDate);
-        rollingStartDate.setDate(rollingStartDate.getDate() - 30);
+        rollingStartDate.setDate(rollingStartDate.getDate() - 45);
         rollingStartDate.setHours(0, 0, 0, 0);
         const notesStart = formatDateKey(rollingStartDate);
         const notesEnd = formatDateKey(rollingEndDate);
@@ -3844,7 +3864,10 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
             // Score łączy łączny czas przestoju i powtarzalność mikroprzestojów.
             const grouped = {};
             comments.forEach(function(comment) {
-                const key = comment.category + '|' + (normalizeIncidentKeyLocal(comment.text) || comment.category.toLowerCase());
+                const normalizedText = normalizeIncidentKeyLocal(comment.text);
+                const key = comment.category === 'Inne'
+                    ? comment.category + '|' + (normalizedText || comment.category.toLowerCase())
+                    : comment.category;
                 if (!grouped[key]) {
                     grouped[key] = {
                         dateKey: comment.dateKey,
@@ -3892,7 +3915,7 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 
         if (comments.length === 0) {
             listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
-            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w ostatnich 30 dniach.</div>`;
+            listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w ostatnich 45 dniach.</div>`;
             return;
         }
 
@@ -3917,8 +3940,8 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 
             if (window.commentsMode === 'top5') {
                 const rank = index + 1;
-                item.title = `${rank}. ${comment.text} | ${durationText}${countText} | Status/działanie: ${statusText}`;
-                item.innerHTML = `<span class="comment-box-date">#${rank} ${fullDateStr}</span> – ${iconHtml} <span><strong>${escapeHtmlLocal(cleanNote)}</strong> — ${escapeHtmlLocal(durationText + countText)}</span>`;
+                item.title = `${rank}. ${comment.text} | Łącznie: ${durationText}${countText} | Ostatni wpis: ${fullDateStr} | Status/działanie: ${statusText}`;
+                item.innerHTML = `<span class="comment-box-date">#${rank} ${fullDateStr}</span> – ${iconHtml} <span><strong>${escapeHtmlLocal(cleanNote)}</strong> — ${escapeHtmlLocal(durationText + countText)}${comment.count > 1 ? ' • powtarza się' : ''}</span>`;
             } else {
                 item.title = `${fullDateStr}${timeText} | ${category} | ${durationText} | ${statusText}`;
                 item.innerHTML = `<span class="comment-box-date">${fullDateStr}</span> – ${iconHtml} <span>${escapeHtmlLocal(cleanNote)}${minutes > 0 ? ' — ' + escapeHtmlLocal(durationText) : ''}</span>`;
