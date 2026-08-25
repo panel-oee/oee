@@ -1,0 +1,9 @@
+{
+  "version": "3.6.5",
+  "displayVersion": "3.6.5",
+  "build": "2026-08-25T21:39:00+02:00",
+  "released": "2026-08-25",
+  "message": "Ograniczono Egress Supabase: raporty OEE są pobierane tylko dla potrzebnego zakresu dat i wskazanych kolumn, zmniejszono częstotliwość odświeżania 6S, a własne dźwięki są zapisywane w Storage zamiast jako Base64 w konfiguracji.",
+  "minimumVersion": "3.4.0",
+  "updateUrl": "./panel.html"
+}
