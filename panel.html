@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Panel OEE Lakiernia 3.6.5</title>
+    <title>Miesięczny Panel OEE - Lakiernia</title>
     <style>
         /* ZMIENNE Z KOLORAMI DLA OBU TRYBÓW */
         :root {
@@ -1252,121 +1252,17 @@ html[data-theme="light"] body.index2-panel-skin td,[data-theme="light"] body.ind
 html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] body.index2-panel-skin tr:hover{background:#f1f5f9!important;}
 </style>
 
+</head>
+<body>
 
-<meta name="theme-color" content="#0f172a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="OEE Lakiernia">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="app-version" content="3.6.5">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<style id="pwa-v32-style">
-.pwa-install-box{position:fixed;right:10px;bottom:10px;z-index:99999;display:flex;gap:7px;padding:8px;border:1px solid #334155;border-radius:12px;background:rgba(15,23,42,.96);box-shadow:0 12px 28px rgba(0,0,0,.35)}.pwa-install-box[hidden]{display:none!important}.pwa-install-box button{padding:9px 12px!important;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:800}.pwa-install-box .close{background:#475569}.pwa-main-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 14px;padding:10px;border:1px solid var(--border-color,#334155);border-radius:12px;background:var(--bg-inputs-flex,#0f172a)}.pwa-main-nav a,.pwa-main-nav button,.pwa-main-nav span{display:flex;align-items:center;justify-content:center;min-height:44px;width:100%;padding:9px 12px!important;border:0;border-radius:9px;text-decoration:none;background:#475569;color:#fff;font:800 13px system-ui;cursor:pointer}.pwa-main-nav .active{background:#2563eb}.pwa-main-nav .app-version-pill{background:#0f172a;color:#7dd3fc;border:1px solid #38bdf8;cursor:default;font-size:11px;letter-spacing:.35px}@media(max-width:900px){.pwa-main-nav{grid-template-columns:1fr 1fr}.pwa-main-nav .app-version-pill{grid-column:1/-1}}@media(max-width:620px){.pwa-main-nav{grid-template-columns:1fr}.pwa-main-nav a,.pwa-main-nav button{min-height:48px;font-size:15px}}@media(display-mode:standalone){.pwa-install-box{display:none!important}}
-</style>
-<style id="oee-v30-style">
-/* OEE Lakiernia v3.0: Dashboard dzisiaj, powiadomienia, Pareto strat */
-.today-dashboard{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin:0 0 18px;padding:14px;border:1px solid var(--border-color,#334155);border-radius:14px;background:var(--bg-inputs-flex,#0f172a);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
-.today-dashboard-head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px}.today-dashboard-title{font-size:14px;font-weight:1000;color:#38bdf8;text-transform:uppercase;letter-spacing:.55px}.today-dashboard-sub{font-size:12px;color:var(--text-muted,#94a3b8);font-weight:750}.today-notification-btn{padding:8px 11px!important;border-radius:9px!important;background:#2563eb!important;color:#fff!important;font-size:12px!important;min-height:36px!important}.today-notification-btn.enabled{background:#059669!important}.today-notification-btn.blocked{background:#dc2626!important}.today-card{min-width:0;background:var(--bg-container,#1e293b);border:1px solid var(--border-color,#334155);border-left:5px solid #38bdf8;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:5px;box-shadow:0 4px 10px rgba(0,0,0,.04)}.today-card.good{border-left-color:#10b981}.today-card.warn{border-left-color:#f59e0b}.today-card.alert{border-left-color:#ef4444}.today-card .label{font-size:11px;font-weight:1000;color:var(--text-muted,#94a3b8);text-transform:uppercase;letter-spacing:.45px}.today-card .value{font-size:24px;font-weight:1000;color:var(--text-main,#f8fafc);line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-card .sub{font-size:12px;font-weight:750;color:var(--text-muted,#94a3b8);line-height:1.22;min-height:29px}.today-card.wide{grid-column:span 2}.today-countdown{font-variant-numeric:tabular-nums}.pareto-section{margin-top:24px;background:var(--bg-inputs-flex,#0f172a);border:1px solid var(--border-color,#334155);border-radius:14px;padding:16px}.pareto-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px}.pareto-title{font-size:16px;font-weight:1000;color:#38bdf8;text-transform:uppercase;letter-spacing:.55px}.pareto-sub{font-size:12px;color:var(--text-muted,#94a3b8);font-weight:750}.pareto-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:14px}.pareto-list{display:grid;gap:9px}.pareto-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(120px,1.2fr) 74px 54px;gap:9px;align-items:center;background:var(--bg-container,#1e293b);border:1px solid var(--border-color,#334155);border-radius:10px;padding:10px}.pareto-name{font-weight:950;color:var(--text-main,#f8fafc);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pareto-bar-track{height:13px;border-radius:999px;background:rgba(148,163,184,.18);overflow:hidden}.pareto-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b)}.pareto-min{font-size:13px;font-weight:950;color:var(--text-main,#f8fafc);text-align:right}.pareto-cum{font-size:12px;font-weight:900;color:var(--text-muted,#94a3b8);text-align:right}.pareto-side{display:grid;gap:10px}.pareto-side-card{background:var(--bg-container,#1e293b);border:1px solid var(--border-color,#334155);border-left:5px solid #f59e0b;border-radius:12px;padding:12px}.pareto-side-card .label{font-size:11px;font-weight:1000;color:var(--text-muted,#94a3b8);text-transform:uppercase;letter-spacing:.45px}.pareto-side-card .value{font-size:19px;font-weight:1000;color:var(--text-main,#f8fafc);line-height:1.15;margin-top:5px}.pareto-side-card .sub{font-size:12px;color:var(--text-muted,#94a3b8);font-weight:750;margin-top:5px;line-height:1.25}.pareto-empty{color:var(--text-muted,#94a3b8);font-weight:800;padding:12px;background:var(--bg-container,#1e293b);border:1px dashed var(--border-color,#334155);border-radius:10px}.notification-toast{position:fixed;right:12px;bottom:12px;z-index:100001;max-width:360px;background:#0f172a;color:#fff;border:1px solid #334155;border-left:5px solid #38bdf8;border-radius:12px;padding:12px;box-shadow:0 18px 36px rgba(0,0,0,.35);font:800 13px system-ui;display:none}.notification-toast.show{display:block;animation:oeeToast .25s ease}.notification-toast small{display:block;color:#94a3b8;font-weight:700;margin-top:4px}@keyframes oeeToast{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-body.operator-mode .pareto-section{display:none!important}
-@media(max-width:1280px){.today-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))}.today-card.wide{grid-column:span 1}.pareto-grid{grid-template-columns:1fr}}
-@media(max-width:720px){.today-dashboard{grid-template-columns:1fr;padding:12px}.today-card .value{font-size:26px}.pareto-row{grid-template-columns:1fr;gap:6px}.pareto-min,.pareto-cum{text-align:left}.notification-toast{left:10px;right:10px;bottom:10px;max-width:none}}
-</style>
-
-<style id="pareto-chart-v33-style">
-/* Wykres Pareto strat - słupki strat + linia kumulacji */
-.pareto-chart-v33{margin:12px 0 16px;background:var(--bg-container,#1e293b);border:1px solid var(--border-color,#334155);border-radius:14px;padding:14px;overflow:hidden;}
-.pareto-chart-v33-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
-.pareto-chart-v33-title{font-size:13px;font-weight:1000;color:#38bdf8;text-transform:uppercase;letter-spacing:.5px;}
-.pareto-chart-v33-sub{font-size:11px;font-weight:750;color:var(--text-muted,#94a3b8);}
-.pareto-chart-v33-plot{position:relative;display:flex;align-items:flex-end;gap:10px;height:280px;padding:34px 12px 42px 44px;border-left:1px solid var(--border-color,#334155);border-bottom:1px solid var(--border-color,#334155);background:linear-gradient(180deg,rgba(148,163,184,.06),rgba(148,163,184,.015));border-radius:10px;overflow:visible;}
-.pareto-chart-v33-axis-label{position:absolute;left:8px;font-size:10px;font-weight:900;color:var(--text-muted,#94a3b8);transform:translateY(50%);}
-.pareto-chart-v33-guide{position:absolute;left:44px;right:12px;border-top:1px dashed rgba(148,163,184,.28);pointer-events:none;}
-.pareto-chart-v33-80{position:absolute;left:44px;right:12px;border-top:2px dashed #38bdf8;box-shadow:0 0 10px rgba(56,189,248,.18);pointer-events:none;}
-.pareto-chart-v33-80 span{position:absolute;right:4px;top:-19px;font-size:10px;font-weight:1000;color:#38bdf8;background:rgba(15,23,42,.7);padding:2px 7px;border-radius:999px;}
-.pareto-chart-v33-bar-wrap{position:relative;flex:1;min-width:48px;height:100%;display:flex;align-items:flex-end;justify-content:center;}
-.pareto-chart-v33-bar{width:min(78%,48px);min-height:2px;border-radius:8px 8px 0 0;background:linear-gradient(180deg,#ef4444,#f59e0b);box-shadow:0 8px 18px rgba(239,68,68,.18);position:relative;}
-.pareto-chart-v33-bar.top80{background:linear-gradient(180deg,#f97316,#ef4444);}
-.pareto-chart-v33-value{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:1000;color:var(--text-main,#f8fafc);white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.65);}
-.pareto-chart-v33-label{position:absolute;bottom:-34px;left:50%;transform:translateX(-50%) rotate(-18deg);transform-origin:center top;width:86px;text-align:center;font-size:10px;font-weight:900;color:var(--text-muted,#94a3b8);line-height:1.1;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
-.pareto-chart-v33-point{position:absolute;width:9px;height:9px;border-radius:50%;background:#38bdf8;border:2px solid #082f49;box-shadow:0 0 0 3px rgba(56,189,248,.16);z-index:5;transform:translate(-50%,50%);}
-.pareto-chart-v33-line{position:absolute;height:3px;background:#38bdf8;transform-origin:left center;z-index:4;border-radius:999px;box-shadow:0 0 9px rgba(56,189,248,.35);}
-.pareto-chart-v33-empty{padding:14px;border:1px dashed var(--border-color,#334155);border-radius:10px;color:var(--text-muted,#94a3b8);font-weight:850;background:var(--bg-inputs-flex,#0f172a);}
-html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ffffff!important;border-color:#cbd5e1!important;}html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33-80 span{background:#dbeafe;color:#1d4ed8;}
-@media(max-width:760px){.pareto-chart-v33{overflow-x:auto}.pareto-chart-v33-plot{min-width:760px;height:270px}.pareto-chart-v33-label{font-size:9px}}
-</style>
-
-
-<style id="app-auto-update-style">
-.app-update-modal{position:fixed;inset:0;z-index:200000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(2,6,23,.72);backdrop-filter:blur(5px)}.app-update-modal.show{display:flex}.app-update-card{width:min(460px,100%);background:var(--bg-container,#172338);color:var(--text-main,#f8fafc);border:1px solid #38bdf8;border-radius:16px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.48)}.app-update-title{font-size:20px;font-weight:1000;color:#38bdf8;margin-bottom:8px}.app-update-copy{font-size:14px;line-height:1.45;color:var(--text-muted,#cbd5e1)}.app-update-version{margin:12px 0;padding:10px;border-radius:10px;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.35);font-weight:900}.app-update-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:16px}.app-update-actions button{min-height:44px}.app-update-later{background:#475569;color:#fff}.app-update-now{background:#0284c7;color:#fff}.app-update-now:disabled{opacity:.65;cursor:wait}.app-update-status{min-height:18px;margin-top:10px;font-size:12px;font-weight:800;color:#7dd3fc}@media(max-width:520px){.app-update-actions{grid-template-columns:1fr}}
-</style>
-
-<style id="app-tools-top-363">.app-tools-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px;padding:10px 13px;border:1px solid var(--border-color,#334155);border-radius:12px;background:var(--bg-inputs-flex,#0f172a)}.app-tools-label{display:flex;flex-direction:column;gap:2px}.app-tools-label strong{font-size:12px;color:#38bdf8;text-transform:uppercase}.app-tools-label span{font-size:11px;color:var(--text-muted,#94a3b8);font-weight:700}.app-tools-actions{display:flex;gap:8px;flex-wrap:wrap}.app-tools-actions button{min-width:180px!important}.rc363-btn{background:#7c3aed!important}.rc363-btn.enabled{background:#059669!important}.header-container{margin-top:0!important}.rc363{position:fixed;inset:0;z-index:210000;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(2,6,23,.82)}.rc363.show{display:flex}.rc363-card{width:min(900px,100%);max-height:92vh;overflow:auto;background:var(--bg-container,#172338);border:1px solid #8b5cf6;border-radius:16px;padding:18px;color:var(--text-main,#fff)}.rc363-head{display:flex;justify-content:space-between;gap:10px}.rc363-title{font-size:20px;font-weight:1000;color:#a78bfa}.rc363-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.rc363-field{display:flex;flex-direction:column;gap:5px}.rc363-field.full{grid-column:1/-1}.rc363-days{display:flex;gap:6px;flex-wrap:wrap}.rc363-days label{padding:6px;border:1px solid var(--border-color,#334155);border-radius:7px}.rc363-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.rc363-list{display:grid;gap:8px;margin-top:14px}.rc363-row{display:grid;grid-template-columns:70px 1fr 200px;gap:8px;align-items:center;padding:10px;border:1px solid var(--border-color,#334155);border-left:5px solid #8b5cf6;border-radius:9px}.rc363-time{font-size:18px;font-weight:1000;color:#a78bfa}.rc363-sub{font-size:11px;color:var(--text-muted,#94a3b8)}@media(max-width:720px){.app-tools-top{flex-direction:column;align-items:stretch}.app-tools-actions{display:grid;grid-template-columns:1fr 1fr}.app-tools-actions button{min-width:0!important}.rc363-grid{grid-template-columns:1fr}.rc363-field.full{grid-column:auto}.rc363-row{grid-template-columns:1fr}}@media(max-width:480px){.app-tools-actions{grid-template-columns:1fr}}</style><style id="nav-layout-364">
-/* 3.6.5: glowna nawigacja zawsze wycentrowana i w jednym rzedzie */
-.pwa-main-nav{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  width:100%!important;
-  max-width:1100px!important;
-  margin:0 auto 18px!important;
-  padding:10px!important;
-  gap:10px!important;
-  align-items:stretch!important;
-  justify-content:center!important;
-}
-.pwa-main-nav>a,.pwa-main-nav>button{
-  width:100%!important;
-  min-width:0!important;
-  min-height:48px!important;
-  margin:0!important;
-  padding:9px 10px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  text-align:center!important;
-  line-height:1.15!important;
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-}
-@media(max-width:620px){
-  .pwa-main-nav{
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    width:100%!important;
-    max-width:none!important;
-    padding:7px!important;
-    gap:6px!important;
-  }
-  .pwa-main-nav>a,.pwa-main-nav>button{
-    min-height:58px!important;
-    padding:7px 4px!important;
-    font-size:clamp(10px,3.15vw,13px)!important;
-    word-break:normal!important;
-    overflow-wrap:break-word!important;
-  }
-}
-@media(max-width:380px){
-  .pwa-main-nav{gap:4px!important;padding:5px!important}
-  .pwa-main-nav>a,.pwa-main-nav>button{font-size:10px!important;padding:6px 2px!important}
-}
-</style></head>
-<body><div id="rc363Modal" class="rc363"><div class="rc363-card"><div class="rc363-head"><div class="rc363-title">Centrum przypomnień 3.6.5</div><button onclick="closeRC363()">Zamknij</button></div><div class="rc363-grid"><input id="rc363Id" type="hidden"><div class="rc363-field"><label>Nazwa</label><input id="rc363Name" placeholder="Raport poranny"></div><div class="rc363-field"><label>Typ</label><select id="rc363Type"><option value="prev">Brak raportu poprzedniego dnia</option><option value="today">Brak raportu dzisiaj</option><option value="sixs">Niewykonane 6S</option><option value="custom">Własne</option></select></div><div class="rc363-field"><label>Godzina</label><input id="rc363Time" type="time" value="08:00"></div><div class="rc363-field"><label>Ponów po minutach</label><input id="rc363Repeat" type="number" min="0" value="0"></div><div class="rc363-field full"><label>Dni</label><div class="rc363-days"><label><input data-d="1" type="checkbox" checked>Pn</label><label><input data-d="2" type="checkbox" checked>Wt</label><label><input data-d="3" type="checkbox" checked>Śr</label><label><input data-d="4" type="checkbox" checked>Cz</label><label><input data-d="5" type="checkbox" checked>Pt</label><label><input data-d="6" type="checkbox">Sb</label><label><input data-d="0" type="checkbox">Nd</label></div></div><div class="rc363-field full"><label>Treść</label><input id="rc363Msg" value="Uzupełnij brakujące dane raportu OEE."></div></div><div class="rc363-actions"><button onclick="testRC363()">Wyślij test</button><button onclick="saveRC363()" style="background:#7c3aed;color:white">Zapisz</button></div><div id="rc363List" class="rc363-list"></div></div></div>
-<div id="appUpdateModal" class="app-update-modal" role="dialog" aria-modal="true" aria-labelledby="appUpdateTitle">
-  <div class="app-update-card">
-    <div id="appUpdateTitle" class="app-update-title">Dostępna aktualizacja aplikacji</div>
-    <div class="app-update-copy">Opublikowano nowszą wersję Panelu OEE. Aktualizacja odświeży pliki aplikacji, ale nie usuwa danych zapisanych w Supabase.</div>
-    <div class="app-update-version"><span id="appUpdateCurrent">Obecna: —</span><br><span id="appUpdateAvailable">Nowa: —</span></div>
-    <div id="appUpdateNotes" class="app-update-copy"></div>
-    <div class="app-update-actions"><button id="appUpdateLater" class="app-update-later" type="button">Później</button><button id="appUpdateNow" class="app-update-now" type="button">Aktualizuj teraz</button></div>
-    <div id="appUpdateStatus" class="app-update-status"></div>
-  </div>
-</div>
-<div id="pwaInstallBox" class="pwa-install-box" hidden><button id="pwaInstallButton" type="button">Zainstaluj aplikację</button><button id="pwaCloseButton" class="close" type="button" aria-label="Zamknij">×</button></div>
-
-
-<div class="container"><div class="header-container">
+<div class="container">
+    <div class="header-container">
         <h2>Miesięczny Panel OEE - Lakiernia</h2>
         <div class="header-controls">
             <select id="operatorModeChooser" class="theme-select" onchange="setPanelMode(this.value)"><option value="manager">Tryb kierownika</option><option value="operator">Tryb operatora</option></select>
+            <button class="btn-config-trigger" onclick="openConfigModal()">⚙️ Konfiguracja progów</button>
+            <button class="btn-config-trigger" onclick="window.location.href='config_panel.html'">⏱️🧹 Konfiguracja Przerw / 6S</button>
+            <button class="btn-config-trigger" title="Otwórz miesięczny kalendarz realizacji zadań 6S" onclick="window.location.href='statystyki_6S.html'">📅 Statystyki 6S</button>
             <div class="theme-switcher">
                 <label for="themeChooser">Motyw:</label>
                 <select id="themeChooser" class="theme-select" onchange="changeTheme(this.value)">
@@ -1375,28 +1271,9 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
                 </select>
             </div>
         </div>
-    <div class="app-tools-top"><div class="app-tools-label"><strong>Powiadomienia i przypomnienia</strong><span>Zezwolenie systemowe oraz harmonogram komunikatów</span></div><div class="app-tools-actions"><button id="notificationToggleBtn" class="today-notification-btn" type="button" onclick="enableOeeNotifications()">Włącz powiadomienia</button><button id="reminderCenterBtn" class="today-notification-btn rc363-btn" type="button" onclick="openRC363()">Centrum przypomnień</button></div></div>
-<nav class="pwa-main-nav" aria-label="Główna nawigacja"><a class="active" href="panel.html">Panel OEE</a><a href="config_panel.html">Przerwy i 6S</a><button type="button" onclick="openConfigModal()">Konfiguracja progów</button></nav>
     </div>
     
-    <section id="todayDashboard" class="today-dashboard" aria-label="Dashboard dzisiaj">
-  <div class="today-dashboard-head">
-    <div>
-      <div class="today-dashboard-title">Dashboard dzisiaj</div>
-      <div class="today-dashboard-sub" id="todayDashboardUpdated">Aktualizacja: —</div>
-    </div>
-    </div>
-  <div class="today-card good" id="todayMonthOeeCard"><div class="label">OEE miesiąca</div><div class="value" id="todayMonthOee">—</div><div class="sub" id="todayMonthOeeSub">Bieżący miesiąc</div></div>
-  <div class="today-card" id="todayShiftCard"><div class="label">Aktualna zmiana</div><div class="value" id="todayShift">—</div><div class="sub" id="todayShiftSub">Pozostało: —</div></div>
-  <div class="today-card" id="todayNextBreakCard"><div class="label">Następna przerwa</div><div class="value" id="todayNextBreak">—</div><div class="sub today-countdown" id="todayNextBreakSub">Odliczanie: —</div></div>
-  <div class="today-card" id="todaySixsCard"><div class="label">6S dzisiaj</div><div class="value" id="todaySixs">—</div><div class="sub" id="todaySixsSub">Historia 6S</div></div>
-  <div class="today-card" id="todayNoFailureCard2"><div class="label">Dni bez awarii</div><div class="value" id="todayNoFailure">—</div><div class="sub">Od ostatniej awarii / usterki</div></div>
-  <div class="today-card" id="todayReportCard"><div class="label">Raport za poprzedni dzień</div><div class="value" id="todayReportStatus">—</div><div class="sub" id="todayReportSub">Kontrola kompletności</div></div>
-  <div class="today-card wide" id="todayForecastCard"><div class="label">Prognoza OEE miesiąca</div><div class="value" id="todayForecastOee">—</div><div class="sub" id="todayForecastSub">Na podstawie zapisanych dni</div></div>
-  <div class="today-card wide" id="todayBestWorstCard"><div class="label">Najlepszy / najgorszy dzień</div><div class="value" id="todayBestWorst">—</div><div class="sub" id="todayBestWorstSub">Bieżący miesiąc</div></div>
-</section>
-<div id="notificationToast" class="notification-toast"></div>
-<div id="editBanner" class="edit-banner">TRYB KOREKTY BŁĘDU: Poprawiasz dane dla wybranego dnia.</div>
+    <div id="editBanner" class="edit-banner">TRYB KOREKTY BŁĘDU: Poprawiasz dane dla wybranego dnia.</div>
 
     <div class="main-layout">
         <div class="left-panel">
@@ -1559,35 +1436,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         <div class="chart-css-grid" id="chartGrid"></div>
     </div>
 
-    <section id="paretoLossesSection" class="pareto-section" aria-label="Analiza Pareto strat">
-  <div class="pareto-head">
-    <div>
-      <div class="pareto-title">📊 Pareto strat miesiąca</div>
-      <div class="pareto-sub">Ranking największych strat z raportów OEE. Czerwony zakres oznacza główne źródła strat.</div>
-    </div>
-    <button class="btn-config-trigger" type="button" onclick="renderParetoLossesV30()">Odśwież Pareto</button>
-  
-  <div id="paretoChartV33" class="pareto-chart-v33" aria-label="Wykres Pareto strat">
-    <div class="pareto-chart-v33-head">
-      <div>
-        <div class="pareto-chart-v33-title">Wykres Pareto strat</div>
-        <div class="pareto-chart-v33-sub">Słupki pokazują minuty strat, a niebieska linia pokazuje procent skumulowany.</div>
-      </div>
-      <div class="pareto-chart-v33-sub">Linia 80% pomaga wskazać główne przyczyny strat.</div>
-    </div>
-    <div id="paretoChartPlotV33" class="pareto-chart-v33-plot"><div class="pareto-chart-v33-empty">Brak danych do wykresu.</div></div>
-  </div>
-
-  <div class="pareto-grid">
-    <div id="paretoLossesList" class="pareto-list"><div class="pareto-empty">Brak danych do analizy.</div></div>
-    <div class="pareto-side">
-      <div class="pareto-side-card"><div class="label">Największa pojedyncza strata</div><div class="value" id="paretoSingleLoss">—</div><div class="sub" id="paretoSingleLossSub">Bieżący miesiąc</div></div>
-      <div class="pareto-side-card"><div class="label">Top 80% strat</div><div class="value" id="paretoTop80">—</div><div class="sub" id="paretoTop80Sub">Zasada Pareto</div></div>
-      <div class="pareto-side-card"><div class="label">Suma strat</div><div class="value" id="paretoTotalLoss">—</div><div class="sub">Awarie + przezbrojenia + serwis</div></div>
-    </div>
-  </div>
-</section>
-<div class="history-section">
+    <div class="history-section">
         <h3>Tabela szczegółowa za bieżący miesiąc</h3>
         <div class="table-responsive">
             <table id="historyTable">
@@ -1612,7 +1461,6 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
 </div>
 
 
-<div class="pwa-version-footer" aria-label="Wersja aplikacji"><span>Wersja <span id="appVersionText">3.6.5</span></span></div>
 <div id="sixsConfigModal" class="gema-modal-overlay">
     <div class="gema-modal break-config-modal">
         <div class="gema-modal-header">Konfiguracja zadań 6S</div>
@@ -2128,7 +1976,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         try {
             const { data, error } = await supabaseClient
                 .from('oee_config')
-                .select('id,target,green_min,yellow_min,chart_guides,critical_guide,target_color,critical_color')
+                .select('*')
                 .eq('id', 1)
                 .single();
 
@@ -2263,9 +2111,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         try {
             const { data, error } = await supabaseClient
                 .from('oee_reports')
-                .select('date,target_speed,breakdown,cleaning,service,bad,m_start,m_end,pcs_start,pcs_end,h_start,h_end,meters,pieces,av,perf,qual,oee,notes')
-                .gte('date', startOfRange)
-                .lte('date', endOfRange)
+                .select('*')
                 .order('date', { ascending: true });
 
             if (error) throw error;
@@ -2362,7 +2208,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         const tbody = document.querySelector('#sixsOperatorsTable tbody');
         if (!tbody) return;
         tbody.innerHTML = '<tr><td colspan="3">Ładowanie operatorów...</td></tr>';
-        const { data, error } = await supabaseClient.from('sixs_operators').select('id,operator_name,group_id,active').order('operator_name');
+        const { data, error } = await supabaseClient.from('sixs_operators').select('*').order('operator_name');
         if (error) {
             tbody.innerHTML = '<tr><td colspan="3">Błąd: ' + escapeHtml(error.message) + '</td></tr>';
             sixsMsg('Błąd pobierania operatorów: ' + error.message, true);
@@ -2409,7 +2255,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         if (!tbody) return;
         const selected = sixsSelectedBreak();
         tbody.innerHTML = '<tr><td colspan="5">Ładowanie zadań...</td></tr>';
-        const { data, error } = await supabaseClient.from('sixs_tasks_config').select('id,task_name,description,area,frequency,timing,recurrence_anchor,monthly_mode,month_day,shift,sixs_start,days,sort_order,active').order('sort_order');
+        const { data, error } = await supabaseClient.from('sixs_tasks_config').select('*').order('sort_order');
         if (error) {
             tbody.innerHTML = '<tr><td colspan="5">Błąd: ' + escapeHtml(error.message) + '</td></tr>';
             sixsMsg('Błąd pobierania zadań: ' + error.message, true);
@@ -2477,7 +2323,7 @@ html[data-theme="light"] body.index2-panel-skin .pareto-chart-v33{background:#ff
         const logDate = dateEl && dateEl.value ? dateEl.value : formatDateKey(new Date());
         const shift = (document.getElementById('sixsHistoryShift') || {}).value || 'all';
         tbody.innerHTML = '<tr><td colspan="8">Ładowanie historii...</td></tr>';
-        let query = supabaseClient.from('sixs_task_logs').select('id,log_date,shift,sixs_start,task_id,task_name,operator_id,operator_name,status,comment,created_at,updated_at').eq('log_date', logDate).order('updated_at', { ascending: false });
+        let query = supabaseClient.from('sixs_task_logs').select('*').eq('log_date', logDate).order('updated_at', { ascending: false });
         if (shift !== 'all') query = query.eq('shift', shift);
         const { data, error } = await query;
         if (error) {
@@ -3729,175 +3575,5 @@ html[data-theme="light"] body.index2-panel-skin .director-mini-sub,
 })();
 </script>
 
-
-<script id="pwa-v32-script">
-(function(){var d=null,b=document.getElementById('pwaInstallBox'),i=document.getElementById('pwaInstallButton'),c=document.getElementById('pwaCloseButton');function s(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}addEventListener('beforeinstallprompt',function(e){e.preventDefault();d=e;if(!s()&&b)b.hidden=false});if(i)i.onclick=async function(){if(d){d.prompt();await d.userChoice;d=null;if(b)b.hidden=true}else alert(/iPhone|iPad|iPod/.test(navigator.userAgent)?'Safari: Udostępnij → Do ekranu początkowego.':'Menu przeglądarki → Zainstaluj aplikację.')};if(c)c.onclick=function(){if(b)b.hidden=true;sessionStorage.setItem('pwa-closed','1')};addEventListener('appinstalled',function(){if(b)b.hidden=true});if(b){if(s())b.hidden=true;else if(sessionStorage.getItem('pwa-closed')!=='1')setTimeout(function(){if(!s())b.hidden=false},1500)}if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').then(function(r){r.update()}).catch(console.warn)});})();
-</script>
-<script id="oee-v30-script">
-(function(){
-'use strict';
-var sixsRefreshTimer=null, dashboardTimer=null, notifyTimer=null;
-var SIXS_CACHE={done:0,total:0,error:''};
-function $(id){return document.getElementById(id)}
-function pad(n){return String(n).padStart(2,'0')}
-function fmtPct(v){return (v===null||v===undefined||isNaN(v))?'—':(Number(v).toFixed(1).replace('.',',')+'%')}
-function safeSet(id,text){var el=$(id); if(el) el.textContent=text}
-function safeHtml(id,html){var el=$(id); if(el) el.innerHTML=html}
-function setCardStatus(id,status){var el=$(id); if(!el)return; el.classList.remove('good','warn','alert'); if(status)el.classList.add(status)}
-function nowMinutes(d){d=d||new Date(); return d.getHours()*60+d.getMinutes()}
-function formatDuration(ms){if(ms<0)ms=0;var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return (h?pad(h)+':':'')+pad(m)+':'+pad(sec)}
-function currentShiftInfo(d){d=d||new Date();var m=nowMinutes(d),shift='3',start=22*60,end=30*60;if(m>=6*60&&m<14*60){shift='1';start=6*60;end=14*60}else if(m>=14*60&&m<22*60){shift='2';start=14*60;end=22*60}else{shift='3';start=(m>=22*60?22*60:-2*60);end=(m>=22*60?30*60:6*60)}var remain=(end-m)*60000;return{shift:shift,label:'Zmiana '+shift,start:start,end:end,remain:remain}}
-function shiftFromBreak(br){return String(br&&br.shift?br.shift:'all')}
-function getBreakDateTime(br,base,addDays){var dt=new Date(base.getFullYear(),base.getMonth(),base.getDate()+addDays,0,0,0,0);var mins=typeof minutesFromTimeText==='function'?minutesFromTimeText(br.start):0;dt.setHours(Math.floor(mins/60),mins%60,0,0);return dt}
-function nextBreakInfo(){var schedule=Array.isArray(window.BREAK_SCHEDULE)?window.BREAK_SCHEDULE:[];var now=new Date();var dow=now.getDay();var candidates=[];for(var plus=0; plus<=1; plus++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+plus);var day=d.getDay();schedule.forEach(function(br){if(!br || br.enabled===false)return; if(Array.isArray(br.days)&&br.days.length&&!br.days.map(Number).includes(day))return; var dt=getBreakDateTime(br,now,plus); if(dt.getTime()>now.getTime())candidates.push({br:br,dt:dt});}); if(candidates.length)break;}candidates.sort(function(a,b){return a.dt-b.dt});return candidates[0]||null}
-function previousWorkdayKey(){var d=new Date();d.setDate(d.getDate()-1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()-1);return typeof formatDateKey==='function'?formatDateKey(d):d.toISOString().slice(0,10)}
-function monthRecordsV30(){if(typeof directorCurrentMonthRecords==='function')return directorCurrentMonthRecords();return Object.keys(window.gemaBazaDanych||{}).map(function(k){return{key:k,rec:gemaBazaDanych[k],date:typeof parseDateKey==='function'?parseDateKey(k):new Date(k)}}).filter(function(x){return x.date&&x.date.getFullYear()===window.currentYear&&x.date.getMonth()===window.currentMonth})}
-function monthStats(){var recs=monthRecordsV30();var sum=0,count=0,best=null,worst=null;recs.forEach(function(x){var o=parseFloat(x.rec&&x.rec.oee);if(!isNaN(o)&&o>0){sum+=o;count++;if(!best||o>best.oee)best={oee:o,date:x.date,key:x.key};if(!worst||o<worst.oee)worst={oee:o,date:x.date,key:x.key};}});return{avg:count?sum/count:null,count:count,best:best,worst:worst}}
-function forecastOee(){var st=monthStats();return st.avg}
-function updateTodayDashboard(){try{var st=monthStats();var avg=st.avg;safeSet('todayMonthOee',fmtPct(avg));safeSet('todayMonthOeeSub',(st.count||0)+' zapisanych dni');setCardStatus('todayMonthOeeCard',avg===null?'':(avg>=((window.OEE_CONFIG||{}).greenMin||70)?'good':(avg>=((window.OEE_CONFIG||{}).yellowMin||60)?'warn':'alert')));var sh=currentShiftInfo();safeSet('todayShift',sh.label);safeSet('todayShiftSub','Pozostało: '+formatDuration(sh.remain));setCardStatus('todayShiftCard','good');var nb=nextBreakInfo();if(nb){var br=nb.br;safeSet('todayNextBreak',String(br.start||'—'));safeSet('todayNextBreakSub',(br.kind==='6S'?'6S':'Przerwa')+' • '+(shiftFromBreak(br)==='all'?'wszystkie zmiany':'zmiana '+shiftFromBreak(br))+' • za '+formatDuration(nb.dt-new Date()));setCardStatus('todayNextBreakCard',br.kind==='6S'?'warn':'good')}else{safeSet('todayNextBreak','—');safeSet('todayNextBreakSub','Brak kolejnej przerwy');setCardStatus('todayNextBreakCard','')}var noFail=typeof directorDaysNoFailure==='function'?directorDaysNoFailure(monthRecordsV30()):null;safeSet('todayNoFailure',noFail===null?'—':String(noFail));setCardStatus('todayNoFailureCard2',noFail>=30?'good':(noFail>=20?'warn':'alert'));var yKey=previousWorkdayKey();var exists=!!(window.gemaBazaDanych&&gemaBazaDanych[yKey]);safeSet('todayReportStatus',exists?'Zapisany':'Brak');safeSet('todayReportSub',yKey);setCardStatus('todayReportCard',exists?'good':'alert');var fc=forecastOee();safeSet('todayForecastOee',fmtPct(fc));safeSet('todayForecastSub','Jeśli trend miesiąca się utrzyma');setCardStatus('todayForecastCard',fc===null?'':(fc>=((window.OEE_CONFIG||{}).target||70)?'good':(fc>=((window.OEE_CONFIG||{}).yellowMin||60)?'warn':'alert')));if(st.best&&st.worst){var b=st.best.date,w=st.worst.date;safeSet('todayBestWorst',pad(b.getDate())+'.'+pad(b.getMonth()+1)+' / '+pad(w.getDate())+'.'+pad(w.getMonth()+1));safeSet('todayBestWorstSub','Najlepszy '+fmtPct(st.best.oee)+' • najgorszy '+fmtPct(st.worst.oee));setCardStatus('todayBestWorstCard','warn')}else{safeSet('todayBestWorst','—');safeSet('todayBestWorstSub','Brak danych');setCardStatus('todayBestWorstCard','')}safeSet('todayDashboardUpdated','Aktualizacja: '+pad(new Date().getHours())+':'+pad(new Date().getMinutes())+':'+pad(new Date().getSeconds()));renderParetoLossesV30();updateNotificationButton();}catch(e){console.warn('Dashboard v3:',e)}}
-async function refreshSixsToday(){if(document.visibilityState==='hidden')return;try{if(!window.supabaseClient)return;var key=typeof formatDateKey==='function'?formatDateKey(new Date()):new Date().toISOString().slice(0,10);var q=await supabaseClient.from('sixs_task_logs').select('status').eq('log_date',key);if(q.error)throw q.error;var rows=q.data||[];var done=rows.filter(function(r){return String(r.status||'').toLowerCase()==='done'}).length;SIXS_CACHE={done:done,total:rows.length,error:''};safeSet('todaySixs',rows.length?done+' / '+rows.length:'—');safeSet('todaySixsSub',rows.length?'Wykonane wpisy z historii':'Brak odkliknięć dzisiaj');setCardStatus('todaySixsCard',rows.length?(done===rows.length?'good':'warn'):'');}catch(e){SIXS_CACHE.error=e.message;safeSet('todaySixs','—');safeSet('todaySixsSub','Brak połączenia z historią 6S');setCardStatus('todaySixsCard','alert')}}
-function renderParetoLossesV30(){try{var losses=typeof directorPareto==='function'?directorPareto(monthRecordsV30()):[];var total=losses.reduce(function(s,x){return s+(parseFloat(x.minutes)||0)},0);if(!losses.length||!total){safeHtml('paretoLossesList','<div class="pareto-empty">Brak strat w bieżącym miesiącu albo brak zapisanych raportów.</div>');safeSet('paretoSingleLoss','—');safeSet('paretoSingleLossSub','Bieżący miesiąc');safeSet('paretoTop80','—');safeSet('paretoTop80Sub','Brak danych');safeSet('paretoTotalLoss','0 min');return}var cum=0, html='',top80=[];losses.forEach(function(x,i){cum+=parseFloat(x.minutes)||0;var pct=total?((x.minutes/total)*100):0;var cp=total?((cum/total)*100):0;if(cp<=80||top80.length===0)top80.push(x.category);html+='<div class="pareto-row"><div class="pareto-name" title="'+escapeHtml(String(x.category||''))+'">'+(i+1)+'. '+escapeHtml(String(x.category||''))+'</div><div class="pareto-bar-track"><div class="pareto-bar" style="width:'+Math.max(4,Math.min(100,pct)).toFixed(1)+'%"></div></div><div class="pareto-min">'+Math.round(x.minutes)+' min</div><div class="pareto-cum">'+cp.toFixed(0)+'%</div></div>';});safeHtml('paretoLossesList',html);safeSet('paretoTop80',String(top80.length)+' przycz.');safeSet('paretoTop80Sub',top80.join(', '));safeSet('paretoTotalLoss',Math.round(total)+' min');var single=biggestSingleLoss();safeSet('paretoSingleLoss',single?single.label:'—');safeSet('paretoSingleLossSub',single?single.sub:'Bieżący miesiąc');}catch(e){console.warn('Pareto v3:',e)}}
-function biggestSingleLoss(){var recs=monthRecordsV30(),best=null;recs.forEach(function(x){var r=x.rec||{};var checks=[{cat:typeof directorExtractCategory==='function'?directorExtractCategory(r.notes||''):'Awaria',min:parseFloat(r.breakdown)||0},{cat:'Zmiana koloru',min:parseFloat(r.cleaning)||0},{cat:'Serwis',min:parseFloat(r.service)||0}];checks.forEach(function(c){if(c.min>0&&(!best||c.min>best.min)){best={min:c.min,cat:c.cat,date:x.date}}})});if(!best)return null;return{label:Math.round(best.min)+' min',sub:(best.cat||'Strata')+' • '+pad(best.date.getDate())+'.'+pad(best.date.getMonth()+1)+'.'+best.date.getFullYear()}}
-function toast(title,body){var el=$('notificationToast');if(!el)return;el.innerHTML=escapeHtml(title)+'<small>'+escapeHtml(body||'')+'</small>';el.classList.add('show');setTimeout(function(){el.classList.remove('show')},6500)}
-function notificationKey(prefix,date){return 'oee_v30_notify_'+prefix+'_'+date}
-function canNotify(){return 'Notification' in window && Notification.permission==='granted'}
-window.enableOeeNotifications=async function(){if(!('Notification' in window)){alert('Ta przeglądarka nie obsługuje powiadomień.');return}var p=Notification.permission;if(p==='default')p=await Notification.requestPermission();updateNotificationButton();if(p==='granted'){localStorage.setItem('oee_v30_notifications','1');toast('Powiadomienia włączone','Aplikacja przypomni o przerwach, 6S i brakującym raporcie.')}else if(p==='denied'){alert('Powiadomienia są zablokowane w ustawieniach przeglądarki.')}}
-function updateNotificationButton(){var btn=$('notificationToggleBtn');if(!btn)return;btn.classList.remove('enabled','blocked');if(!('Notification' in window)){btn.textContent='Powiadomienia niedostępne';btn.classList.add('blocked');return}if(Notification.permission==='granted'){btn.textContent='Powiadomienia włączone';btn.classList.add('enabled')}else if(Notification.permission==='denied'){btn.textContent='Powiadomienia zablokowane';btn.classList.add('blocked')}else btn.textContent='Włącz powiadomienia'}
-function sendNotification(title,body,tag){toast(title,body);if(!canNotify())return;try{navigator.serviceWorker&&navigator.serviceWorker.ready?navigator.serviceWorker.ready.then(function(reg){reg.showNotification(title,{body:body,tag:tag,icon:'icons/icon-192.png',badge:'icons/icon-192.png',renotify:false})}):new Notification(title,{body:body,tag:tag,icon:'icons/icon-192.png'})}catch(e){console.warn('Notification:',e)}}
-function checkBreakAlerts(){if(localStorage.getItem('oee_v30_notifications')!=='1'&&!canNotify())return;var nbAll=(Array.isArray(window.BREAK_SCHEDULE)?window.BREAK_SCHEDULE:[]);var now=new Date(),todayKey=typeof formatDateKey==='function'?formatDateKey(now):now.toISOString().slice(0,10);nbAll.forEach(function(br){if(!br||br.enabled===false)return;if(Array.isArray(br.days)&&br.days.length&&!br.days.map(Number).includes(now.getDay()))return;var dt=getBreakDateTime(br,now,0),diff=Math.round((dt-now)/60000);var desc=(br.kind==='6S'?'Czas 6S':'Przerwa')+' • '+(shiftFromBreak(br)==='all'?'wszystkie zmiany':'zmiana '+shiftFromBreak(br))+' • '+br.start;if(diff===5){var k=notificationKey('break5_'+br.start,todayKey);if(!localStorage.getItem(k)){localStorage.setItem(k,'1');sendNotification((br.kind==='6S'?'🧹 6S za 5 minut':'⏱ Przerwa za 5 minut'),desc,k)}}if(diff===0){var k2=notificationKey('break0_'+br.start,todayKey);if(!localStorage.getItem(k2)){localStorage.setItem(k2,'1');sendNotification((br.kind==='6S'?'🧹 Rozpoczyna się czas 6S':'⏱ Rozpoczyna się przerwa'),desc,k2)}}});var h=now.getHours(),m=now.getMinutes();if(h===21&&m>=50){var yKey=previousWorkdayKey();if(window.gemaBazaDanych&&!gemaBazaDanych[yKey]){var rk=notificationKey('report_'+yKey,todayKey);if(!localStorage.getItem(rk)){localStorage.setItem(rk,'1');sendNotification('📋 Brak raportu OEE','Nie zapisano raportu za '+yKey,rk)}}}if(SIXS_CACHE.total&&SIXS_CACHE.done<SIXS_CACHE.total){var sk=notificationKey('sixs_incomplete',todayKey);if(!localStorage.getItem(sk)){localStorage.setItem(sk,'1');sendNotification('⚠ Nie wykonano wszystkich zadań 6S',SIXS_CACHE.done+' / '+SIXS_CACHE.total+' wykonanych',sk)}}}
-function wrapAfter(name, fn){var old=window[name];if(typeof old==='function'&&!old.__v30Wrapped){var wrapped=function(){var r=old.apply(this,arguments);setTimeout(fn,80);return r};wrapped.__v30Wrapped=true;window[name]=wrapped}}
-function initV30(){wrapAfter('renderTableAndChart',function(){updateTodayDashboard();refreshSixsToday()});wrapAfter('calculateWeeklyAverageFromDay',updateTodayDashboard);wrapAfter('selectDay',updateTodayDashboard);wrapAfter('changeMonth',function(){setTimeout(function(){updateTodayDashboard();refreshSixsToday()},250)});updateNotificationButton();updateTodayDashboard();refreshSixsToday();if(dashboardTimer)clearInterval(dashboardTimer);dashboardTimer=setInterval(updateTodayDashboard,1000);if(sixsRefreshTimer)clearInterval(sixsRefreshTimer);sixsRefreshTimer=setInterval(refreshSixsToday,300000);if(notifyTimer)clearInterval(notifyTimer);notifyTimer=setInterval(checkBreakAlerts,30000);setTimeout(checkBreakAlerts,3000)}
-window.renderParetoLossesV30=renderParetoLossesV30;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initV30);else initV30();
-})();
-</script>
-
-<script id="pareto-chart-v33-script">
-(function(){
-  function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  function currentRecords(){
-    if(typeof window.directorCurrentMonthRecords==='function') return window.directorCurrentMonthRecords();
-    return Object.keys(window.gemaBazaDanych||{}).map(function(k){return {key:k,rec:gemaBazaDanych[k],date:typeof parseDateKey==='function'?parseDateKey(k):new Date(k)}}).filter(function(x){return x.date&&x.date.getFullYear()===window.currentYear&&x.date.getMonth()===window.currentMonth});
-  }
-  function losses(){
-    if(typeof window.directorPareto==='function') return window.directorPareto(currentRecords())||[];
-    return [];
-  }
-  function renderParetoChartV33(){
-    var plot=document.getElementById('paretoChartPlotV33');
-    if(!plot) return;
-    var rows=losses().filter(function(x){return (parseFloat(x.minutes)||0)>0;}).slice(0,8);
-    var total=rows.reduce(function(s,x){return s+(parseFloat(x.minutes)||0);},0);
-    if(!rows.length||!total){plot.innerHTML='<div class="pareto-chart-v33-empty">Brak strat w bieżącym miesiącu albo brak zapisanych raportów.</div>';return;}
-    var max=Math.max.apply(null,rows.map(function(x){return parseFloat(x.minutes)||0;}));
-    var html='';
-    [0,25,50,75,100].forEach(function(v){
-      html+='<div class="pareto-chart-v33-guide" style="bottom:'+v+'%"></div><div class="pareto-chart-v33-axis-label" style="bottom:'+v+'%">'+v+'%</div>';
-    });
-    html+='<div class="pareto-chart-v33-80" style="bottom:80%"><span>80%</span></div>';
-    var cum=0, points=[];
-    rows.forEach(function(x,i){
-      var minutes=parseFloat(x.minutes)||0;
-      cum+=minutes;
-      var h=max?Math.max(2,(minutes/max)*100):0;
-      var cp=total?Math.min(100,(cum/total)*100):0;
-      var top80=cp<=80 || i===0;
-      points.push({x:i,y:cp});
-      html+='<div class="pareto-chart-v33-bar-wrap" data-i="'+i+'"><div class="pareto-chart-v33-bar '+(top80?'top80':'')+'" style="height:'+h.toFixed(1)+'%"><div class="pareto-chart-v33-value">'+Math.round(minutes)+' min</div></div><div class="pareto-chart-v33-label" title="'+esc(x.category)+'">'+esc(x.category)+'</div></div>';
-    });
-    plot.innerHTML=html;
-    setTimeout(function(){drawLine(plot,points);},0);
-  }
-  function drawLine(plot,points){
-    if(!plot||!points.length) return;
-    plot.querySelectorAll('.pareto-chart-v33-point,.pareto-chart-v33-line').forEach(function(e){e.remove();});
-    var wraps=plot.querySelectorAll('.pareto-chart-v33-bar-wrap');
-    var rect=plot.getBoundingClientRect();
-    var coords=[];
-    points.forEach(function(p,i){
-      var w=wraps[i]; if(!w) return;
-      var wr=w.getBoundingClientRect();
-      var x=(wr.left+wr.width/2)-rect.left;
-      var usable=plot.clientHeight-76;
-      var y=34+(100-p.y)/100*usable;
-      coords.push({x:x,y:y,p:p.y});
-      var dot=document.createElement('div');dot.className='pareto-chart-v33-point';dot.style.left=x+'px';dot.style.top=y+'px';dot.title='Kumulacja: '+p.y.toFixed(0)+'%';plot.appendChild(dot);
-    });
-    for(var i=1;i<coords.length;i++){
-      var a=coords[i-1],b=coords[i];
-      var dx=b.x-a.x,dy=b.y-a.y;
-      var len=Math.sqrt(dx*dx+dy*dy);
-      var angle=Math.atan2(dy,dx)*180/Math.PI;
-      var line=document.createElement('div');line.className='pareto-chart-v33-line';line.style.left=a.x+'px';line.style.top=a.y+'px';line.style.width=len+'px';line.style.transform='rotate('+angle+'deg)';plot.appendChild(line);
-    }
-  }
-  function wrap(name){
-    var old=window[name];
-    if(typeof old==='function'&&!old.__paretoChartV33Wrapped){
-      var w=function(){var r=old.apply(this,arguments);setTimeout(renderParetoChartV33,120);return r;};
-      w.__paretoChartV33Wrapped=true;window[name]=w;
-    }
-  }
-  function init(){wrap('renderParetoLossesV30');wrap('renderTableAndChart');wrap('changeMonth');setTimeout(renderParetoChartV33,300);window.renderParetoChartV33=renderParetoChartV33;}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
-
-
-<script id="app-auto-update-script">
-(function(){
-  'use strict';
-  const CURRENT_APP_VERSION='3.6.5';
-  const VERSION_URL='./version.json';
-  const CHECK_INTERVAL=15*60*1000;
-  let availableVersion=null;
-  function parts(v){return String(v||'0').split('.').map(function(x){return parseInt(x,10)||0})}
-  function newer(remote,local){const a=parts(remote),b=parts(local),n=Math.max(a.length,b.length);for(let i=0;i<n;i++){if((a[i]||0)>(b[i]||0))return true;if((a[i]||0)<(b[i]||0))return false}return false}
-  function setText(id,text){const e=document.getElementById(id);if(e)e.textContent=text}
-  function setDisplayedVersion(v){document.querySelectorAll('#appVersionText').forEach(function(e){e.textContent=String(v).replace(/\.0$/,'')});document.querySelectorAll('meta[name="app-version"]').forEach(function(e){e.content=v})}
-  function showUpdate(info){availableVersion=info;setText('appUpdateCurrent','Obecna: '+CURRENT_APP_VERSION);setText('appUpdateAvailable','Nowa: '+info.version);setText('appUpdateNotes',info.message||'Dostępne są poprawki i ulepszenia.');const m=document.getElementById('appUpdateModal');if(m)m.classList.add('show')}
-  function hideUpdate(){const m=document.getElementById('appUpdateModal');if(m)m.classList.remove('show')}
-  async function checkForUpdate(force){
-    try{
-      const response=await fetch(VERSION_URL+'?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
-      if(!response.ok)throw new Error('HTTP '+response.status);
-      const info=await response.json();
-      setDisplayedVersion(CURRENT_APP_VERSION);
-      if(info.version&&newer(info.version,CURRENT_APP_VERSION)){
-        const dismissed=sessionStorage.getItem('oee_update_dismissed');
-        if(force||dismissed!==info.version)showUpdate(info);
-        return true;
-      }
-      return false;
-    }catch(err){console.warn('Sprawdzanie aktualizacji:',err);return false}
-  }
-  async function installUpdate(){
-    const btn=document.getElementById('appUpdateNow');if(btn)btn.disabled=true;
-    setText('appUpdateStatus','Pobieranie aktualizacji...');
-    try{
-      if('serviceWorker' in navigator){
-        const reg=await navigator.serviceWorker.getRegistration();
-        if(reg){await reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'})}
-      }
-      try{const keys=await caches.keys();await Promise.all(keys.map(function(k){return caches.delete(k)}))}catch(e){}
-      setText('appUpdateStatus','Aktualizacja gotowa. Ponowne uruchamianie...');
-      setTimeout(function(){location.replace('./panel.html?updated='+Date.now())},700);
-    }catch(err){setText('appUpdateStatus','Nie udało się zaktualizować: '+err.message);if(btn)btn.disabled=false}
-  }
-  function init(){
-    setDisplayedVersion(CURRENT_APP_VERSION);
-    const now=document.getElementById('appUpdateNow'),later=document.getElementById('appUpdateLater');
-    if(now)now.addEventListener('click',installUpdate);
-    if(later)later.addEventListener('click',function(){if(availableVersion)sessionStorage.setItem('oee_update_dismissed',availableVersion.version);hideUpdate()});
-    if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()});
-    setTimeout(function(){checkForUpdate(false)},1800);
-    setInterval(function(){checkForUpdate(false)},CHECK_INTERVAL);
-    document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkForUpdate(false)});
-    window.checkOeeAppUpdate=function(){return checkForUpdate(true)};
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
-</script>
-
-<script id="rc363-script">(function(){const K='oee_rc363';let a=[];const $=x=>document.getElementById(x);function esc(v){return String(v||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}function load(){try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){a=[]}render()}function persist(){localStorage.setItem(K,JSON.stringify(a));render()}function render(){const active=a.filter(x=>x.enabled!==false).length;$('reminderCenterBtn').classList.toggle('enabled',active>0);$('reminderCenterBtn').textContent=active?'Przypomnienia: '+active:'Centrum przypomnień';$('rc363List').innerHTML=a.length?a.map(r=>'<div class="rc363-row"><div class="rc363-time">'+r.time+'</div><div><b>'+esc(r.name)+'</b><div class="rc363-sub">'+esc(r.msg)+'</div></div><div><button onclick="editRC363(\''+r.id+'\')">Edytuj</button> <button onclick="toggleRC363(\''+r.id+'\')">'+(r.enabled===false?'Włącz':'Wyłącz')+'</button> <button onclick="delRC363(\''+r.id+'\')">Usuń</button></div></div>').join(''):'<div class="pareto-empty">Brak przypomnień.</div>'}function reset(){$('rc363Id').value='';$('rc363Name').value='';$('rc363Time').value='08:00';$('rc363Msg').value='Uzupełnij brakujące dane raportu OEE.';$('rc363Repeat').value=0;document.querySelectorAll('[data-d]').forEach(x=>x.checked=[1,2,3,4,5].includes(+x.dataset.d))}window.openRC363=()=>{$('rc363Modal').classList.add('show');render()};window.closeRC363=()=>$('rc363Modal').classList.remove('show');window.saveRC363=()=>{const id=$('rc363Id').value||'r'+Date.now(),r={id,name:$('rc363Name').value||'Przypomnienie OEE',type:$('rc363Type').value,time:$('rc363Time').value,msg:$('rc363Msg').value,repeat:+$('rc363Repeat').value||0,days:Array.from(document.querySelectorAll('[data-d]:checked')).map(x=>+x.dataset.d),enabled:true};const i=a.findIndex(x=>x.id===id);i<0?a.push(r):a[i]=r;persist();reset()};window.editRC363=id=>{const r=a.find(x=>x.id===id);if(!r)return;$('rc363Id').value=r.id;$('rc363Name').value=r.name;$('rc363Type').value=r.type;$('rc363Time').value=r.time;$('rc363Msg').value=r.msg;$('rc363Repeat').value=r.repeat;document.querySelectorAll('[data-d]').forEach(x=>x.checked=r.days.includes(+x.dataset.d))};window.toggleRC363=id=>{const r=a.find(x=>x.id===id);if(r){r.enabled=r.enabled===false;persist()}};window.delRC363=id=>{if(confirm('Usunąć przypomnienie?')){a=a.filter(x=>x.id!==id);persist()}};async function note(title,body,tag){if(Notification.permission==='default')await Notification.requestPermission();if(Notification.permission!=='granted')return;const reg=await navigator.serviceWorker.ready;reg.showNotification(title,{body,tag,icon:'icons/icon-192.png'})}window.testRC363=()=>note($('rc363Name').value||'Test przypomnienia',$('rc363Msg').value||'Test działa.','rc363-test');function key(d){return typeof formatDateKey==='function'?formatDateKey(d):d.toISOString().slice(0,10)}function prev(){let d=new Date();d.setDate(d.getDate()-1);while([0,6].includes(d.getDay()))d.setDate(d.getDate()-1);return d}async function check(){const n=new Date(),hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');for(const r of a){if(r.enabled===false||r.time!==hm||!r.days.includes(n.getDay()))continue;const once='rc363_'+r.id+'_'+key(n);if(localStorage.getItem(once))continue;let ok=true,detail='';if(['prev','today'].includes(r.type)){const k=key(r.type==='prev'?prev():n);ok=!(window.gemaBazaDanych&&gemaBazaDanych[k]);detail=' Brak raportu za '+k}if(ok)await note(r.name,r.msg+detail,'rc363-'+r.id);localStorage.setItem(once,'1')}}function init(){reset();load();setInterval(check,30000);setTimeout(check,2000)}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init()})();</script></body>
+</body>
 </html>
