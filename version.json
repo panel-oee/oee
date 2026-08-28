@@ -1,0 +1,7 @@
+{
+  "version": "5.0.1",
+  "codename": "Quantum Forge Clean Navigation",
+  "date": "2026-08-28",
+  "database": "existing Supabase",
+  "launch": "file and https"
+}
