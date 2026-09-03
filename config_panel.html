@@ -339,4 +339,5 @@ async function loadHistory(){const tb=document.querySelector('#historyTable tbod
 async function init(){renderDayChips();renderTaskDayChips();renderStartTimePicker();clearTaskForm();document.getElementById('historyDate').value=formatDateKey(new Date());await loadSchedule();renderSchedule();renderBreakDropdowns();clearBreakForm();await loadGroups();await loadOperators();populateGroupSelects();await loadTasks();const reverseDetails=document.getElementById('reverseAssignmentsDetails');if(reverseDetails)reverseDetails.addEventListener('toggle',()=>{if(reverseDetails.open)loadReverseAssignmentsView()});msg('Panel gotowy. Wybierz przerwę 6S lub edytuj harmonogram.')}
 window.onload=init;
 </script>
+<script src="assets/database-optimization.js"></script>
 </body></html>
