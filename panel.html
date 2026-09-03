@@ -1253,6 +1253,14 @@ html[data-theme="light"] body.index2-panel-skin tr:hover,[data-theme="light"] bo
 </style>
 
 <link rel="stylesheet" href="assets/quantum-forge.css">
+
+<style id="select-options-compat-fix">
+/* Czytelne opcje list w Chromium/Edge. Bez ingerencji w przyciski. */
+select { color-scheme: dark; }
+select option, select optgroup { background-color: #111827 !important; color: #f8fafc !important; }
+html[data-theme="light"] select { color-scheme: light; }
+html[data-theme="light"] select option, html[data-theme="light"] select optgroup { background-color: #ffffff !important; color: #0f172a !important; }
+</style>
 </head>
 <body>
 

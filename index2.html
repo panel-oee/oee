@@ -2683,6 +2683,14 @@ body.v4-dashboard .director-mini-card.alert{border-left-color:#ef4444!important;
 }
 </style>
 <link rel="stylesheet" href="assets/quantum-forge.css">
+
+<style id="select-options-compat-fix">
+/* Czytelne opcje list w Chromium/Edge. Bez ingerencji w przyciski. */
+select { color-scheme: dark; }
+select option, select optgroup { background-color: #111827 !important; color: #f8fafc !important; }
+html[data-theme="light"] select { color-scheme: light; }
+html[data-theme="light"] select option, html[data-theme="light"] select optgroup { background-color: #ffffff !important; color: #0f172a !important; }
+</style>
 </head>
 <body>
 <div class="container">

@@ -1,16 +1,16 @@
-# Lakiernia OEE 5.0.1 - Quantum Forge UI
+## Lakiernia OEE 5.0.2 - Quantum Forge Stability Fix
 
-Kompletna wersja bazująca na sześciu plikach produkcyjnych. Zachowuje istniejącą logikę OEE i 6S oraz połączenie z obecną bazą Supabase, ale dodaje całkowicie nową, wspólną warstwę wizualną.
+Kompletna paczka produkcyjna obejmująca ekrany OEE i 6S. Zachowano istniejącą logikę, bazę Supabase oraz wygląd przycisków każdego ekranu.
 
-## Start
+### Start
 - `index.html` - OEE Command Center / TV
-- `panel.html` - Production Intelligence, raporty i kierownik
+- `index2.html` - alternatywny wariant TV
+- `panel.html` - raporty OEE i panel kierownika
+- `config_panel.html` - konfiguracja przerw i 6S
 - `kiosk_6S.html` - terminal operatora
-- `statystyki_6S.html` - analityka 6S
-- `config_panel.html` - Control Studio
-- `index2.html` - zachowany wariant alternatywny TV
+- `statystyki_6S.html` - kalendarz i analityka 6S
+- `assets/quantum-forge.css` - wspólna warstwa wizualna
+- `assets/quantum-forge.js` - wspólny skrypt pomocniczy
 
-Można testować bezpośrednio z dysku. Pełny tryb sieciowy zalecany jest przez GitHub Pages.
-
-## Nawigacja 5.0.1
-Dodatkowy globalny pasek został usunięty. Nawigacja pozostaje w oryginalnych miejscach właściwych dla danego widoku.
+### Ważne
+Po podmianie paczki wykonaj `Ctrl + F5`. Dla pracy sieciowej zalecane jest uruchomienie przez HTTPS.

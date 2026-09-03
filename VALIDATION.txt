@@ -1,0 +1,7 @@
+index.html: HTML OK, select fix OK
+index2.html: HTML OK, select fix OK
+panel.html: HTML OK, select fix OK
+config_panel.html: HTML OK, select fix OK
+kiosk_6S.html: HTML OK, select fix OK
+statystyki_6S.html: HTML OK, select fix OK
+assets/quantum-forge.css: button overrides removed, stray brace fixed

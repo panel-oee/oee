@@ -1,7 +1,7 @@
 {
-  "version": "5.0.1",
-  "codename": "Quantum Forge Clean Navigation",
-  "date": "2026-08-28",
+  "version": "5.0.2",
+  "codename": "Quantum Forge Stability Fix",
+  "date": "2026-09-03",
   "database": "existing Supabase",
   "launch": "file and https"
 }
