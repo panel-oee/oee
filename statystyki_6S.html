@@ -96,4 +96,5 @@ function exportExcel(){
 function showDetails(encoded){if(!CACHE)return;const p=JSON.parse(decodeURIComponent(encoded)),task=CACHE.tasks.find(t=>String(t.id)===String(p.taskId)),logs=CACHE.logs.filter(l=>String(l.task_id)===String(p.taskId)&&String(l.log_date)===p.date&&String(l.shift)===p.shift&&String(l.sixs_start)===p.start),opMap=new Map(CACHE.ops.map(o=>[String(o.id),o.operator_name]));document.getElementById('detailBody').innerHTML='<div class="detail-grid"><b>Data</b><span>'+esc(p.date)+'</span><b>Obszar</b><span>'+esc(task?.area||'Pozostałe')+'</span><b>Zadanie</b><span>'+esc(task?.task_name||'')+'</span><b>Zmiana</b><span>'+esc(p.shift)+'</span><b>Przerwa 6S</b><span>'+esc(p.start)+'</span></div>'+logs.map(l=>'<div class="detail-entry"><b>'+esc(opMap.get(String(l.operator_id))||l.operator_name||'Operator')+'</b><br>Status: '+esc(l.status||'—')+'<br>Uwagi: '+esc(l.comment||'brak')+'<br>Czas: '+esc(l.updated_at||l.created_at||'—')+'</div>').join('');document.getElementById('detailModal').classList.add('show')}
 function closeDetails(){document.getElementById('detailModal').classList.remove('show')}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetails()});window.addEventListener('load',()=>{setCurrent();loadCalendar()});
-</script></body></html>
+</script><script src="assets/database-optimization.js"></script>
+</body></html>
