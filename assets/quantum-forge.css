@@ -28,3 +28,45 @@ body[data-q-page="stats"] .sheet{box-shadow:0 22px 70px rgba(0,0,0,.45)!importan
 
 /* 5.0.1: bez dodatkowego paska nawigacji. Każdy ekran korzysta wyłącznie z własnych, kontekstowych przycisków. */
 body{padding-top:initial;}
+
+/* 5.0.2: poprawa czytelnosci bialej karty statystyk 6S */
+body[data-q-page="stats"] .sheet {
+  color: #111827 !important;
+  color-scheme: light;
+}
+body[data-q-page="stats"] .sheet .head-main,
+body[data-q-page="stats"] .sheet .meta,
+body[data-q-page="stats"] .sheet .meta > div {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+body[data-q-page="stats"] .sheet #sheetTitle,
+body[data-q-page="stats"] .sheet .meta,
+body[data-q-page="stats"] .sheet .meta b,
+body[data-q-page="stats"] .sheet #monthLabel,
+body[data-q-page="stats"] .sheet #operatorsLabel {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+body[data-q-page="stats"] .sheet #sheetTitle {
+  font-weight: 900 !important;
+}
+body[data-q-page="stats"] .sheet ::selection {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+@media print {
+  body[data-q-page="stats"] .sheet #sheetTitle,
+  body[data-q-page="stats"] .sheet .meta,
+  body[data-q-page="stats"] .sheet .meta b,
+  body[data-q-page="stats"] .sheet #monthLabel,
+  body[data-q-page="stats"] .sheet #operatorsLabel {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+}
+
