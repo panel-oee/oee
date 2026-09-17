@@ -1314,8 +1314,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                     <input type="number" id="targetSpeed" step="0.1" value="0.8">
                 </div>
                 <div class="form-group">
-                    <label>Awarie/Usterki (minuty):</label>
-                    <input type="number" id="breakdownMinutes" value="0">
+                    <label id="breakdownMinutesLabel">Główna przyczyna przestoju (minuty):</label>
+                    <input type="number" id="breakdownMinutes" value="0" min="0" step="1" title="Wpisz czas głównej przyczyny, np. awarii, usterki, braku proszku lub innego przestoju. Czas czyszczenia i serwisu wpisuj w osobnych polach.">
                 </div>
                 <div class="form-group">
                     <label>Czyszczenie kabiny (minuty):</label>
@@ -2137,7 +2137,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                         date: dateKey,
                         day: dayNum,
                         targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
-                        breakdown: row.breakdown != null ? parseInt(row.breakdown, 10) : 0,
+                        breakdown: row.downtime_minutes != null ? parseInt(row.downtime_minutes, 10) : (row.breakdown != null ? parseInt(row.breakdown, 10) : 0),
+                        downtimeMinutes: row.downtime_minutes != null ? parseInt(row.downtime_minutes, 10) : (row.breakdown != null ? parseInt(row.breakdown, 10) : 0),
                         cleaning: row.cleaning != null ? parseInt(row.cleaning, 10) : 0,
                         service: row.service != null ? parseInt(row.service, 10) : 0,
                         bad: row.bad != null ? parseInt(row.bad, 10) : 0,
@@ -2414,8 +2415,11 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             document.getElementById(id).addEventListener('input', () => {
                 markChanged();
                 calculateDifferences();
+                if (id === 'downtimeCategory') updateDowntimeTimeFieldHint();
             });
         });
+        document.getElementById('downtimeCategory').addEventListener('change', updateDowntimeTimeFieldHint);
+        updateDowntimeTimeFieldHint();
 
         window.addEventListener('beforeunload', function (e) {
             if (hasUnsavedChanges || isEditMode) {
@@ -2701,6 +2705,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
         calculateWeeklyAverageFromDay(dateKey);
         hasUnsavedChanges = false;
+        updateDowntimeTimeFieldHint();
         calculateDifferences();
     }
 
@@ -2870,6 +2875,23 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     }
 
     async function directorAuditLog(action,dateKey,oldData,newData,reason){try{await supabaseClient.from('oee_audit_log').insert({action:action,report_date:dateKey,old_data:oldData||null,new_data:newData||null,reason:reason||'',created_at:new Date().toISOString()});}catch(err){console.warn('Nie zapisano audytu zmian OEE:',err.message);}}
+    function updateDowntimeTimeFieldHint() {
+        const categoryEl = document.getElementById('downtimeCategory');
+        const labelEl = document.getElementById('breakdownMinutesLabel');
+        const inputEl = document.getElementById('breakdownMinutes');
+        if (!categoryEl || !labelEl || !inputEl) return;
+        const category = categoryEl.value;
+        const labels = {
+            'Awaria maszyny': 'Czas awarii maszyny (minuty):',
+            'Usterka maszyny': 'Czas usterki maszyny (minuty):',
+            'Brak proszku': 'Czas braku proszku (minuty):',
+            'Inne': 'Czas innego przestoju (minuty):'
+        };
+        labelEl.innerText = labels[category] || 'Główna przyczyna przestoju (minuty):';
+        inputEl.title = category === 'Brak proszku'
+            ? 'Wpisz rzeczywisty czas oczekiwania spowodowany brakiem proszku. Czas czyszczenia kabiny nie jest tutaj pobierany.'
+            : 'Wpisz czas głównej przyczyny. Czas czyszczenia i serwisu wpisuj w osobnych polach.';
+    }
     async function saveDataLocally() {
         var dateKey = selectedDayGlobal;
         var selectedDate = parseDateKey(dateKey);
@@ -2915,6 +2937,19 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         }
         if (category === "Serwis" && serviceMinutes <= 0) {
             alert("Wybrano kategorię Serwis — wpisz czas serwisu w minutach.");
+            return;
+        }
+        const categoriesUsingMainDowntime = ["Awaria maszyny", "Usterka maszyny", "Brak proszku", "Inne"];
+        if (categoriesUsingMainDowntime.includes(category) && breakdownMinutes <= 0) {
+            const categoryTimeLabel = category === "Brak proszku" ? "czas braku proszku" : "czas wybranego przestoju";
+            alert("Wybrano kategorię " + category + " — wpisz " + categoryTimeLabel + " w polu czasu głównej przyczyny przestoju.");
+            document.getElementById('breakdownMinutes').focus();
+            return;
+        }
+        const categoriesUsingCleaning = ["Zmiana koloru", "Przemalowanie", "Czyszczenie/Konserwacja"];
+        if (categoriesUsingCleaning.includes(category) && cleaningMinutes <= 0) {
+            alert("Wybrano kategorię " + category + " — wpisz czas czyszczenia kabiny w minutach.");
+            document.getElementById('cleaningMinutes').focus();
             return;
         }
         if (cleaningMinutes > 0 && changeoverCount < 1) {
@@ -2998,6 +3033,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             date: dateKey,
             target_speed: targetSpeed,
             breakdown: breakdownMinutes,
+            downtime_minutes: breakdownMinutes,
             cleaning: cleaningMinutes,
             service: serviceMinutes,
             bad: badPieces,
@@ -3028,6 +3064,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                 day: dayNum,
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,
+                downtimeMinutes: breakdownMinutes,
                 cleaning: cleaningMinutes,
                 changeoverCount: changeoverCount,
                 service: serviceMinutes,

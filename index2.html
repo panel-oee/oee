@@ -3033,6 +3033,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                         pcs_start: row.pcs_start != null ? row.pcs_start : (row.pcsStart != null ? row.pcsStart : null),
                         pcs_end: row.pcs_end != null ? row.pcs_end : (row.pcsEnd != null ? row.pcsEnd : null),
                         breakdown: row.breakdown != null ? parseFloat(row.breakdown) : 0,
+                        downtime_minutes: row.downtime_minutes != null ? parseFloat(row.downtime_minutes) : (row.breakdown != null ? parseFloat(row.breakdown) : 0),
                         cleaning: row.cleaning != null ? parseFloat(row.cleaning) : 0,
                         service: row.service != null ? parseFloat(row.service) : 0
                     };
@@ -3795,10 +3796,13 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             const cleaning = parseNumberLocal(source.cleaning);
             const service = parseNumberLocal(source.service);
 
-            if (category === 'Serwis') return service || breakdown || cleaning || 0;
-            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return cleaning || breakdown || service || 0;
-            if (category === 'Awaria maszyny' || category === 'Usterka maszyny' || category === 'Brak proszku' || category === 'Inne') return breakdown || service || cleaning || 0;
-            return breakdown || service || cleaning || 0;
+            const downtime = parseNumberLocal(source.downtime_minutes != null ? source.downtime_minutes : source.breakdown);
+            // Każda kategoria korzysta wyłącznie z właściwego pola czasu.
+            // Brak proszku nie może dziedziczyć czasu czyszczenia kabiny.
+            if (category === 'Serwis') return service;
+            if (category === 'Zmiana koloru' || category === 'Przemalowanie' || category === 'Czyszczenie/Konserwacja') return cleaning;
+            if (category === 'Awaria maszyny' || category === 'Usterka maszyny' || category === 'Brak proszku' || category === 'Inne') return downtime;
+            return 0;
         }
 
         function buildVisibleComment(dateKey, rawNote, sourceRow) {
@@ -3840,7 +3844,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         try {
             const { data, error } = await supabaseClient
                 .from('oee_reports')
-                .select('date, notes, breakdown, cleaning, service, h_start, h_end')
+                .select('date, notes, breakdown, downtime_minutes, cleaning, service, h_start, h_end')
                 .gte('date', notesStart)
                 .lte('date', notesEnd)
                 .order('date', { ascending: false });
