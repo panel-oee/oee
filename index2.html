@@ -2691,6 +2691,18 @@ select option, select optgroup { background-color: #111827 !important; color: #f
 html[data-theme="light"] select { color-scheme: light; }
 html[data-theme="light"] select option, html[data-theme="light"] select optgroup { background-color: #ffffff !important; color: #0f172a !important; }
 </style>
+
+<style id="copilot-comments-all-only-fix">
+/* OSTATNIE ZAKŁÓCENIA: tylko pełna lista, bez przełącznika TOP 5 */
+#commentsModeControls,
+#commentsTop5Btn,
+#commentsAllBtn {
+  display: none !important;
+}
+.v4-comments-panel .v4-panel-head {
+  padding-right: 0 !important;
+}
+</style>
 </head>
 <body>
 <div class="container">
@@ -3659,71 +3671,14 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
         if (!listContainer) return;
 
-        if (!window.commentsMode) {
-            window.commentsMode = 'top5';
-        }
+        // Tylko pełna lista zakłóceń. Tryb TOP 5 został usunięty.
+        window.commentsMode = 'all';
 
-        if (titleEl && !document.getElementById('commentsModeControls')) {
-            titleEl.style.display = 'flex';
-            titleEl.style.justifyContent = 'space-between';
-            titleEl.style.alignItems = 'center';
-            titleEl.style.gap = '8px';
+        // Panel nie tworzy już przełączników TOP 5 / Wszystkie.
+        // Lista zawsze pokazuje wszystkie zakłócenia z ostatnich 45 dni.
 
-            const titleText = titleEl.innerText;
-            titleEl.innerHTML = `<span>${titleText}</span>`;
 
-            const controls = document.createElement('div');
-            controls.id = 'commentsModeControls';
-            controls.style.display = 'flex';
-            controls.style.gap = '6px';
-
-            const btnTop = document.createElement('button');
-            btnTop.id = 'commentsTop5Btn';
-            btnTop.type = 'button';
-            btnTop.innerText = 'TOP 5';
-            btnTop.title = '5 najważniejszych/powtarzających się problemów z ostatnich 45 dni: czas przestoju + liczba wystąpień';
-            btnTop.style.padding = '4px 12px';
-            btnTop.style.borderRadius = '6px';
-            btnTop.style.border = '1px solid var(--border-color)';
-            btnTop.style.cursor = 'pointer';
-            btnTop.onclick = async function () {
-                window.commentsMode = 'top5';
-                await renderCommentsBox();
-            };
-
-            const btnAll = document.createElement('button');
-            btnAll.id = 'commentsAllBtn';
-            btnAll.type = 'button';
-            btnAll.innerText = 'Wszystkie';
-            btnAll.title = 'Wszystkie zakłócenia z ostatnich 45 dni';
-            btnAll.style.padding = '4px 12px';
-            btnAll.style.borderRadius = '6px';
-            btnAll.style.border = '1px solid var(--border-color)';
-            btnAll.style.cursor = 'pointer';
-            btnAll.onclick = async function () {
-                window.commentsMode = 'all';
-                await renderCommentsBox();
-            };
-
-            controls.appendChild(btnTop);
-            controls.appendChild(btnAll);
-            titleEl.appendChild(controls);
-        }
-
-        const btnTop = document.getElementById('commentsTop5Btn');
-        const btnAll = document.getElementById('commentsAllBtn');
-
-        if (btnTop && btnAll) {
-            const activeStyle = function(btn, active) {
-                btn.style.background = active ? '#ffffff' : 'transparent';
-                btn.style.color = active ? '#0f172a' : 'var(--text-muted)';
-                btn.style.fontWeight = active ? '800' : '700';
-            };
-            activeStyle(btnTop, window.commentsMode === 'top5');
-            activeStyle(btnAll, window.commentsMode === 'all');
-        }
-
-        listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
+        listContainer.dataset.mode = 'all';
         listContainer.innerHTML = '';
 
         let comments = [];
@@ -3927,7 +3882,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         }
 
         if (comments.length === 0) {
-            listContainer.dataset.mode = window.commentsMode === 'all' ? 'all' : 'top5';
+            listContainer.dataset.mode = 'all';
             listContainer.innerHTML = `<div class="comment-box-empty">Brak odnotowanych uwag i przestojów w ostatnich 45 dniach.</div>`;
             return;
         }
