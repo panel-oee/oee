@@ -3927,10 +3927,12 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             // Score łączy łączny czas przestoju i powtarzalność mikroprzestojów.
             const grouped = {};
             comments.forEach(function(comment) {
+                // TOP 5 grupuje ten sam konkretny problem, a nie samą kategorię.
+                // Dzięki temu różne awarie maszyny są osobnymi pozycjami, natomiast
+                // powtarzający się wpis, np. "Brak zasilania na filtrze końcowym",
+                // sumuje czas i liczbę wystąpień.
                 const normalizedText = normalizeIncidentKeyLocal(comment.text);
-                const key = comment.category === 'Inne'
-                    ? comment.category + '|' + (normalizedText || comment.category.toLowerCase())
-                    : comment.category;
+                const key = comment.category + '|' + (normalizedText || comment.category.toLowerCase());
                 if (!grouped[key]) {
                     grouped[key] = {
                         dateKey: comment.dateKey,
