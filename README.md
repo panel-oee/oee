@@ -1,5 +1,8 @@
-# Dymek na dole wewnątrz wykresu
+# Poprawka opisu dymka
 
-Dymek jest wyświetlany 10 px nad dolną linią wykresu, wewnątrz obszaru wykresu. Nie wychodzi pod panel i nie jest obcinany.
+Dymek pokazuje teraz logiczny opis:
 
-Podmień `index.html` i `index2.html`, a następnie wykonaj `Ctrl+F5`.
+- `Dzień 2 • OEE 79,0% • Pełna doba, 2 zmiany`
+- albo `Dzień 2 • OEE 79,5% • Wynik częściowy, zmiana 2`
+
+Techniczne oznaczenia `[Zmiana 1]` i `[Zmiana 2]` nie są już powtarzane w uwagach. Same uwagi pojawiają się tylko wtedy, gdy zawierają właściwą treść.

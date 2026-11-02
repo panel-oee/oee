@@ -3477,37 +3477,60 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             if (!grouped[key]) {
                 grouped[key] = Object.assign({}, row, {
                     meters: 0, pieces: 0, bad: 0, breakdown: 0, downtime_minutes: 0,
-                    cleaning: 0, service: 0, notes: '', _weight: 0,
-                    _av: 0, _perf: 0, _qual: 0, _oee: 0
+                    cleaning: 0, service: 0, notes: '', _shifts: [],
+                    _plannedMinutes: 0, _runtimeMinutes: 0, _idealMinutes: 0,
+                    _goodPieces: 0, _totalPieces: 0
                 });
             }
             const g = grouped[key];
+            const shift = Number(row.shift || 1);
+            if (!g._shifts.includes(shift)) g._shifts.push(shift);
             ['meters','pieces','bad','breakdown','downtime_minutes','cleaning','service'].forEach(function(field) {
                 g[field] += Number(row[field] || 0);
             });
-            if (Number(row.shift || 1) === 1 || g.m_start == null) g.m_start = row.m_start;
-            if (Number(row.shift || 1) === 1 || g.pcs_start == null) g.pcs_start = row.pcs_start;
-            if (Number(row.shift || 1) === 2 || g.m_end == null) g.m_end = row.m_end;
-            if (Number(row.shift || 1) === 2 || g.pcs_end == null) g.pcs_end = row.pcs_end;
-            if (row.h_start && (!g.h_start || Number(row.shift || 1) === 1)) g.h_start = row.h_start;
-            if (row.h_end && (!g.h_end || Number(row.shift || 1) === 2)) g.h_end = row.h_end;
-            const weight = Math.max(1, Number(row.meters || row.pieces || 0));
-            g._weight += weight;
-            g._av += Number(row.av || 0) * weight;
-            g._perf += Number(row.perf || 0) * weight;
-            g._qual += Number(row.qual || 0) * weight;
-            g._oee += Number(row.oee || 0) * weight;
-            if (row.notes) g.notes += (g.notes ? ' | ' : '') + '[Zmiana ' + Number(row.shift || 1) + '] ' + row.notes;
+            if (shift === 1 || g.m_start == null) g.m_start = row.m_start;
+            if (shift === 1 || g.pcs_start == null) g.pcs_start = row.pcs_start;
+            if (shift === 2 || g.m_end == null) g.m_end = row.m_end;
+            if (shift === 2 || g.pcs_end == null) g.pcs_end = row.pcs_end;
+            if (row.h_start && (!g.h_start || shift === 1)) g.h_start = row.h_start;
+            if (row.h_end && (!g.h_end || shift === 2)) g.h_end = row.h_end;
+
+            // Laczenie OEE po skladowych i rzeczywistych podstawach czasu/produkcji.
+            // Dostepnosc wazona planowanym czasem, wydajnosc czasem pracy,
+            // jakosc liczba sztuk. To eliminuje bledne wazenie samego OEE metrami.
+            const av = Math.max(0, Number(row.av || 0)) / 100;
+            const perf = Math.max(0, Number(row.perf || 0)) / 100;
+            const qual = Math.max(0, Number(row.qual || 0)) / 100;
+            const downtime = Math.max(0, Number(row.downtime_minutes || row.breakdown || 0))
+                + Math.max(0, Number(row.cleaning || 0))
+                + Math.max(0, Number(row.service || 0));
+            let planned = 480;
+            let runtime = av > 0 && av < 1 && downtime > 0 ? (av * downtime / (1 - av)) : (av * planned);
+            if (av > 0 && av < 1 && downtime > 0) planned = runtime + downtime;
+            else runtime = av * planned;
+            g._plannedMinutes += planned;
+            g._runtimeMinutes += runtime;
+            g._idealMinutes += runtime * perf;
+            const totalPieces = Math.max(0, Number(row.pieces || 0));
+            g._totalPieces += totalPieces;
+            g._goodPieces += totalPieces * qual;
+
+            if (row.notes) g.notes += (g.notes ? ' | ' : '') + '[Zmiana ' + shift + '] ' + row.notes;
             if (!g.created_at || String(row.created_at || '') > String(g.created_at)) g.created_at = row.created_at;
         });
         return Object.keys(grouped).sort().map(function(key) {
-            const g = grouped[key], w = g._weight || 1;
-            g.av = g._av / w; g.perf = g._perf / w; g.qual = g._qual / w; g.oee = g._oee / w;
-            delete g._weight; delete g._av; delete g._perf; delete g._qual; delete g._oee;
+            const g = grouped[key];
+            g.shift_count = g._shifts.length;
+            g.shifts_present = g._shifts.slice().sort().join(',');
+            g.av = g._plannedMinutes > 0 ? (g._runtimeMinutes / g._plannedMinutes) * 100 : 0;
+            g.perf = g._runtimeMinutes > 0 ? (g._idealMinutes / g._runtimeMinutes) * 100 : 0;
+            g.qual = g._totalPieces > 0 ? (g._goodPieces / g._totalPieces) * 100 : 100;
+            g.oee = (g.av / 100) * (g.perf / 100) * (g.qual / 100) * 100;
+            delete g._shifts; delete g._plannedMinutes; delete g._runtimeMinutes;
+            delete g._idealMinutes; delete g._goodPieces; delete g._totalPieces;
             return g;
         });
     }
-
     async function loadDataFromSupabase() {
 		const yearStr = currentYear;
 		const monthStr = String(currentMonth + 1).padStart(2, '0');
@@ -3551,6 +3574,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                     const dateKey = row.date;
                     gemaBazaDanych[dateKey] = {
                         date: dateKey,
+                        shift_count: Number(row.shift_count || 1),
+                        shifts_present: row.shifts_present || String(row.shift || 1),
                         oee: row.oee != null ? parseFloat(row.oee).toFixed(1) : "0.0",
                         notes: row.notes || "",
                         h_start: row.h_start || row.hStart || "",
@@ -4556,14 +4581,19 @@ function buildCalendar() {
                         ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
                         : 'linear-gradient(180deg, #34d399 0%, #10b981 100%)');
                 
-                let chartNote = rec.notes;
-                let match = chartNote.match(/\[(.*?)\]/);
-                if (match && KATEGORIE_IKON[match[1].trim()]) {
-                    chartNote = KATEGORIE_IKON[match[1].trim()] + " " + chartNote.replace(match[0], "").trim();
-                }
+                // Czytelny opis bez technicznych prefiksów [Zmiana 1] / [Zmiana 2].
+                const isFullDay = Number(rec.shift_count || 1) >= 2;
+                const shiftLabel = String(rec.shifts_present || '1').replace(',', ' i ');
+                const dayStatus = isFullDay
+                    ? 'Pełna doba, 2 zmiany'
+                    : 'Wynik częściowy, zmiana ' + shiftLabel;
+                let tooltipText = `Dzień ${d} • OEE ${rec.oee}% • ${dayStatus}`;
 
-                var tooltipText = `Dzień ${d}: ${rec.oee}%`;
-                if(rec.notes) tooltipText += ` (${chartNote})`;
+                let cleanChartNote = String(rec.notes || '')
+                    .replace(/\[Zmiana\s*[12]\]\s*/gi, '')
+                    .replace(/\s*\|\s*/g, ' • ')
+                    .trim();
+                if (cleanChartNote) tooltipText += ` • Uwagi: ${cleanChartNote}`;
                 // Dla wysokich slupkow dymek otwiera sie wewnatrz slupka,
                 // aby panel wykresu nie obcinal jego gornej czesci.
                 bar.classList.toggle('tooltip-inside', oeeForColor >= 65);
