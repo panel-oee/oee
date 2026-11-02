@@ -3329,7 +3329,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     var currentMonth = currentDateObj.getMonth();
     // Domyślnie pokazujemy ostatni zakończony dzień, bo raport za dzisiaj
     // często nie jest jeszcze zapisany po odświeżeniu panelu.
-    var selectedDayGlobal = formatDateKey(getPreviousBusinessDay(currentDateObj));
+    var selectedDayGlobal = formatDateKey(currentDateObj);
 
     const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -3375,7 +3375,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
 
     function getDefaultDashboardDay() {
-        return formatDateKey(getPreviousBusinessDay(new Date()));
+        // Dashboard dwuzmianowy zawsze otwiera biezacy dzien i biezacy miesiac.
+        return formatDateKey(new Date());
     }
 
     function parseDateKey(dateKey) {
@@ -3665,7 +3666,14 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         return (parseFloat(rec.cleaning || 0) > 0) ? 1 : 0;
     }
 
-    function directorIsMachineFailure(note){const c=directorExtractCategory(note);return c==='Awaria maszyny'||c==='Usterka maszyny';}
+    function directorIsMachineFailure(note){
+        const text=String(note||'');
+        // Po polaczeniu zmian notatka moze zaczynac sie od [Zmiana 1]/[Zmiana 2].
+        // Szukamy kategorii awarii w calej notatce, nie tylko w pierwszym nawiasie.
+        if(/\[(Awaria maszyny|Usterka maszyny)\]/i.test(text)) return true;
+        const c=directorExtractCategory(text);
+        return c==='Awaria maszyny'||c==='Usterka maszyny';
+    }
     function directorDateFromKey(key,rec){if(key&&String(key).includes('-'))return parseDateKey(key);if(rec&&rec.date)return parseDateKey(rec.date);return null;}
     function directorCurrentMonthRecords(){return Object.keys(gemaBazaDanych||{}).map(k=>({key:k,rec:gemaBazaDanych[k],date:directorDateFromKey(k,gemaBazaDanych[k])})).filter(x=>x.rec&&x.date&&x.date.getFullYear()===currentYear&&x.date.getMonth()===currentMonth);}
     function directorAvg(records){let s=0,c=0;records.forEach(x=>{const v=parseFloat(x.rec.oee);if(!isNaN(v)&&v>0){s+=v;c++;}});return c?s/c:null;}
@@ -3713,12 +3721,14 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             .filter(x => x.rec && x.date)
             .sort((a,b) => b.date - a.date);
         const lastFailure = allRows.find(x => directorIsMachineFailure((x.rec || {}).notes));
-        if (!lastFailure) return null;
+        if (!allRows.length) return null;
         const today = new Date();
         today.setHours(0,0,0,0);
-        const failureDate = new Date(lastFailure.date);
-        failureDate.setHours(0,0,0,0);
-        return Math.max(0, Math.floor((today - failureDate) / 86400000));
+        // Gdy awaria istnieje, liczymy od jej daty. Gdy w pobranej historii nie ma
+        // zadnej awarii, liczymy potwierdzony okres od najstarszego dostepnego raportu.
+        const referenceDate = lastFailure ? new Date(lastFailure.date) : new Date(allRows[allRows.length-1].date);
+        referenceDate.setHours(0,0,0,0);
+        return Math.max(0, Math.floor((today - referenceDate) / 86400000));
     }
     function renderDirectorInsights(){
         const alertValue=document.getElementById('directorAlertValue');
