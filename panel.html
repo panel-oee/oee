@@ -1587,6 +1587,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     var isEditMode = false;
     var hasUnsavedChanges = false;
     var gemaBazaDanych = {};
+    var calendarBazaDanych = {};
+    var allShiftRecords = {};
 
     // =========================================================================
     // DYNAMICZNA KONFIGURACJA PROGÓW OEE
@@ -2181,12 +2183,13 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             const { data, error } = await supabaseClient
                 .from('oee_reports')
                 .select('*')
-                .eq('shift', parseInt(selectedReportShift, 10))
                 .order('date', { ascending: true });
 
             if (error) throw error;
 
             gemaBazaDanych = {};
+            calendarBazaDanych = {};
+            allShiftRecords = {};
 
             if (data) {
                 data.forEach(row => {
@@ -2194,7 +2197,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                     const dateObj = parseDateKey(dateKey);
                     const dayNum = dateObj.getDate();
 
-                    gemaBazaDanych[dateKey] = {
+                    const normalizedRecord = {
                         date: dateKey,
                         day: dayNum,
                         targetSpeed: row.target_speed != null ? parseFloat(row.target_speed) : 0.8,
@@ -2218,6 +2221,18 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                         notes: row.notes || "",
                         changeoverCount: getChangeoverCountFromRecord({ notes: row.notes || "", cleaning: row.cleaning })
                     };
+                    normalizedRecord.shift = parseInt(row.shift || 1, 10);
+                    allShiftRecords[dateKey + '|' + normalizedRecord.shift] = normalizedRecord;
+                    if (String(normalizedRecord.shift) === String(selectedReportShift)) {
+                        gemaBazaDanych[dateKey] = normalizedRecord;
+                    }
+                    // Kalendarz zawsze pokazuje historię dnia. Dla zmiany 2, gdy brak raportu
+                    // zmiany 2 (np. dane historyczne sprzed migracji), pokazuje zapis zmiany 1.
+                    const existingCalendar = calendarBazaDanych[dateKey];
+                    if (!existingCalendar || String(normalizedRecord.shift) === String(selectedReportShift) ||
+                        (String(existingCalendar.shift) !== String(selectedReportShift) && normalizedRecord.shift === 1)) {
+                        calendarBazaDanych[dateKey] = normalizedRecord;
+                    }
                 });
             }
         } catch (err) {
@@ -2657,16 +2672,16 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
                 cell.innerHTML = '<div>' + day + '</div>';
 
-                if (gemaBazaDanych[dateKey]) {
-                    var oeeValue = parseFloat(gemaBazaDanych[dateKey].oee);
+                if (calendarBazaDanych[dateKey]) {
+                    var oeeValue = parseFloat(calendarBazaDanych[dateKey].oee);
                     const criticalForColor = readStoredCriticalGuide(OEE_CONFIG.criticalGuide, 45);
                     if (oeeValue < criticalForColor) cell.className += ' oee-bad';
                     else if (oeeValue < OEE_CONFIG.greenMin) cell.className += ' oee-warn';
                     else cell.className += ' oee-good';
 
-                    cell.innerHTML += '<span class="mini-oee">' + gemaBazaDanych[dateKey].oee + '%</span>';
-                    if (gemaBazaDanych[dateKey].notes) {
-                        titleText = titleText ? titleText + ' | ' + gemaBazaDanych[dateKey].notes : gemaBazaDanych[dateKey].notes;
+                    cell.innerHTML += '<span class="mini-oee">' + calendarBazaDanych[dateKey].oee + '%</span>';
+                    if (calendarBazaDanych[dateKey].notes) {
+                        titleText = titleText ? titleText + ' | ' + calendarBazaDanych[dateKey].notes : calendarBazaDanych[dateKey].notes;
                     }
                 } else {
                     cell.innerHTML += '<span class="mini-oee" style="visibility: hidden;">&nbsp;</span>';
@@ -2766,7 +2781,14 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             var previousRecord = findPreviousRecord(dateKey);
             if (previousRecord) lastSpeed = previousRecord.targetSpeed;
             document.getElementById('targetSpeed').value = lastSpeed;
-            restoreLatestCounters();
+            if (String(selectedReportShift) === '2' && allShiftRecords[dateKey + '|1']) {
+                const shift1 = allShiftRecords[dateKey + '|1'];
+                if (shift1.hEnd != null) document.getElementById('hStart').value = shift1.hEnd;
+                if (shift1.mEnd != null) document.getElementById('mStart').value = shift1.mEnd;
+                if (shift1.pcsEnd != null) document.getElementById('pcsStart').value = shift1.pcsEnd;
+            } else {
+                restoreLatestCounters();
+            }
         }
 
         calculateWeeklyAverageFromDay(dateKey);
@@ -3155,6 +3177,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                 changeoverCount: changeoverCount
             };
 
+            calendarBazaDanych[dateKey] = gemaBazaDanych[dateKey];
+            allShiftRecords[dateKey + '|' + selectedReportShift] = gemaBazaDanych[dateKey];
             localStorage.setItem('gema_oee_local_db_dates', JSON.stringify(gemaBazaDanych));
             await directorAuditLog(isEditMode ? 'edit' : 'create', dateKey, oldAuditRecord, gemaBazaDanych[dateKey], noteText);
             hasUnsavedChanges = false;
@@ -3219,7 +3243,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         const dayLabel = "dnia " + dateObj.getDate() + "." + (dateObj.getMonth() + 1) + "." + dateObj.getFullYear();
 
         if (!gemaBazaDanych[dateKey]) {
-            alert("Brak zapisanego raportu dla " + dayLabel + ".");
+            alert("Brak zapisanego raportu dla " + dayLabel + ", zmiana " + selectedReportShift + ".");
             return;
         }
 
@@ -3229,7 +3253,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             const { error } = await supabaseClient
                 .from('oee_reports')
                 .delete()
-                .eq('date', dateKey);
+                .eq('date', dateKey)
+                .eq('shift', parseInt(selectedReportShift, 10));
 
             if (error) throw error;
 
