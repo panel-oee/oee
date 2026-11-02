@@ -3139,6 +3139,23 @@ select { color-scheme: dark; }
 select option, select optgroup { background-color: #111827 !important; color: #f8fafc !important; }
 html[data-theme="light"] select { color-scheme: light; }
 html[data-theme="light"] select option, html[data-theme="light"] select optgroup { background-color: #ffffff !important; color: #0f172a !important; }
+
+/* POPRAWKA: dymek wysokiego slupka pozostaje wewnatrz obszaru wykresu i nie jest obcinany. */
+.v4-chart-panel .chart-css-bar.tooltip-inside .chart-css-tooltip {
+  top: 10px !important;
+  bottom: auto !important;
+  max-width: min(250px, 24vw) !important;
+}
+.v4-chart-panel .chart-css-bar.tooltip-inside .chart-css-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #f8fafc;
+}
 </style>
 </head>
 <body>
@@ -4513,6 +4530,9 @@ function buildCalendar() {
 
                 var tooltipText = `Dzień ${d}: ${rec.oee}%`;
                 if(rec.notes) tooltipText += ` (${chartNote})`;
+                // Dla wysokich slupkow dymek otwiera sie wewnatrz slupka,
+                // aby panel wykresu nie obcinal jego gornej czesci.
+                bar.classList.toggle('tooltip-inside', oeeForColor >= 65);
                 bar.innerHTML = `<div class="chart-css-tooltip">${tooltipText}</div>`;
             } else { 
                 bar.style.height = '0%'; 

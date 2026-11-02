@@ -1,11 +1,5 @@
-# Aktualizacja paczki
+# Poprawka dymka wykresu
 
-Poprawiono logikę daty w panelu dwuzmianowym:
+Poprawiono obcinanie chmury po wskazaniu lub dotknięciu wysokiego słupka. Dla słupków od 65% dymek jest wyświetlany wewnątrz obszaru wykresu, poniżej górnej krawędzi słupka. Dla niższych słupków pozostaje nad słupkiem.
 
-- panel otwiera bieżący dzień kalendarzowy, np. 2 listopada 2026, zamiast poprzedniego dnia roboczego,
-- raport zmiany 1 i zmiany 2 jest przypisany do tej samej bieżącej daty,
-- po zapisaniu zmiany 1 panel pozostaje na tej samej dacie i przełącza formularz na zmianę 2,
-- po zapisaniu zmiany 2 panel nadal pozostaje na tej samej dacie,
-- daty historyczne nadal można wybrać ręcznie w kalendarzu.
-
-Migracji SQL nie uruchamiaj ponownie. Podmień pliki HTML i wykonaj `Ctrl+F5`.
+Migracji SQL nie uruchamiaj. Podmień `index.html` oraz `index2.html`, a następnie wykonaj `Ctrl+F5`.

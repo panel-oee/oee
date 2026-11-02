@@ -1668,7 +1668,24 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     var currentYear = currentDateObj.getFullYear();
     var currentMonth = currentDateObj.getMonth();
     var selectedDayGlobal = formatDateKey(currentDateObj);
-    var selectedReportShift = String(localStorage.getItem('gema_report_shift') || '1');
+    var selectedReportShift = detectCurrentShift();
+    var reportShiftSelectedManually = false;
+
+    function detectCurrentShift(now) {
+        now = now || new Date();
+        var minutes = now.getHours() * 60 + now.getMinutes();
+        // 06:00-13:59: zmiana 1; 14:00-21:59: zmiana 2.
+        // Po 22:00 wybieramy zakończoną zmianę 2, a przed 06:00 nadchodzącą zmianę 1.
+        return (minutes >= 14 * 60 && minutes < 24 * 60) ? '2' : '1';
+    }
+
+    function applyShiftSelectionToUi() {
+        var selector = document.getElementById('reportShift');
+        if (selector) selector.value = selectedReportShift;
+        var meta = shiftCloseMeta(selectedReportShift);
+        var hint = document.getElementById('shiftCloseWindow');
+        if (hint) hint.textContent = 'Zamknięcie: ' + meta.start + '-' + meta.end;
+    }
 
     function shiftCloseMeta(shift) {
         return String(shift) === '2'
@@ -1688,7 +1705,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     }
     async function changeReportShift(value) {
         selectedReportShift = String(value) === '2' ? '2' : '1';
-        localStorage.setItem('gema_report_shift', selectedReportShift);
+        reportShiftSelectedManually = true;
         var meta = shiftCloseMeta(selectedReportShift);
         var hint = document.getElementById('shiftCloseWindow');
         if (hint) hint.textContent = 'Zamknięcie: ' + meta.start + '-' + meta.end;
@@ -2446,6 +2463,11 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         loadBreakScheduleFromLocalStorage();
         await loadBreakScheduleFromSupabase(false);
         await loadOeeConfigFromSupabase();
+        // Przy każdym otwarciu panelu dobieramy zmianę automatycznie według bieżącej godziny.
+        // Użytkownik nadal może ręcznie zmienić wybór w polu „Zmiana”.
+        selectedReportShift = detectCurrentShift();
+        reportShiftSelectedManually = false;
+        applyShiftSelectionToUi();
         await loadDataFromSupabase();
         const savedPanelModeOnLoad = localStorage.getItem('gema_panel_mode') || 'manager';
         setPanelMode(savedPanelModeOnLoad);
@@ -3159,7 +3181,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             // od razu do zmiany 2, zamiast przeskakiwać na następny dzień.
             if (String(selectedReportShift) === '1') {
                 selectedReportShift = '2';
-                localStorage.setItem('gema_report_shift', selectedReportShift);
+                reportShiftSelectedManually = false;
                 const shiftSelectAfterSave = document.getElementById('reportShift');
                 if (shiftSelectAfterSave) shiftSelectAfterSave.value = selectedReportShift;
                 const shiftMetaAfterSave = shiftCloseMeta(selectedReportShift);
