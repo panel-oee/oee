@@ -1313,6 +1313,14 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                     <label>Wybrany dzień:</label>
                     <input type="text" id="dayOfMonthDisplay" readonly style="background:var(--bg-input-box); font-weight:bold; text-align:center; border-color:var(--border-color);">
                 </div>
+                <div class="form-group" style="max-width: 220px;">
+                    <label for="reportShift">Zmiana:</label>
+                    <select id="reportShift" onchange="changeReportShift(this.value)" style="font-weight:bold;">
+                        <option value="1">Zmiana 1 (06:00-14:00)</option>
+                        <option value="2">Zmiana 2 (14:00-22:00)</option>
+                    </select>
+                    <small id="shiftCloseWindow" style="display:block;margin-top:5px;color:var(--text-muted,#64748b);">Zamknięcie: 13:50-14:00</small>
+                </div>
                 <div class="form-group">
                     <label>Prędkość zadana (m/min):</label>
                     <input type="number" id="targetSpeed" step="0.1" value="0.8">
@@ -1666,6 +1674,36 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     var currentYear = currentDateObj.getFullYear();
     var currentMonth = currentDateObj.getMonth();
     var selectedDayGlobal = formatDateKey(currentDateObj);
+    var selectedReportShift = String(localStorage.getItem('gema_report_shift') || '1');
+
+    function shiftCloseMeta(shift) {
+        return String(shift) === '2'
+            ? { label: 'Zmiana 2 (14:00-22:00)', start: '21:50', end: '22:00' }
+            : { label: 'Zmiana 1 (06:00-14:00)', start: '13:50', end: '14:00' };
+    }
+    function currentCloseStatus(shift, reportDate) {
+        var today = formatDateKey(new Date());
+        if (reportDate !== today) return 'korekta_historyczna';
+        var meta = shiftCloseMeta(shift), now = new Date();
+        var mins = now.getHours() * 60 + now.getMinutes();
+        var partsA = meta.start.split(':').map(Number), partsB = meta.end.split(':').map(Number);
+        var from = partsA[0] * 60 + partsA[1], to = partsB[0] * 60 + partsB[1];
+        if (mins < from) return 'przed_oknem';
+        if (mins <= to) return 'w_terminie';
+        return 'po_terminie';
+    }
+    async function changeReportShift(value) {
+        selectedReportShift = String(value) === '2' ? '2' : '1';
+        localStorage.setItem('gema_report_shift', selectedReportShift);
+        var meta = shiftCloseMeta(selectedReportShift);
+        var hint = document.getElementById('shiftCloseWindow');
+        if (hint) hint.textContent = 'Zamknięcie: ' + meta.start + '-' + meta.end;
+        hasUnsavedChanges = false;
+        await loadDataFromSupabase();
+        buildCalendar();
+        selectDay(selectedDayGlobal);
+        renderTableAndChart();
+    }
 
     const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
@@ -2106,6 +2144,13 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         selectedDayGlobal = getDateKeyForDay(1);
 
         await loadDataFromSupabase();
+        var shiftSelectInit = document.getElementById('reportShift');
+        if (shiftSelectInit) {
+            shiftSelectInit.value = selectedReportShift;
+            var shiftMetaInit = shiftCloseMeta(selectedReportShift);
+            var shiftHintInit = document.getElementById('shiftCloseWindow');
+            if (shiftHintInit) shiftHintInit.textContent = 'Zamknięcie: ' + shiftMetaInit.start + '-' + shiftMetaInit.end;
+        }
         const savedPanelMode = localStorage.getItem('gema_panel_mode') || 'manager';
         document.getElementById('operatorModeChooser').value = savedPanelMode;
         setPanelMode(savedPanelMode);
@@ -2125,6 +2170,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             const { data, error } = await supabaseClient
                 .from('oee_reports')
                 .select('*')
+                .eq('shift', parseInt(selectedReportShift, 10))
                 .order('date', { ascending: true });
 
             if (error) throw error;
@@ -3035,6 +3081,9 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         const oldAuditRecord = gemaBazaDanych[dateKey] ? JSON.parse(JSON.stringify(gemaBazaDanych[dateKey])) : null;
         const dbRow = {
             date: dateKey,
+            shift: parseInt(selectedReportShift, 10),
+            closed_at: new Date().toISOString(),
+            close_status: currentCloseStatus(selectedReportShift, dateKey),
             target_speed: targetSpeed,
             breakdown: breakdownMinutes,
             downtime_minutes: breakdownMinutes,
@@ -3059,12 +3108,13 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         try {
             const { error } = await supabaseClient
                 .from('oee_reports')
-                .upsert(dbRow, { onConflict: 'date' });
+                .upsert(dbRow, { onConflict: 'date,shift' });
 
             if (error) throw error;
 
             gemaBazaDanych[dateKey] = {
                 date: dateKey,
+                shift: parseInt(selectedReportShift, 10),
                 day: dayNum,
                 targetSpeed: targetSpeed,
                 breakdown: breakdownMinutes,

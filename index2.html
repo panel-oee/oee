@@ -2993,6 +2993,47 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         }
     }
 
+    
+    // Laczy raporty zmiany 1 i 2 w jeden rekord dobowy dla ekranu TV.
+    function aggregateOeeShiftRows(rows) {
+        const grouped = {};
+        (rows || []).forEach(function(row) {
+            const key = row.date;
+            if (!key) return;
+            if (!grouped[key]) {
+                grouped[key] = Object.assign({}, row, {
+                    meters: 0, pieces: 0, bad: 0, breakdown: 0, downtime_minutes: 0,
+                    cleaning: 0, service: 0, notes: '', _weight: 0,
+                    _av: 0, _perf: 0, _qual: 0, _oee: 0
+                });
+            }
+            const g = grouped[key];
+            ['meters','pieces','bad','breakdown','downtime_minutes','cleaning','service'].forEach(function(field) {
+                g[field] += Number(row[field] || 0);
+            });
+            if (Number(row.shift || 1) === 1 || g.m_start == null) g.m_start = row.m_start;
+            if (Number(row.shift || 1) === 1 || g.pcs_start == null) g.pcs_start = row.pcs_start;
+            if (Number(row.shift || 1) === 2 || g.m_end == null) g.m_end = row.m_end;
+            if (Number(row.shift || 1) === 2 || g.pcs_end == null) g.pcs_end = row.pcs_end;
+            if (row.h_start && (!g.h_start || Number(row.shift || 1) === 1)) g.h_start = row.h_start;
+            if (row.h_end && (!g.h_end || Number(row.shift || 1) === 2)) g.h_end = row.h_end;
+            const weight = Math.max(1, Number(row.meters || row.pieces || 0));
+            g._weight += weight;
+            g._av += Number(row.av || 0) * weight;
+            g._perf += Number(row.perf || 0) * weight;
+            g._qual += Number(row.qual || 0) * weight;
+            g._oee += Number(row.oee || 0) * weight;
+            if (row.notes) g.notes += (g.notes ? ' | ' : '') + '[Zmiana ' + Number(row.shift || 1) + '] ' + row.notes;
+            if (!g.created_at || String(row.created_at || '') > String(g.created_at)) g.created_at = row.created_at;
+        });
+        return Object.keys(grouped).sort().map(function(key) {
+            const g = grouped[key], w = g._weight || 1;
+            g.av = g._av / w; g.perf = g._perf / w; g.qual = g._qual / w; g.oee = g._oee / w;
+            delete g._weight; delete g._av; delete g._perf; delete g._qual; delete g._oee;
+            return g;
+        });
+    }
+
     async function loadDataFromSupabase() {
 		const yearStr = currentYear;
 		const monthStr = String(currentMonth + 1).padStart(2, '0');
@@ -3032,7 +3073,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
             gemaBazaDanych = {}; 
             if (data) {
-                data.forEach(row => {
+                aggregateOeeShiftRows(data).forEach(row => {
                     const dateKey = row.date;
                     gemaBazaDanych[dateKey] = {
                         date: dateKey,
