@@ -3156,6 +3156,30 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
   border-right: 7px solid transparent;
   border-bottom: 7px solid #f8fafc;
 }
+
+/* FINAL: dymek przy dolnej krawedzi, ale wewnatrz wykresu. */
+.v4-chart-panel .chart-css-tooltip,
+.v4-chart-panel .chart-css-bar.tooltip-inside .chart-css-tooltip {
+  top: auto !important;
+  bottom: 10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: min(250px, 24vw) !important;
+  z-index: 100 !important;
+}
+.v4-chart-panel .chart-css-tooltip::after,
+.v4-chart-panel .chart-css-bar.tooltip-inside .chart-css-tooltip::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: auto !important;
+  bottom: -7px !important;
+  transform: translateX(-50%) !important;
+  border-left: 7px solid transparent !important;
+  border-right: 7px solid transparent !important;
+  border-bottom: 0 !important;
+  border-top: 7px solid #f8fafc !important;
+}
 </style>
 </head>
 <body>
