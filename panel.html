@@ -1662,15 +1662,9 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var currentDateObj = new Date();
-    // Domyślnie wybieramy poprzedni dzień roboczy, pomijając sobotę i niedzielę.
-    // Przykłady:
-    // - wtorek 14.07 -> poniedziałek 13.07
-    // - poniedziałek 13.07 -> piątek 10.07
-    // - niedziela/sobota -> piątek
-    currentDateObj.setDate(currentDateObj.getDate() - 1);
-    while (currentDateObj.getDay() === 0 || currentDateObj.getDay() === 6) {
-        currentDateObj.setDate(currentDateObj.getDate() - 1);
-    }
+    // W systemie dwuzmianowym raport jest przypisany do dnia, w którym trwa zmiana.
+    // Panel zawsze otwiera bieżącą datę kalendarzową, także po weekendzie.
+    currentDateObj.setHours(0, 0, 0, 0);
     var currentYear = currentDateObj.getFullYear();
     var currentMonth = currentDateObj.getMonth();
     var selectedDayGlobal = formatDateKey(currentDateObj);
@@ -3161,11 +3155,24 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         targetGuide.style.boxShadow = `0 0 10px ${hexToRgba(targetColor, 0.45)}`;
         chartGrid.appendChild(targetGuide);
 
-        var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const nextDay = dayNum < daysInMonth ? dayNum + 1 : dayNum;
-            selectDay(getDateKeyForDay(nextDay));
+            // Po zapisie pozostajemy na tej samej dacie. Po zmianie 1 panel przechodzi
+            // od razu do zmiany 2, zamiast przeskakiwać na następny dzień.
+            if (String(selectedReportShift) === '1') {
+                selectedReportShift = '2';
+                localStorage.setItem('gema_report_shift', selectedReportShift);
+                const shiftSelectAfterSave = document.getElementById('reportShift');
+                if (shiftSelectAfterSave) shiftSelectAfterSave.value = selectedReportShift;
+                const shiftMetaAfterSave = shiftCloseMeta(selectedReportShift);
+                const shiftHintAfterSave = document.getElementById('shiftCloseWindow');
+                if (shiftHintAfterSave) shiftHintAfterSave.textContent = 'Zamknięcie: ' + shiftMetaAfterSave.start + '-' + shiftMetaAfterSave.end;
+                await loadDataFromSupabase();
+                buildCalendar();
+                selectDay(dateKey);
+            } else {
+                selectDay(dateKey);
+            }
             renderTableAndChart();
-            alert("Pomyślnie zweryfikowano ciągłość i zapisano raport w Supabase dla dnia " + dayNum + ".");
+            alert("Zapisano raport dla " + dateKey + ", zmiana " + dbRow.shift + ".");
         } catch (err) {
             console.error("Błąd zapisu Supabase:", err.message);
             alert("BŁĄD ZAPISU W CHMURZE: " + err.message + "\nDane nie zostały utrwalone na serwerze zewnętrznym.");
