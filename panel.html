@@ -2801,24 +2801,43 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         return Object.keys(gemaBazaDanych).filter(k => k.includes('-')).sort();
     }
 
+    function getAllShiftEntriesSorted() {
+        return Object.keys(allShiftRecords || {}).map(function(compoundKey) {
+            const parts = compoundKey.split('|');
+            const dateKey = parts[0];
+            const shift = parseInt(parts[1] || '1', 10);
+            return { key: dateKey, shift: shift, rec: allShiftRecords[compoundKey] };
+        }).filter(function(x) { return x.key && x.rec; })
+          .sort(function(a,b) { return a.key.localeCompare(b.key) || a.shift - b.shift; });
+    }
+
+    function findPreviousShiftRecord(dateKey, shift) {
+        shift = parseInt(shift || selectedReportShift || 1, 10);
+        const entries = getAllShiftEntriesSorted().filter(function(x) {
+            return x.key < dateKey || (x.key === dateKey && x.shift < shift);
+        });
+        return entries.length ? entries[entries.length - 1] : null;
+    }
+
+    function findNextShiftRecord(dateKey, shift) {
+        shift = parseInt(shift || selectedReportShift || 1, 10);
+        const entries = getAllShiftEntriesSorted().filter(function(x) {
+            return x.key > dateKey || (x.key === dateKey && x.shift > shift);
+        });
+        return entries.length ? entries[0] : null;
+    }
+
     function findPreviousRecord(dateKey) {
-        const keys = getAllRecordKeysSorted().filter(k => k < dateKey);
-        if (keys.length === 0) return null;
-        return gemaBazaDanych[keys[keys.length - 1]];
+        const found = findPreviousShiftRecord(dateKey, selectedReportShift);
+        return found ? found.rec : null;
     }
 
     function findPreviousRecordWithKey(dateKey) {
-        const keys = getAllRecordKeysSorted().filter(k => k < dateKey);
-        if (keys.length === 0) return null;
-        const key = keys[keys.length - 1];
-        return { key, rec: gemaBazaDanych[key] };
+        return findPreviousShiftRecord(dateKey, selectedReportShift);
     }
 
     function findNextRecordWithKey(dateKey) {
-        const keys = getAllRecordKeysSorted().filter(k => k > dateKey);
-        if (keys.length === 0) return null;
-        const key = keys[0];
-        return { key, rec: gemaBazaDanych[key] };
+        return findNextShiftRecord(dateKey, selectedReportShift);
     }
 
     function getAverageForWorkRange(monday, friday) {
@@ -3034,10 +3053,17 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             document.getElementById('breakdownMinutes').focus();
             return;
         }
-        const categoriesUsingCleaning = ["Zmiana koloru", "Przemalowanie", "Czyszczenie/Konserwacja"];
+        // „Przemalowanie” oznacza poprawki wadliwych sztuk, a nie czyszczenie kabiny.
+        // Czas czyszczenia jest wymagany tylko dla faktycznej zmiany koloru lub konserwacji.
+        const categoriesUsingCleaning = ["Zmiana koloru", "Czyszczenie/Konserwacja"];
         if (categoriesUsingCleaning.includes(category) && cleaningMinutes <= 0) {
             alert("Wybrano kategorię " + category + " — wpisz czas czyszczenia kabiny w minutach.");
             document.getElementById('cleaningMinutes').focus();
+            return;
+        }
+        if (category === "Przemalowanie" && badPieces <= 0) {
+            alert("Wybrano kategorię Przemalowanie — wpisz liczbę sztuk wadliwych przeznaczonych do poprawki.");
+            document.getElementById('badPieces').focus();
             return;
         }
         if (cleaningMinutes > 0 && changeoverCount < 1) {
@@ -3073,15 +3099,16 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         if (prev) {
             var prevRec = prev.rec;
             var prevDate = parseDateKey(prev.key);
+            var prevShiftLabel = prev.shift ? ' zmiana ' + prev.shift : '';
             var prevHMinutes = parseHoursToMinutes(prevRec.hEnd);
             if (parseInt(valMStart, 10) < prevRec.mEnd) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów START (${valMStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.mEnd})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów START (${valMStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1}${prevShiftLabel} (${prevRec.mEnd})!\n`;
             }
             if (parseInt(valPcsStart, 10) < prevRec.pcsEnd) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk START (${valPcsStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.pcsEnd})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk START (${valPcsStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1}${prevShiftLabel} (${prevRec.pcsEnd})!\n`;
             }
             if (minStart < prevHMinutes && minStart !== -1 && prevHMinutes !== -1) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu START (${valHStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1} (${prevRec.hEnd})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu START (${valHStart}) jest mniejszy niż KONIEC z dnia ${prevDate.getDate()}.${prevDate.getMonth()+1}${prevShiftLabel} (${prevRec.hEnd})!\n`;
             }
         }
 
@@ -3089,15 +3116,16 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         if (next) {
             var nextRec = next.rec;
             var nextDate = parseDateKey(next.key);
+            var nextShiftLabel = next.shift ? ' zmiana ' + next.shift : '';
             var nextHStartMinutes = parseHoursToMinutes(nextRec.hStart);
             if (parseInt(valMEnd, 10) > nextRec.mStart) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów KONIEC (${valMEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.mStart})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik metrów KONIEC (${valMEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1}${nextShiftLabel} (${nextRec.mStart})!\n`;
             }
             if (parseInt(valPcsEnd, 10) > nextRec.pcsStart) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk KONIEC (${valPcsEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.pcsStart})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik sztuk KONIEC (${valPcsEnd}) jest większy niż START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1}${nextShiftLabel} (${nextRec.pcsStart})!\n`;
             }
             if (minEnd > nextHStartMinutes && minEnd !== -1 && nextHStartMinutes !== -1) {
-                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu KONIEC (${valHEnd}) najeżdża na START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1} (${nextRec.hStart})!\n`;
+                errorMessage += `• [KONTROLA CIĄGŁOŚCI] Licznik czasu KONIEC (${valHEnd}) najeżdża na START z dnia ${nextDate.getDate()}.${nextDate.getMonth()+1}${nextShiftLabel} (${nextRec.hStart})!\n`;
             }
         }
 
@@ -3280,7 +3308,10 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     }
 
     function restoreLatestCounters() {
-        var previousRecord = findPreviousRecord(selectedDayGlobal);
+        // Kolejnosc produkcyjna: zmiana 1 -> zmiana 2 -> zmiana 1 nastepnego dnia.
+        // Dla zmiany 1 bierzemy KONIEC ostatniej zmiany 2, a nie wczorajszej zmiany 1.
+        var previous = findPreviousShiftRecord(selectedDayGlobal, selectedReportShift);
+        var previousRecord = previous ? previous.rec : null;
 
         if (previousRecord) {
             document.getElementById('hStart').value = previousRecord.hEnd;
