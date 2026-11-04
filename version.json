@@ -1,7 +1,7 @@
 {
-  "version": "5.0.2",
-  "codename": "Quantum Forge Stability Fix",
-  "date": "2026-09-03",
+  "version": "5.0.4",
+  "codename": "Quantum Forge Database Config",
+  "date": "2026-11-03",
   "database": "existing Supabase",
   "launch": "file and https"
 }

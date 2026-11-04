@@ -3285,6 +3285,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 </div>
 </div>
 </div>
+<script src="assets/database-config.js"></script>
 <script>
     // =========================================================================
     // DYNAMICZNA KONFIGURACJA PROGÓW OEE (Pobierana automatycznie z Supabase)
@@ -3343,8 +3344,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
 
     var gemaBazaDanych = {};
     
-    const SUPABASE_URL = 'https://vyobsgknuxxlglkyhulb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.APP_DATABASE_CONFIG;
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
@@ -4305,7 +4305,9 @@ function buildCalendar() {
         let diffMins = endMins - startMins;
         if (isNaN(diffMins) || diffMins < 0) return "—";
         
-        diffMins = Math.max(0, diffMins - 120);
+        // Licznik automatyki pokazuje rzeczywisty czas pracy.
+        // Nie odejmujemy ponownie 120 minut przerw.
+        diffMins = Math.max(0, diffMins);
         
         const hrs = Math.floor(diffMins / 60);
         const mins = diffMins % 60;
@@ -4957,7 +4959,7 @@ function buildCalendar() {
 })();
 </script>
 
-<script id="copilot-trend-nofail-visible-fix">
+<script id="copilot-trend-nofail-visible-fix-script">
 (function(){
   function statusColor(status){
     return status === 'good' ? '#10b981' : (status === 'warn' ? '#f59e0b' : '#ef4444');
@@ -5054,7 +5056,7 @@ function buildCalendar() {
 </script>
 
 
-<script id="copilot-kpi-left-bar-status-fix">
+<script id="copilot-kpi-left-bar-status-fix-script">
 (function(){
   function parsePct(text){
     const match = String(text || '').replace(',', '.').match(/-?\d+(?:\.\d+)?/);

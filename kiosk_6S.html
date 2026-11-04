@@ -95,9 +95,9 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
   </div>
 </div>
 
+<script src="assets/database-config.js"></script>
 <script>
-const SUPABASE_URL='https://vyobsgknuxxlglkyhulb.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.APP_DATABASE_CONFIG;
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const BREAK_KEY='gema_break_schedule_config_v2';
 const DEFAULT_BREAKS=[{start:'05:45',durationMinutes:15,kind:'6S',shift:'1',days:[1,2,3,4,5],enabled:true},{start:'13:45',durationMinutes:15,kind:'6S',shift:'2',days:[1,2,3,4,5],enabled:true},{start:'21:45',durationMinutes:15,kind:'6S',shift:'3',days:[1,2,3,4,5],enabled:true}];

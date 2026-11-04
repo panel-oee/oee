@@ -87,9 +87,9 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
   <div class="box"><h2>Historia zadań 6S</h2><div class="grid3"><div><label>Data</label><input type="date" id="historyDate"></div><div><label>Zmiana</label><select id="historyShift"><option value="all">Wszystkie zmiany</option><option value="1">Zmiana 1</option><option value="2">Zmiana 2</option><option value="3">Zmiana 3</option></select></div><div style="align-self:end"><button class="save" onclick="loadHistory()">Odśwież historię</button></div></div><div class="table-responsive"><table id="historyTable"><thead><tr><th>Data</th><th>Zmiana</th><th>Start 6S</th><th>Zadanie</th><th>Status</th><th>Operator</th><th>Uwagi</th><th>Czas</th><th>Akcje</th></tr></thead><tbody></tbody></table></div></div>
 </section>
 </div>
+<script src="assets/database-config.js"></script>
 <script>
-const SUPABASE_URL='https://vyobsgknuxxlglkyhulb.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.APP_DATABASE_CONFIG;
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const KEY='gema_break_schedule_config_v2';
 const DEFAULT_BREAKS=[{start:'05:45',durationMinutes:15,kind:'6S',shift:'1',soundType:'chime',title:'CZAS 6S',subtitle:'Sprzątanie / porządki — do końca pozostało:',days:[1,2,3,4,5],enabled:true},{start:'09:30',durationMinutes:30,kind:'main',shift:'1',soundType:'siren',title:'PRZERWA',subtitle:'Do końca przerwy pozostało:',days:[1,2,3,4,5],enabled:true},{start:'13:45',durationMinutes:15,kind:'6S',shift:'2',soundType:'chime',title:'CZAS 6S',subtitle:'Sprzątanie / porządki — do końca pozostało:',days:[1,2,3,4,5],enabled:true},{start:'17:30',durationMinutes:30,kind:'main',shift:'2',soundType:'siren',title:'PRZERWA',subtitle:'Do końca przerwy pozostało:',days:[1,2,3,4,5],enabled:true},{start:'21:45',durationMinutes:15,kind:'6S',shift:'3',soundType:'chime',title:'CZAS 6S',subtitle:'Sprzątanie / porządki — do końca pozostało:',days:[1,2,3,4,5],enabled:true}];

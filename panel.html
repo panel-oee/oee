@@ -1583,6 +1583,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
   </div><div class="gema-modal-footer"><button onclick="closeBreakScheduleConfig()" style="background:#475569;color:white;">Anuluj</button><button onclick="saveBreakScheduleConfig()" style="background:#0284c7;color:white;">Zapisz w bazie</button></div>
  </div>
 </div>
+<script src="assets/database-config.js"></script>
 <script>
     var isEditMode = false;
     var hasUnsavedChanges = false;
@@ -1659,8 +1660,7 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     let NEW_BREAK_ROW_INDEX = -1;
 
 
-    const SUPABASE_URL = 'https://vyobsgknuxxlglkyhulb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_n6qmH_g5BMxbzxxz5KDp3A_W0k80d7L';
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.APP_DATABASE_CONFIG;
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     var currentDateObj = new Date();
@@ -2523,7 +2523,9 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
         if (mStartMin !== -1 && mEndMin !== -1) {
             let diffMin = mEndMin - mStartMin;
             if (diffMin >= 0) {
-                let displayDiffMin = Math.max(0, diffMin - 120);
+                // Licznik automatyki pokazuje rzeczywisty czas pracy.
+                // Nie odejmujemy ponownie 120 minut przerw.
+                let displayDiffMin = diffMin;
                 let hrs = Math.floor(displayDiffMin / 60);
                 let mins = displayDiffMin % 60;
                 diffTBox.innerText = `⏱️ Różnica: ${hrs}h ${mins.toString().padStart(2, '0')}m`;
