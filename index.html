@@ -3506,6 +3506,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
             if (Number.isFinite(shiftOee) && shiftOee >= 0) {
                 g._oeeSum += shiftOee;
                 g._oeeCount += 1;
+                // Zachowaj OEE osobno dla każdej zmiany do widoku wybranego dnia.
+                if (shift === 1 || shift === 2) g['shift_oee_' + shift] = shiftOee;
             }
             const downtime = Math.max(0, Number(row.downtime_minutes || row.breakdown || 0))
                 + Math.max(0, Number(row.cleaning || 0))
@@ -3586,6 +3588,8 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
                         shift_count: Number(row.shift_count || 1),
                         shifts_present: row.shifts_present || String(row.shift || 1),
                         oee: row.oee != null ? parseFloat(row.oee).toFixed(1) : "0.0",
+                        shift_oee_1: row.shift_oee_1 != null ? parseFloat(row.shift_oee_1).toFixed(1) : null,
+                        shift_oee_2: row.shift_oee_2 != null ? parseFloat(row.shift_oee_2).toFixed(1) : null,
                         notes: row.notes || "",
                         h_start: row.h_start || row.hStart || "",
                         h_end: row.h_end || row.hEnd || "",
@@ -5296,5 +5300,96 @@ function buildCalendar() {
   window.repaintOeeThresholdConsistency = repaintAll;
 })();
 </script>
+
+
+<style id="shift-oee-details-style">
+#shiftOeeDetails{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:7px 0 8px;padding:7px 10px;border:1px solid var(--v4-border,#334155);border-radius:10px;background:rgba(30,41,59,.55);font-size:12px;font-weight:800;color:var(--v4-muted,#94a3b8)}
+#shiftOeeDetails b{color:var(--v4-text,#f8fafc)}
+</style>
+<script id="shift-oee-details-fixed">
+(function(){
+ function db(){return window.gemaBazaDanych||(typeof gemaBazaDanych!=='undefined'?gemaBazaDanych:{});}
+ function key(){return window.selectedDayGlobal||(typeof selectedDayGlobal!=='undefined'?selectedDayGlobal:null);}
+ function good(v){return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));}
+ function fmt(v){return good(v)?Number(v).toFixed(1)+'%':'—';}
+ function record(){const k=key();return k?db()[k]:null;}
+ function values(rec){
+   let v1=rec?rec.shift_oee_1:null,v2=rec?rec.shift_oee_2:null;
+   const present=String((rec&&rec.shifts_present)||'').split(',').map(x=>Number(x.trim())).filter(x=>x===1||x===2);
+   const count=Number((rec&&rec.shift_count)||present.length||0);
+   if(rec&&count===1&&good(rec.oee)){
+     const n=present[0]||Number(rec.shift)||1;
+     if(n===1&&!good(v1))v1=rec.oee;
+     if(n===2&&!good(v2))v2=rec.oee;
+   }
+   return {v1,v2,count};
+ }
+ function render(){
+   const anchor=document.querySelector('.v4-selected-oee');
+   if(!anchor)return;
+   let box=document.getElementById('shiftOeeDetails');
+   if(!box){box=document.createElement('div');box.id='shiftOeeDetails';anchor.insertAdjacentElement('afterend',box);}
+   const rec=record();
+   if(!rec){box.innerHTML='<span>Zmiana 1: <b>—</b></span><span>Zmiana 2: <b>—</b></span><span>Kompletność: <b>0/2</b></span>';return;}
+   const x=values(rec);
+   box.innerHTML='<span>Zmiana 1: <b>'+fmt(x.v1)+'</b></span><span>Zmiana 2: <b>'+fmt(x.v2)+'</b></span><span>Kompletność: <b>'+x.count+'/2</b></span>';
+ }
+ document.addEventListener('DOMContentLoaded',()=>setTimeout(render,500));
+ document.addEventListener('click',()=>setTimeout(render,80));
+ setInterval(render,1500);
+ window.addEventListener('load',render);
+})();
+</script>
+
+
+<style id="selected-day-responsive-v1">
+/* Responsywny panel "Wybrany dzień": pełne dane bez obcinania. */
+.v4-main{grid-template-columns:minmax(0,1fr) clamp(420px,24vw,480px)!important;}
+.v4-day-panel{
+  display:grid!important;
+  grid-template-rows:auto auto 58px 54px 76px minmax(126px,auto)!important;
+  gap:7px!important;
+  align-content:start!important;
+  overflow:visible!important;
+  min-width:0!important;
+}
+.v4-day-panel .v4-panel-head{margin:0!important;min-height:0!important;}
+.v4-day-panel .v4-selected-date{font-size:18px!important;line-height:1.15!important;margin:0!important;}
+.v4-day-panel .v4-selected-oee{height:58px!important;min-height:58px!important;padding:7px 11px!important;box-sizing:border-box!important;}
+.v4-day-panel .v4-selected-oee strong{font-size:46px!important;line-height:1!important;}
+#shiftOeeDetails{height:54px!important;min-height:54px!important;box-sizing:border-box!important;margin:0!important;padding:7px 10px!important;gap:8px!important;font-size:12px!important;white-space:nowrap!important;}
+.v4-day-panel .gema-counters-section,.v4-day-panel .gema-counters-container{height:76px!important;min-height:76px!important;margin:0!important;}
+.v4-day-panel .gema-counters-container{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;}
+.v4-day-panel .gema-counter-card{height:76px!important;min-height:76px!important;padding:7px 9px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;overflow:hidden!important;}
+.v4-day-panel .gema-counter-title{font-size:11px!important;line-height:1.12!important;min-height:25px!important;}
+.v4-day-panel .gema-counter-value{font-size:25px!important;line-height:1!important;text-align:left!important;white-space:nowrap!important;}
+.v4-day-panel .v4-loss{margin:0!important;min-height:126px!important;max-height:none!important;height:auto!important;padding:9px 12px!important;overflow:visible!important;}
+.v4-day-panel .v4-loss .director-mini-value{font-size:25px!important;line-height:1.05!important;margin:1px 0 4px!important;}
+.v4-day-panel .v4-loss .director-mini-sub{font-size:13px!important;line-height:1.18!important;gap:1px!important;}
+.v4-day-panel .v4-loss .loss-detail{min-height:15px!important;height:auto!important;line-height:15px!important;}
+@media (max-width:1500px){
+  .v4-main{grid-template-columns:minmax(0,1fr) clamp(400px,30vw,460px)!important;}
+}
+@media (max-height:820px) and (min-width:900px){
+  .v4-day-panel{grid-template-rows:auto auto 50px 46px 68px minmax(112px,auto)!important;gap:5px!important;padding:10px!important;}
+  .v4-day-panel .v4-selected-date{font-size:17px!important;}
+  .v4-day-panel .v4-selected-oee{height:50px!important;min-height:50px!important;padding:5px 10px!important;}
+  .v4-day-panel .v4-selected-oee strong{font-size:40px!important;}
+  #shiftOeeDetails{height:46px!important;min-height:46px!important;padding:5px 9px!important;font-size:11px!important;}
+  .v4-day-panel .gema-counters-section,.v4-day-panel .gema-counters-container{height:68px!important;min-height:68px!important;}
+  .v4-day-panel .gema-counter-card{height:68px!important;min-height:68px!important;padding:5px 8px!important;}
+  .v4-day-panel .gema-counter-title{font-size:10px!important;min-height:22px!important;}
+  .v4-day-panel .gema-counter-value{font-size:22px!important;}
+  .v4-day-panel .v4-loss{min-height:112px!important;padding:7px 10px!important;}
+  .v4-day-panel .v4-loss .director-mini-value{font-size:21px!important;margin:0 0 2px!important;}
+  .v4-day-panel .v4-loss .director-mini-sub{font-size:11px!important;line-height:1.12!important;}
+}
+@media (max-width:1050px){
+  .v4-main{grid-template-columns:1fr!important;}
+  .v4-day-panel{grid-template-rows:auto auto 54px 50px 72px minmax(120px,auto)!important;}
+  #shiftOeeDetails{white-space:normal!important;}
+}
+</style>
+
 </body>
 </html>
