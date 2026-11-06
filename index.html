@@ -3697,10 +3697,21 @@ html[data-theme="light"] select option, html[data-theme="light"] select optgroup
     function directorExtractCategory(note){const text=stripChangeoverMarker ? stripChangeoverMarker(String(note||'')) : String(note||'');const m=text.match(/\[(.*?)\]/);return m?m[1].trim():(text.trim()?'Inne':'Brak przestojów');}
 
     function extractChangeoverCountFromNotes(note) {
-        const match = String(note || '').match(/(?:\[PRZEZBROJENIA:(\d+)\]|<!--\s*PRZEZBROJENIA:(\d+)\s*-->)/i);
-        if (!match) return null;
-        const value = parseInt(match[1] || match[2], 10);
-        return (!isNaN(value) && value >= 0) ? value : null;
+        // Rekord dobowy może zawierać osobne znaczniki z obu zmian.
+        // Zliczamy wszystkie znaczniki zamiast pobierać tylko pierwszy.
+        const text = String(note || '');
+        const regex = /(?:\[PRZEZBROJENIA:(\d+)\]|<!--\s*PRZEZBROJENIA:(\d+)\s*-->)/gi;
+        let match;
+        let total = 0;
+        let found = false;
+        while ((match = regex.exec(text)) !== null) {
+            const value = parseInt(match[1] || match[2], 10);
+            if (!isNaN(value) && value >= 0) {
+                total += value;
+                found = true;
+            }
+        }
+        return found ? total : null;
     }
     function stripChangeoverMarker(note) {
         return String(note || '').replace(/\s*\[PRZEZBROJENIA:\d+\]\s*/gi, ' ').replace(/\s*<!--\s*PRZEZBROJENIA:\d+\s*-->\s*/gi, ' ').replace(/\s{2,}/g, ' ').trim();
